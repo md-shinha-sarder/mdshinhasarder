@@ -55,8 +55,8 @@ async function load(type: "posts" | "pages", force = false): Promise<BlogPost[]>
           if (!error && data && (data.posts || data.items)) {
             loaded = (data?.posts ?? data?.items ?? []) as BlogPost[];
           }
-        } catch {
-          // ignore and proceed to direct fetch
+        } catch (_e) {
+          void _e;
         }
 
         if (!loaded) {

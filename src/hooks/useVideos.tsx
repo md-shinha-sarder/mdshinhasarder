@@ -35,8 +35,8 @@ async function fetchPage(page: number, pageSize: number): Promise<Cache> {
       if (!error && data && (data.videos || data.reels)) {
         result = data;
       }
-    } catch {
-      // ignore and try direct fetch
+    } catch (_e) {
+      void _e;
     }
 
     if (!result) {

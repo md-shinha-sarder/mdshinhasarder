@@ -5,8 +5,3 @@ pages_build_output_dir = "dist"
 
 [vars]
 NEXTAUTH_URL = "https://mdshinhasarder.com"
-
-# Hyperdrive or Neon connection binding (optional Cloudflare Hyperdrive acceleration)
-# [[hyperdrive]]
-# binding = "HYPERDRIVE"
-# id = "your-hyperdrive-id"
