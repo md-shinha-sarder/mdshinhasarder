@@ -132,3 +132,24 @@ CREATE POLICY "site_settings_write_auth" ON public.site_settings FOR ALL TO auth
 
 CREATE POLICY "site_contact_read_auth" ON public.site_contact FOR SELECT TO authenticated USING (true);
 CREATE POLICY "site_contact_write_auth" ON public.site_contact FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('media', 'media', true, 52428800, null)
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+DROP POLICY IF EXISTS "Media bucket public read" ON storage.objects;
+DROP POLICY IF EXISTS "Media bucket public insert" ON storage.objects;
+DROP POLICY IF EXISTS "Media bucket public update" ON storage.objects;
+DROP POLICY IF EXISTS "Media bucket public delete" ON storage.objects;
+
+CREATE POLICY "Media bucket public read" ON storage.objects
+FOR SELECT USING (bucket_id = 'media');
+
+CREATE POLICY "Media bucket public insert" ON storage.objects
+FOR INSERT WITH CHECK (bucket_id = 'media');
+
+CREATE POLICY "Media bucket public update" ON storage.objects
+FOR UPDATE USING (bucket_id = 'media');
+
+CREATE POLICY "Media bucket public delete" ON storage.objects
+FOR DELETE USING (bucket_id = 'media');

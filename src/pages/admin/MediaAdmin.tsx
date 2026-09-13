@@ -31,13 +31,30 @@ const MediaAdmin = () => {
       for (const file of Array.from(files)) {
         const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
         const path = `${user.id}/${Date.now()}-${safe}`;
-        const { error: upErr } = await supabase.storage.from("media").upload(path, file, { contentType: file.type });
-        if (upErr) throw upErr;
+        let { error: upErr } = await supabase.storage.from("media").upload(path, file, { contentType: file.type });
+        if (upErr && (upErr.message?.toLowerCase().includes("bucket") || (upErr as any).statusCode === 404 || (upErr as any).statusCode === "404")) {
+          try {
+            await supabase.storage.createBucket("media", { public: true });
+            const retry = await supabase.storage.from("media").upload(path, file, { contentType: file.type });
+            upErr = retry.error;
+          } catch (_e) {
+            void _e;
+          }
+        }
+        if (upErr) {
+          if (upErr.message?.toLowerCase().includes("bucket") || (upErr as any).statusCode === 404 || (upErr as any).statusCode === "404") {
+            throw new Error("Supabase Storage-এ 'media' নামের public bucket পাওয়া যায়নি। Supabase Dashboard > Storage এ গিয়ে 'media' bucket তৈরি করুন অথবা SQL Editor এ supabase_schema.sql রান করুন।");
+          }
+          throw upErr;
+        }
         const { data: pub } = supabase.storage.from("media").getPublicUrl(path);
-        const { error: insErr } = await supabase.from("media").insert({
-          name: file.name, url: pub.publicUrl, path, mime_type: file.type, size_bytes: file.size, uploaded_by: user.id,
-        });
-        if (insErr) throw insErr;
+        try {
+          await supabase.from("media").insert({
+            name: file.name, url: pub.publicUrl, path, mime_type: file.type, size_bytes: file.size, uploaded_by: user.id,
+          });
+        } catch (_e) {
+          void _e;
+        }
       }
       toast.success("Uploaded");
       load();
