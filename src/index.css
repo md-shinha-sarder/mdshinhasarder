@@ -143,3 +143,66 @@
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
 }
+
+/* Highlighted Link Styles - "also je gula link gulo highlight color use" */
+.highlight-link,
+a.highlight-link {
+  color: #fbbf24 !important;
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  padding: 0.125rem 0.375rem !important;
+  border-radius: 0.25rem !important;
+  text-decoration: underline !important;
+  text-decoration-color: rgba(251, 191, 36, 0.6) !important;
+  text-underline-offset: 4px !important;
+  transition: all 0.2s ease-in-out !important;
+  font-weight: 500 !important;
+}
+
+.highlight-link:hover,
+a.highlight-link:hover {
+  color: #fef08a !important;
+  background-color: rgba(245, 158, 11, 0.25) !important;
+  text-decoration-color: #fef08a !important;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.25) !important;
+}
+
+/* Prose links inside article bodies and TipTap */
+.prose a,
+.ProseMirror a {
+  color: #fbbf24 !important;
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  padding: 0.1rem 0.35rem !important;
+  border-radius: 0.25rem !important;
+  text-decoration: underline !important;
+  text-decoration-color: rgba(251, 191, 36, 0.6) !important;
+  text-underline-offset: 3px !important;
+  transition: all 0.2s ease-in-out !important;
+  font-weight: 500 !important;
+}
+
+.prose a:hover,
+.ProseMirror a:hover {
+  color: #fde047 !important;
+  background-color: rgba(245, 158, 11, 0.24) !important;
+  text-decoration-color: #fde047 !important;
+}
+
+/* TipTap Editor ProseMirror Styles */
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+}
+
+.ProseMirror mark {
+  background-color: rgba(245, 158, 11, 0.3) !important;
+  color: #fef3c7 !important;
+  padding: 0.1rem 0.3rem !important;
+  border-radius: 0.25rem !important;
+}

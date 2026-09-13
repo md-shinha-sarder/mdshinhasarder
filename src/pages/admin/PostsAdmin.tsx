@@ -12,6 +12,7 @@ import { MediaPicker } from "@/components/admin/MediaPicker";
 import { toSiteMediaUrl } from "@/lib/mediaUrl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePosts } from "@/hooks/usePosts";
+import { TipTapEditor } from "@/components/editor/TipTapEditor";
 import { postPath } from "@/lib/postUrl";
 import { Link } from "react-router-dom";
 
@@ -78,7 +79,16 @@ const PostsAdmin = () => {
                   <div><Label>Slug</Label><Input value={editing.slug} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} /></div>
                 </div>
                 <div><Label>Excerpt</Label><Textarea rows={2} value={editing.excerpt || ""} onChange={(e) => setEditing({ ...editing, excerpt: e.target.value })} /></div>
-                <div><Label>Content</Label><Textarea rows={8} value={editing.content} onChange={(e) => setEditing({ ...editing, content: e.target.value })} /></div>
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <Label>Content (TipTap Rich Editor)</Label>
+                    <span className="text-[11px] text-amber-400 font-medium">Highlight & Link enabled</span>
+                  </div>
+                  <TipTapEditor
+                    content={editing.content}
+                    onChange={(html) => setEditing({ ...editing, content: html })}
+                  />
+                </div>
                 <MediaPicker label="Cover Image *" value={toSiteMediaUrl(editing.cover_url || "")} onChange={(url) => setEditing({ ...editing, cover_url: url })} />
                 <div><Label>Tags (comma separated)</Label><Input value={tagsStr} onChange={(e) => setTagsStr(e.target.value)} /></div>
                 <div><Label>SEO Title</Label><Input value={editing.seo_title || ""} onChange={(e) => setEditing({ ...editing, seo_title: e.target.value })} /></div>
