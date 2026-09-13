@@ -7,6 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
+const ADMIN_EMAILS = [
+  "shinhasarder2343@gmail.com",
+  "mdshinhasarder466@gmail.com",
+];
+
 const ADMIN_ALIASES: Record<string, string> = {
   shinhasarder2343: "shinhasarder2343@gmail.com",
   mdshinhasarder466: "mdshinhasarder466@gmail.com",
@@ -38,17 +43,36 @@ const Auth = () => {
       if (error) throw error;
       const { data: verified, error: userError } = await supabase.auth.getUser();
       if (userError || !verified.user) throw userError || new Error("Could not verify this session.");
-      const { data: roleRow, error: roleError } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", verified.user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      if (roleError) throw roleError;
-      if (!roleRow) {
+
+      let isAllowed = false;
+      const verifiedEmail = (verified.user.email || "").toLowerCase().trim();
+      if (
+        ADMIN_EMAILS.includes(verifiedEmail) ||
+        verified.user.app_metadata?.role === "admin" ||
+        verified.user.user_metadata?.role === "admin"
+      ) {
+        isAllowed = true;
+      }
+
+      try {
+        const { data: roleRow } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", verified.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        if (roleRow) {
+          isAllowed = true;
+        }
+      } catch (_e) {
+        void _e;
+      }
+
+      if (!isAllowed) {
         await supabase.auth.signOut();
         throw new Error("This account is not an admin.");
       }
+
       toast.success("Signed in successfully. Opening admin dashboard...");
       nav("/admin", { replace: true });
     } catch (err: any) {

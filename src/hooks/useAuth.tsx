@@ -10,6 +10,11 @@ interface AuthCtx {
   signOut: () => Promise<void>;
 }
 
+const ADMIN_EMAILS = [
+  "shinhasarder2343@gmail.com",
+  "mdshinhasarder466@gmail.com",
+];
+
 const Ctx = createContext<AuthCtx>({ user: null, session: null, isAdmin: false, loading: true, signOut: async () => {} });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -21,14 +26,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    const checkAdmin = async (userId: string) => {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .maybeSingle();
-      return !!data;
+    const checkAdmin = async (u: User) => {
+      const email = (u.email || "").toLowerCase().trim();
+      if (ADMIN_EMAILS.includes(email)) return true;
+      if (u.app_metadata?.role === "admin" || u.user_metadata?.role === "admin") return true;
+
+      try {
+        const { data, error } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", u.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        if (!error && data) return true;
+      } catch (_e) {
+        void _e;
+      }
+      return false;
     };
 
     const applySession = async (s: Session | null) => {
@@ -41,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
         return;
       }
-      const admin = await checkAdmin(s.user.id).catch(() => false);
+      const admin = await checkAdmin(s.user).catch(() => false);
       if (!mounted) return;
       setIsAdmin(admin);
       setLoading(false);

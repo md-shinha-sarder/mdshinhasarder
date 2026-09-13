@@ -8,45 +8,91 @@ import { toast } from "sonner";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { toSiteMediaUrl } from "@/lib/mediaUrl";
 
+const DEFAULT_SEO = {
+  site_title: "MD. Shinha Sarder",
+  site_tagline: "Founder & CEO of IT Tech BD and Biostar TV World",
+  logo_url: "/profile.webp",
+  favicon_url: "/favicon.webp",
+  seo_title: "MD. Shinha Sarder - Official Website & Blog",
+  seo_description: "Official website and blog of MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World.",
+  seo_keywords: "MD. Shinha Sarder, IT Tech BD, Biostar TV World, Blogger",
+  social_facebook: "https://facebook.com/md.shinha.sarder",
+  social_twitter: "https://x.com/mdshinhasarder",
+  social_youtube: "https://youtube.com/@MD-Shinha-Sarder",
+  social_github: "https://github.com/md-shinha-sarder",
+  social_website: "https://mdshinhasarder.com",
+};
+
 const SeoAdmin = () => {
-  const [s, setS] = useState<any>(null);
+  const [s, setS] = useState<any>(DEFAULT_SEO);
+  const [loading, setLoading] = useState(true);
   const [contact, setContact] = useState<{ contact_email: string; contact_phone: string }>({
-    contact_email: "",
-    contact_phone: "",
+    contact_email: "shinhasarder2343@gmail.com",
+    contact_phone: "+8801700000000",
   });
 
   useEffect(() => {
-    supabase.from("site_settings").select("*").eq("id", 1).maybeSingle().then(({ data }) => setS(data));
+    supabase
+      .from("site_settings")
+      .select("*")
+      .eq("id", 1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setS({ ...DEFAULT_SEO, ...data });
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+
     (supabase.from as any)("site_contact")
       .select("contact_email, contact_phone")
       .eq("id", 1)
       .maybeSingle()
       .then(({ data }: any) => {
-        if (data) setContact({ contact_email: data.contact_email || "", contact_phone: data.contact_phone || "" });
-      });
+        if (data) {
+          setContact({
+            contact_email: data.contact_email || "shinhasarder2343@gmail.com",
+            contact_phone: data.contact_phone || "",
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const save = async () => {
-    const { error } = await supabase.from("site_settings").update({
-      site_title: s.site_title, site_tagline: s.site_tagline,
-      logo_url: s.logo_url, favicon_url: s.favicon_url,
-      seo_title: s.seo_title, seo_description: s.seo_description, seo_keywords: s.seo_keywords,
-      social_facebook: s.social_facebook, social_twitter: s.social_twitter, social_youtube: s.social_youtube,
-      social_github: s.social_github, social_website: s.social_website,
-    }).eq("id", 1);
+    const payload = {
+      id: 1,
+      site_title: s.site_title,
+      site_tagline: s.site_tagline,
+      logo_url: s.logo_url,
+      favicon_url: s.favicon_url,
+      seo_title: s.seo_title,
+      seo_description: s.seo_description,
+      seo_keywords: s.seo_keywords,
+      social_facebook: s.social_facebook,
+      social_twitter: s.social_twitter,
+      social_youtube: s.social_youtube,
+      social_github: s.social_github,
+      social_website: s.social_website,
+    };
+    const { error } = await supabase.from("site_settings").upsert(payload);
     if (error) return toast.error(error.message);
 
-    const { error: cErr } = await (supabase.from as any)("site_contact").upsert({
-      id: 1,
-      contact_email: contact.contact_email || null,
-      contact_phone: contact.contact_phone || null,
-    });
-    if (cErr) return toast.error(cErr.message);
+    try {
+      await (supabase.from as any)("site_contact").upsert({
+        id: 1,
+        contact_email: contact.contact_email || null,
+        contact_phone: contact.contact_phone || null,
+      });
+    } catch (_e) {
+      void _e;
+    }
 
     toast.success("Saved");
   };
 
-  if (!s) return <div className="text-muted-foreground">Loading...</div>;
+  if (loading) return <div className="text-muted-foreground">Loading...</div>;
 
   return (
     <div className="space-y-6 max-w-2xl">

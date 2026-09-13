@@ -21,8 +21,28 @@ export interface SiteSettings {
   social_website: string | null;
 }
 
+const DEFAULT_SETTINGS: SiteSettings = {
+  id: 1,
+  site_title: "MD. Shinha Sarder",
+  site_tagline: "Founder & CEO of IT Tech BD and Biostar TV World",
+  logo_url: "/profile.webp",
+  favicon_url: "/favicon.webp",
+  primary_color: "42 87% 55%",
+  background_color: "222 47% 6%",
+  font_heading: "Playfair Display",
+  font_body: "Plus Jakarta Sans",
+  seo_title: "MD. Shinha Sarder - Official Website & Blog",
+  seo_description: "Official website of MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World.",
+  seo_keywords: "MD. Shinha Sarder, IT Tech BD, Biostar TV World, Blogger",
+  social_facebook: "https://facebook.com/md.shinha.sarder",
+  social_twitter: "https://x.com/mdshinhasarder",
+  social_youtube: "https://youtube.com/@MD-Shinha-Sarder",
+  social_github: "https://github.com/md-shinha-sarder",
+  social_website: "https://mdshinhasarder.com",
+};
+
 export const useSiteSettings = () => {
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,7 +52,7 @@ export const useSiteSettings = () => {
       .eq("id", 1)
       .maybeSingle()
       .then(({ data }) => {
-        setSettings(data as unknown as SiteSettings);
+        if (data) setSettings({ ...DEFAULT_SETTINGS, ...(data as unknown as SiteSettings) });
         setLoading(false);
       })
       .catch(() => {

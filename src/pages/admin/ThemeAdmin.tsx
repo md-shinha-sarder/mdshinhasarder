@@ -5,26 +5,56 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
+const DEFAULT_THEME = {
+  site_title: "MD. Shinha Sarder",
+  site_tagline: "Founder & CEO of IT Tech BD and Biostar TV World",
+  logo_url: "/profile.webp",
+  favicon_url: "/favicon.webp",
+  primary_color: "42 87% 55%",
+  background_color: "222 47% 6%",
+  font_heading: "Playfair Display",
+  font_body: "Plus Jakarta Sans",
+};
+
 const ThemeAdmin = () => {
-  const [s, setS] = useState<any>(null);
+  const [s, setS] = useState<any>(DEFAULT_THEME);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.from("site_settings").select("*").eq("id", 1).maybeSingle().then(({ data }) => setS(data));
+    supabase
+      .from("site_settings")
+      .select("*")
+      .eq("id", 1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setS({ ...DEFAULT_THEME, ...data });
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   }, []);
 
   const save = async () => {
-    const { error } = await supabase.from("site_settings").update({
-      site_title: s.site_title, site_tagline: s.site_tagline, logo_url: s.logo_url, favicon_url: s.favicon_url,
-      primary_color: s.primary_color, background_color: s.background_color,
-      font_heading: s.font_heading, font_body: s.font_body,
-    }).eq("id", 1);
+    const payload = {
+      id: 1,
+      site_title: s.site_title,
+      site_tagline: s.site_tagline,
+      logo_url: s.logo_url,
+      favicon_url: s.favicon_url,
+      primary_color: s.primary_color,
+      background_color: s.background_color,
+      font_heading: s.font_heading,
+      font_body: s.font_body,
+    };
+    const { error } = await supabase.from("site_settings").upsert(payload);
     if (error) return toast.error(error.message);
     toast.success("Saved. Reload site to see all changes.");
     if (s.primary_color) document.documentElement.style.setProperty("--primary", s.primary_color);
     if (s.background_color) document.documentElement.style.setProperty("--background", s.background_color);
   };
 
-  if (!s) return <div className="text-muted-foreground">Loading...</div>;
+  if (loading) return <div className="text-muted-foreground">Loading...</div>;
 
   return (
     <div className="space-y-6 max-w-2xl">
