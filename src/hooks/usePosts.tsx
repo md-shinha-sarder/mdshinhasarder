@@ -49,12 +49,25 @@ async function load(type: "posts" | "pages", force = false): Promise<BlogPost[]>
       })) as BlogPost[];
     } else {
       try {
-        const { data, error } = await supabase.functions.invoke(`fetch-posts?type=${type}${force ? `&t=${Date.now()}` : ""}`);
-        if (!error && data) {
-          cache[type] = (data?.posts ?? data?.items ?? []) as BlogPost[];
-        } else {
-          cache[type] = cache[type] ?? [];
+        let loaded: BlogPost[] | null = null;
+        try {
+          const { data, error } = await supabase.functions.invoke(`fetch-posts?type=${type}${force ? `&t=${Date.now()}` : ""}`);
+          if (!error && data && (data.posts || data.items)) {
+            loaded = (data?.posts ?? data?.items ?? []) as BlogPost[];
+          }
+        } catch {
+          // ignore and proceed to direct fetch
         }
+
+        if (!loaded) {
+          const res = await fetch(`https://ihegjzwlvthfqwredssj.supabase.co/functions/v1/fetch-posts?type=${type}${force ? `&t=${Date.now()}` : ""}`);
+          if (res.ok) {
+            const data = await res.json();
+            loaded = (data?.posts ?? data?.items ?? []) as BlogPost[];
+          }
+        }
+
+        cache[type] = loaded ?? cache[type] ?? [];
       } catch {
         cache[type] = cache[type] ?? [];
       }

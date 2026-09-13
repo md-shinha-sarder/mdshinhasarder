@@ -27,16 +27,36 @@ let inflight: Promise<Cache> | null = null;
 
 async function fetchPage(page: number, pageSize: number): Promise<Cache> {
   try {
-    const { data } = await supabase.functions.invoke("fetch-videos", {
-      body: { page, pageSize },
-    });
+    let result: any = null;
+    try {
+      const { data, error } = await supabase.functions.invoke("fetch-videos", {
+        body: { page, pageSize },
+      });
+      if (!error && data && (data.videos || data.reels)) {
+        result = data;
+      }
+    } catch {
+      // ignore and try direct fetch
+    }
+
+    if (!result) {
+      const res = await fetch("https://ihegjzwlvthfqwredssj.supabase.co/functions/v1/fetch-videos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ page, pageSize }),
+      });
+      if (res.ok) {
+        result = await res.json();
+      }
+    }
+
     return {
-      videos: (data?.videos ?? []) as VideoItem[],
-      reels: (data?.reels ?? []) as VideoItem[],
-      page: data?.page ?? page,
-      pageSize: data?.pageSize ?? pageSize,
-      total: data?.total ?? 0,
-      hasMore: !!data?.hasMore,
+      videos: (result?.videos ?? []) as VideoItem[],
+      reels: (result?.reels ?? []) as VideoItem[],
+      page: result?.page ?? page,
+      pageSize: result?.pageSize ?? pageSize,
+      total: result?.total ?? 0,
+      hasMore: !!result?.hasMore,
     };
   } catch {
     return {
