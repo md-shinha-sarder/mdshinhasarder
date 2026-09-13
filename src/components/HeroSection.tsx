@@ -33,7 +33,7 @@ const HeroSection = () => {
           <p className="text-sm uppercase tracking-[0.25em] text-primary">Entrepreneur</p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-gradient-card shadow-card overflow-hidden animate-fade-in">
+        <div className="rounded-2xl border border-amber-500/20 bg-gradient-card shadow-card overflow-hidden animate-fade-in backdrop-blur-xl">
           <div className="flex flex-col md:flex-row">
             <div className="md:w-72 flex-shrink-0 p-6 flex items-center justify-center bg-card/40 border-b md:border-b-0 md:border-r border-border">
               <div className="relative">

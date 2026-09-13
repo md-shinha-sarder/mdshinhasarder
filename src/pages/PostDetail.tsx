@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Calendar, Facebook, Twitter, Linkedin, Link as LinkIcon, MessageCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
 import { usePosts } from "@/hooks/usePosts";
 import { postPath } from "@/lib/postUrl";
@@ -53,8 +54,10 @@ const PostDetail = () => {
   const canonical = seo?.canonical || url;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+    <div className="relative min-h-screen bg-[#080b12] text-foreground">
+      <SiteBackground />
+      <div className="relative z-10">
+        <Navbar />
       {post && seo && (
         <Helmet>
           <title>{seo.metaTitle}</title>
@@ -202,6 +205,7 @@ const PostDetail = () => {
         </div>
       </article>
       <FooterSection />
+      </div>
     </div>
   );
 };

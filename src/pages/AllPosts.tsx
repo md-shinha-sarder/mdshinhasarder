@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Calendar, Search } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
 import { usePosts } from "@/hooks/usePosts";
 import { postPath } from "@/lib/postUrl";
@@ -31,13 +32,15 @@ const AllPosts = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Helmet>
-        <title>All Posts | MD. Shinha Sarder</title>
-        <meta name="description" content="Browse all articles, biographies, projects and updates by MD. Shinha Sarder." />
-        <link rel="canonical" href={typeof window !== "undefined" ? window.location.href : ""} />
-      </Helmet>
-      <Navbar />
+    <div className="relative min-h-screen bg-[#080b12] text-foreground">
+      <SiteBackground />
+      <div className="relative z-10">
+        <Helmet>
+          <title>All Posts | MD. Shinha Sarder</title>
+          <meta name="description" content="Browse all articles, biographies, projects and updates by MD. Shinha Sarder." />
+          <link rel="canonical" href={typeof window !== "undefined" ? window.location.href : ""} />
+        </Helmet>
+        <Navbar />
       <section className="pt-32 pb-16">
         <div className="container mx-auto px-6">
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mb-6"><ArrowLeft size={16} /> Home</Link>
@@ -77,6 +80,7 @@ const AllPosts = () => {
         </div>
       </section>
       <FooterSection />
+      </div>
     </div>
   );
 };
