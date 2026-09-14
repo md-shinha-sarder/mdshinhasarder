@@ -1,13 +1,13 @@
-'use client';
-
 import React, { forwardRef } from 'react';
-import NextLink, { LinkProps as NextLinkProps } from 'next/link';
 import {
-  useRouter as useNextRouter,
-  usePathname as useNextPathname,
-  useSearchParams as useNextSearchParams,
-  useParams as useNextParams,
-} from 'next/navigation';
+  Link as RouterLink,
+  NavLink as RouterNavLink,
+  useNavigate as useRouterNavigate,
+  useLocation as useRouterLocation,
+  useParams as useRouterParams,
+  useSearchParams as useRouterSearchParams,
+  Outlet as RouterOutlet,
+} from 'react-router-dom';
 
 export interface LinkProps extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
   href?: string;
@@ -18,55 +18,45 @@ export interface LinkProps extends Omit<React.AnchorHTMLAttributes<HTMLAnchorEle
 
 export const Link = forwardRef<HTMLAnchorElement, LinkProps>(({ href, to, children, ...props }, ref) => {
   const target = href || to || '#';
+  if (
+    target.startsWith('http://') ||
+    target.startsWith('https://') ||
+    target.startsWith('mailto:') ||
+    target.startsWith('tel:') ||
+    target.startsWith('#')
+  ) {
+    return (
+      <a ref={ref} href={target} {...props}>
+        {children}
+      </a>
+    );
+  }
   return (
-    <NextLink ref={ref} href={target} {...props}>
+    <RouterLink ref={ref} to={target} {...props}>
       {children}
-    </NextLink>
+    </RouterLink>
   );
 });
 Link.displayName = 'Link';
 
 export function useNavigate() {
-  const router = useNextRouter();
+  const nav = useRouterNavigate();
   return (path: string | number) => {
-    if (typeof path === 'number') {
-      if (path === -1) router.back();
-      return;
-    }
-    router.push(path);
+    nav(path as any);
   };
 }
 
 export function useLocation() {
-  const pathname = useNextPathname() || '/';
-  return {
-    pathname,
-    search: '',
-    hash: '',
-    state: null,
-    key: 'default',
-  };
+  return useRouterLocation();
 }
 
 export function useParams<T extends Record<string, string | string[]> = Record<string, string>>(): T {
-  const params = useNextParams();
-  return (params || {}) as T;
+  const params = useRouterParams();
+  return (params || {}) as unknown as T;
 }
 
 export function useSearchParams(): [URLSearchParams, (newParams: Record<string, string> | URLSearchParams) => void] {
-  const searchParams = useNextSearchParams();
-  const router = useNextRouter();
-  const pathname = useNextPathname() || '';
-
-  const setParams = (newParams: Record<string, string> | URLSearchParams) => {
-    const next = new URLSearchParams(
-      newParams instanceof URLSearchParams ? newParams : newParams
-    );
-    router.push(`${pathname}?${next.toString()}`);
-  };
-
-  const current = searchParams ? new URLSearchParams(searchParams.toString()) : new URLSearchParams();
-  return [current, setParams];
+  return useRouterSearchParams();
 }
 
 export interface NavLinkProps extends Omit<LinkProps, 'className'> {
@@ -76,21 +66,23 @@ export interface NavLinkProps extends Omit<LinkProps, 'className'> {
 
 export const NavLink = forwardRef<HTMLAnchorElement, NavLinkProps>(
   ({ to, href, className, end, children, ...props }, ref) => {
-    const pathname = useNextPathname() || '/';
     const target = href || to || '#';
-    const isActive = end ? pathname === target : pathname === target || pathname.startsWith(`${target}/`);
-
-    const computedClassName = typeof className === 'function' ? className({ isActive }) : className;
-
     return (
-      <NextLink ref={ref} href={target} className={computedClassName} {...props}>
+      <RouterNavLink
+        ref={ref}
+        to={target}
+        end={end}
+        className={({ isActive }) =>
+          typeof className === 'function' ? className({ isActive }) : className || ''
+        }
+        {...props}
+      >
         {children}
-      </NextLink>
+      </RouterNavLink>
     );
   }
 );
 NavLink.displayName = 'NavLink';
 
-export const Outlet = ({ children }: { children?: React.ReactNode }) => {
-  return <>{children}</>;
-};
+export const Outlet = RouterOutlet;
+

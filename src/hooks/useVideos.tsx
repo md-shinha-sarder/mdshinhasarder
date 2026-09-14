@@ -22,6 +22,75 @@ interface Cache {
   hasMore: boolean;
 }
 
+const DEFAULT_FALLBACK_REELS: VideoItem[] = [
+  {
+    id: "j44N-z_KxZo",
+    title: "MD. Shinha Sarder — Official Short",
+    published: new Date().toISOString(),
+    thumbnail: "https://i.ytimg.com/vi/j44N-z_KxZo/hqdefault.jpg",
+    url: "https://www.youtube.com/shorts/j44N-z_KxZo",
+    shortUrl: "https://www.youtube.com/shorts/j44N-z_KxZo",
+    embed: "https://www.youtube.com/embed/j44N-z_KxZo",
+    platform: "youtube",
+    kind: "short",
+  },
+  {
+    id: "-HOF8TtEh7s",
+    title: "MD. Shinha Sarder — Tech Highlights",
+    published: new Date().toISOString(),
+    thumbnail: "https://i.ytimg.com/vi/-HOF8TtEh7s/hqdefault.jpg",
+    url: "https://www.youtube.com/shorts/-HOF8TtEh7s",
+    shortUrl: "https://www.youtube.com/shorts/-HOF8TtEh7s",
+    embed: "https://www.youtube.com/embed/-HOF8TtEh7s",
+    platform: "youtube",
+    kind: "short",
+  },
+  {
+    id: "fLDFXPJf_NA",
+    title: "MD. Shinha Sarder — Project Journey",
+    published: new Date().toISOString(),
+    thumbnail: "https://i.ytimg.com/vi/fLDFXPJf_NA/hqdefault.jpg",
+    url: "https://www.youtube.com/shorts/fLDFXPJf_NA",
+    shortUrl: "https://www.youtube.com/shorts/fLDFXPJf_NA",
+    embed: "https://www.youtube.com/embed/fLDFXPJf_NA",
+    platform: "youtube",
+    kind: "short",
+  },
+  {
+    id: "5t9OMumgFd4",
+    title: "MD. Shinha Sarder — Behind the Scenes",
+    published: new Date().toISOString(),
+    thumbnail: "https://i.ytimg.com/vi/5t9OMumgFd4/hqdefault.jpg",
+    url: "https://www.youtube.com/shorts/5t9OMumgFd4",
+    shortUrl: "https://www.youtube.com/shorts/5t9OMumgFd4",
+    embed: "https://www.youtube.com/embed/5t9OMumgFd4",
+    platform: "youtube",
+    kind: "short",
+  },
+  {
+    id: "oDFzQkTWwUE",
+    title: "MD. Shinha Sarder — Keynotes & Talks",
+    published: new Date().toISOString(),
+    thumbnail: "https://i.ytimg.com/vi/oDFzQkTWwUE/hqdefault.jpg",
+    url: "https://www.youtube.com/shorts/oDFzQkTWwUE",
+    shortUrl: "https://www.youtube.com/shorts/oDFzQkTWwUE",
+    embed: "https://www.youtube.com/embed/oDFzQkTWwUE",
+    platform: "youtube",
+    kind: "short",
+  },
+  {
+    id: "tN62GEJz4eM",
+    title: "MD. Shinha Sarder — Founder Updates",
+    published: new Date().toISOString(),
+    thumbnail: "https://i.ytimg.com/vi/tN62GEJz4eM/hqdefault.jpg",
+    url: "https://www.youtube.com/shorts/tN62GEJz4eM",
+    shortUrl: "https://www.youtube.com/shorts/tN62GEJz4eM",
+    embed: "https://www.youtube.com/embed/tN62GEJz4eM",
+    platform: "youtube",
+    kind: "short",
+  },
+];
+
 let cache: Cache | null = null;
 let inflight: Promise<Cache> | null = null;
 
@@ -72,21 +141,27 @@ async function fetchPage(page: number, pageSize: number): Promise<Cache> {
       }
     }
 
+    const rawReels: VideoItem[] = (result?.reels ?? result?.allReels ?? []) as VideoItem[];
+    const rawVideos: VideoItem[] = (result?.videos ?? result?.allVideos ?? []) as VideoItem[];
+
+    const finalReels = rawReels.length > 0 ? rawReels : (rawVideos.length > 0 ? rawVideos : DEFAULT_FALLBACK_REELS);
+    const finalVideos = rawVideos.length > 0 ? rawVideos : finalReels;
+
     return {
-      videos: (result?.videos ?? []) as VideoItem[],
-      reels: (result?.reels ?? []) as VideoItem[],
+      videos: finalVideos,
+      reels: finalReels,
       page: result?.page ?? page,
       pageSize: result?.pageSize ?? pageSize,
-      total: result?.total ?? 0,
+      total: result?.total || finalVideos.length,
       hasMore: !!result?.hasMore,
     };
   } catch {
     return {
-      videos: [],
-      reels: [],
+      videos: DEFAULT_FALLBACK_REELS,
+      reels: DEFAULT_FALLBACK_REELS,
       page,
       pageSize,
-      total: 0,
+      total: DEFAULT_FALLBACK_REELS.length,
       hasMore: false,
     };
   }

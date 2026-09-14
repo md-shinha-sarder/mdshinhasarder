@@ -85,6 +85,47 @@ async function load(type: "posts" | "pages", force = false): Promise<BlogPost[]>
       }
     }
 
+    // 4. Fallback directly to Blogger public JSON feed (works anywhere, including Cloudflare Pages static hosting)
+    if (!loaded || loaded.length === 0) {
+      try {
+        const feedPath = type === "posts" ? "posts" : "pages";
+        const res = await fetch(`https://shinhaauthor.blogspot.com/feeds/${feedPath}/default?alt=json&max-results=500`);
+        if (res.ok) {
+          const json = await res.json();
+          const entries = json.feed?.entry || [];
+          if (entries.length > 0) {
+            loaded = entries.map((e: any) => {
+              const title = e.title?.$t || "";
+              const content = e.content?.$t || e.summary?.$t || "";
+              const published = e.published?.$t || "";
+              const updated = e.updated?.$t || published;
+              const link = (e.link || []).find((l: any) => l.rel === "alternate")?.href || "";
+              const tags = (e.category || []).map((c: any) => c.term).filter((t: string) => t !== "Latest");
+              const imgM = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+              const image = imgM ? imgM[1].replace(/\/s\d+(-c)?\//, "/s1600/").replace(/=w\d+-h\d+(-c)?$/, "=w1600") : null;
+              const slug = link ? (link.split("/").pop()?.replace(/\.html?$/, "") || "post") : "post";
+              const plain = content.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+              const excerpt = plain.slice(0, 180) + (plain.length > 180 ? "…" : "");
+              return {
+                id: slug,
+                slug,
+                title,
+                url: link,
+                image,
+                excerpt: excerpt || title,
+                content,
+                published,
+                updated,
+                tags,
+              };
+            }) as BlogPost[];
+          }
+        }
+      } catch (_err) {
+        console.warn("Direct Blogger feed fetch fallback error:", _err);
+      }
+    }
+
     cache[type] = loaded ?? cache[type] ?? [];
     (subs[type] ||= new Set()).forEach((fn) => fn(cache[type]));
     return cache[type];

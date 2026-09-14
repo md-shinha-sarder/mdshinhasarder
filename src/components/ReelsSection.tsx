@@ -39,11 +39,18 @@ const ReelsSection = () => {
               <button key={v.id} onClick={() => setOpen(v.embed)} className="group relative aspect-[9/16] rounded-xl overflow-hidden border border-border hover:border-primary/60 transition-colors bg-card">
                 {v.thumbnail ? (
                   <img
-                    src={v.thumbnail}
+                    src={v.thumbnail || `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`}
                     alt={v.title}
                     loading="lazy"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
                     onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display = "none";
+                      const img = e.currentTarget as HTMLImageElement;
+                      if (!img.src.includes("hqdefault")) {
+                        img.src = `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
+                      } else {
+                        img.src = "/hero-bg.jpg";
+                      }
                     }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />

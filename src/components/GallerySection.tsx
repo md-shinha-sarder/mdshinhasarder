@@ -11,16 +11,34 @@ const CURATED_PHOTOS = [
     idx: 1,
   },
   {
+    src: "https://blogger.googleusercontent.com/img/a/AVvXsEhVe_gGSExCjJZ6AokzAVFSm_qcBpo2tF6uxFQKqz6BbhKrwuMTA0snTOrHjioRRvgLHUUKotQbibBP4rnJBstZrjZMgoTEeDgZ7gIbR08FgmyrLulDe-Ol00lp6s1D6tCoaOShpiGTRi3M5ljDe0cOfl_PvY9NQkR3X_Cg-mN54c_M68J1su0jhbrMfHca=w1600",
+    title: "MD. Shinha Sarder — 1980-Inspired Portrait",
+    tags: ["Vintage", "Portrait", "Photo"],
+    idx: 2,
+  },
+  {
     src: "/hero-portrait.jpg",
     title: "MD. Shinha Sarder — Tech Leadership",
     tags: ["Leadership", "Engineer", "IT Tech BD"],
-    idx: 2,
+    idx: 3,
+  },
+  {
+    src: "https://blogger.googleusercontent.com/img/a/AVvXsEiVPVF3oI83rBIALNPYyRryLjaRLguvIEKHTUr3FSuF-5i2PXSbAmhia20Bc-ugj06ZKhCaie4G9QWAjU-6BX27QZIdc48tt_mP0mUQ_FMY3Gsztp6ky3yOoUrcrIvKk47BhZRmBMWW3iJ88OJZcsmwnJ_r4i7vVhpSthL9QNYN7rJiN2S1Q31-GBc23KXg",
+    title: "MD. Shinha Sarder — Fedora Linux Development",
+    tags: ["Development", "Fedora", "Linux"],
+    idx: 4,
   },
   {
     src: "/profile-photo.webp",
     title: "MD. Shinha Sarder — Biostar TV World",
     tags: ["Media", "CEO", "Tech"],
-    idx: 3,
+    idx: 5,
+  },
+  {
+    src: "https://blogger.googleusercontent.com/img/a/AVvXsEi1VfBWJHjT60cMLXIhxFzmmxD-_lqvL1UqM46m2BfM9x_bZ_gTzI_4Uj7U1gH26q_eFm9pW8gJ0Z1c0fD3b9l2rM4f6n7_l_e4v",
+    title: "MD. Shinha Sarder — Sports & Activities",
+    tags: ["Sports", "Moments"],
+    idx: 6,
   },
 ];
 
@@ -79,6 +97,7 @@ const GallerySection = () => {
                   height={800}
                   loading="lazy"
                   decoding="async"
+                  referrerPolicy="no-referrer"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).src = "/profile.webp";
                   }}
@@ -97,7 +116,17 @@ const GallerySection = () => {
             <button onClick={() => setOpen(null)} aria-label="Close" className="absolute top-6 right-6 w-10 h-10 rounded-full border border-border bg-card flex items-center justify-center hover:text-primary hover:border-primary">
               <X size={18} />
             </button>
-            <img src={open} alt="Photo by MD. Shinha Sarder" loading="eager" decoding="async" className="max-w-full max-h-full rounded-xl shadow-card" />
+            <img
+              src={open}
+              alt="Photo by MD. Shinha Sarder"
+              loading="eager"
+              decoding="async"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = "/profile.webp";
+              }}
+              className="max-w-full max-h-full rounded-xl shadow-card"
+            />
           </div>
         )}
       </div>
