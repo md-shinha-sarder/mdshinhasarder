@@ -4,10 +4,9 @@ import { useVideos, VideoItem } from "@/hooks/useVideos";
 
 function getSafeEmbedUrl(urlOrEmbed: string): string {
   if (!urlOrEmbed) return "";
-  const ytMatch = urlOrEmbed.match(/(?:youtube\.com\/(?:embed\/|shorts\/|watch\?v=)|youtu\.be\/)([\w-]+)/);
+  const ytMatch = urlOrEmbed.match(/(?:youtube\.com\/(?:embed\/|shorts\/|watch\?v=)|youtu\.be\/)([\w-]{11})/);
   if (ytMatch) {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://mdshinhasarder.com";
-    return `https://www.youtube-nocookie.com/embed/${ytMatch[1]}?autoplay=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(origin)}`;
+    return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0&playsinline=1&modestbranding=1`;
   }
   return urlOrEmbed;
 }
