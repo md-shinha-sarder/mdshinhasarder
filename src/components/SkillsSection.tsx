@@ -1,23 +1,28 @@
 const groups: { title: string; items: { name: string; percent: number }[] }[] = [
   {
-    title: "Programming Languages",
+    title: "Backend & Systems",
     items: [
-      { name: "Python", percent: 80 },
-      { name: "Java", percent: 65 },
-      { name: "C", percent: 70 },
-      { name: "C++", percent: 65 },
+      { name: "Python", percent: 90 },
+      { name: "Node.js", percent: 88 },
+      { name: "Java", percent: 70 },
+      { name: "C / C++", percent: 70 },
     ],
   },
   {
-    title: "Web Technologies",
+    title: "Web & Full-Stack",
     items: [
-      { name: "HTML", percent: 85 },
-      { name: "CSS", percent: 75 },
+      { name: "Next.js / React", percent: 85 },
+      { name: "HTML5 / CSS3", percent: 90 },
+      { name: "REST APIs & Cloudflare Pages", percent: 85 },
+      { name: "Tailwind CSS", percent: 85 },
     ],
   },
   {
-    title: "Databases",
-    items: [{ name: "MySQL", percent: 70 }],
+    title: "Databases & Cloud",
+    items: [
+      { name: "PostgreSQL & Supabase", percent: 85 },
+      { name: "MySQL", percent: 75 },
+    ],
   },
   {
     title: "Core Concepts",
