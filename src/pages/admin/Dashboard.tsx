@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { FileText, Newspaper, Image, Rss } from "lucide-react";
 import { usePosts, usePages } from "@/hooks/usePosts";
-import { Link } from "react-router-dom";
+import { Link } from "@/lib/router";
 import { postPath } from "@/lib/postUrl";
 
 const Dashboard = () => {

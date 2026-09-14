@@ -38,7 +38,15 @@ const ReelsSection = () => {
             {items.map((v) => (
               <button key={v.id} onClick={() => setOpen(v.embed)} className="group relative aspect-[9/16] rounded-xl overflow-hidden border border-border hover:border-primary/60 transition-colors bg-card">
                 {v.thumbnail ? (
-                  <img src={v.thumbnail} alt={v.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img
+                    src={v.thumbnail}
+                    alt={v.title}
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = "none";
+                    }}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                 ) : (
                   <div className="w-full h-full bg-gradient-card flex items-center justify-center text-xs text-muted-foreground">{v.platform === "facebook" ? "Facebook Reel" : "Short"}</div>
                 )}

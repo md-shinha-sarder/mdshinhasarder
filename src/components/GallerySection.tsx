@@ -3,6 +3,27 @@ import { X } from "lucide-react";
 import { usePosts } from "@/hooks/usePosts";
 import { buildAlt } from "@/lib/imageSeo";
 
+const CURATED_PHOTOS = [
+  {
+    src: "/profile.webp",
+    title: "MD. Shinha Sarder — Official Portrait",
+    tags: ["Portrait", "Entrepreneur", "Founder"],
+    idx: 1,
+  },
+  {
+    src: "/hero-portrait.jpg",
+    title: "MD. Shinha Sarder — Tech Leadership",
+    tags: ["Leadership", "Engineer", "IT Tech BD"],
+    idx: 2,
+  },
+  {
+    src: "/profile-photo.webp",
+    title: "MD. Shinha Sarder — Biostar TV World",
+    tags: ["Media", "CEO", "Tech"],
+    idx: 3,
+  },
+];
+
 const GallerySection = () => {
   const { posts, loading } = usePosts();
   const [open, setOpen] = useState<string | null>(null);
@@ -25,7 +46,12 @@ const GallerySection = () => {
         }
       });
     });
-    return out;
+
+    if (out.length === 0) {
+      return CURATED_PHOTOS;
+    }
+
+    return [...out, ...CURATED_PHOTOS.filter((c) => !set.has(c.src))];
   }, [posts]);
 
   return (
@@ -46,7 +72,18 @@ const GallerySection = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {images.slice(0, 24).map((img, i) => (
               <button key={i} onClick={() => setOpen(img.src)} className="group relative aspect-square overflow-hidden rounded-xl border border-border hover:border-primary/60 transition-colors">
-                <img src={img.src} alt={buildAlt(img.title, [...img.tags, `photo ${img.idx}`])} width={800} height={800} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <img
+                  src={img.src}
+                  alt={buildAlt(img.title, [...img.tags, `photo ${img.idx}`])}
+                  width={800}
+                  height={800}
+                  loading="lazy"
+                  decoding="async"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = "/profile.webp";
+                  }}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
                 <span className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                   <span className="text-xs text-foreground line-clamp-2">{img.title}</span>
                 </span>

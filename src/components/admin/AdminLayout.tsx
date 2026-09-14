@@ -1,5 +1,5 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { NavLink, useNavigate } from "@/lib/router";
+import { useEffect, useState, ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { LayoutDashboard, FileText, Newspaper, Image, Settings, Palette, LogOut, Home, ShieldCheck, Menu, X } from "lucide-react";
 
@@ -13,7 +13,7 @@ const items = [
   { to: "/admin/theme", icon: Palette, label: "Theme" },
 ];
 
-const AdminLayout = () => {
+const AdminLayout = ({ children }: { children?: ReactNode }) => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const nav = useNavigate();
   const [drawer, setDrawer] = useState(false);
@@ -77,7 +77,7 @@ const AdminLayout = () => {
           <span className="font-serif font-bold text-gradient-gold">Admin</span>
           <span className="w-8" />
         </div>
-        <div className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto"><Outlet /></div>
+        <div className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto">{children}</div>
       </main>
     </div>
   );

@@ -13,7 +13,7 @@ import { toSiteMediaUrl } from "@/lib/mediaUrl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePages } from "@/hooks/usePosts";
 import { postPath } from "@/lib/postUrl";
-import { Link } from "react-router-dom";
+import { Link } from "@/lib/router";
 
 
 

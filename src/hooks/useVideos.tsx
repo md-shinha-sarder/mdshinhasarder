@@ -28,25 +28,47 @@ let inflight: Promise<Cache> | null = null;
 async function fetchPage(page: number, pageSize: number): Promise<Cache> {
   try {
     let result: any = null;
+
+    // 1. Try local Next.js /api/videos route
     try {
-      const { data, error } = await supabase.functions.invoke("fetch-videos", {
-        body: { page, pageSize },
-      });
-      if (!error && data && (data.videos || data.reels)) {
-        result = data;
+      const res = await fetch(`/api/videos?page=${page}&pageSize=${pageSize}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && (data.videos?.length > 0 || data.reels?.length > 0)) {
+          result = data;
+        }
       }
-    } catch (_e) {
-      void _e;
+    } catch (_err) {
+      console.warn("Local /api/videos fetch error:", _err);
     }
 
+    // 2. Fallback to Supabase function invoke if not returned
     if (!result) {
-      const res = await fetch("https://ihegjzwlvthfqwredssj.supabase.co/functions/v1/fetch-videos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ page, pageSize }),
-      });
-      if (res.ok) {
-        result = await res.json();
+      try {
+        const { data, error } = await supabase.functions.invoke("fetch-videos", {
+          body: { page, pageSize },
+        });
+        if (!error && data && (data.videos || data.reels)) {
+          result = data;
+        }
+      } catch (_e) {
+        void _e;
+      }
+    }
+
+    // 3. Fallback to external endpoint if still not returned
+    if (!result) {
+      try {
+        const res = await fetch("https://ihegjzwlvthfqwredssj.supabase.co/functions/v1/fetch-videos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ page, pageSize }),
+        });
+        if (res.ok) {
+          result = await res.json();
+        }
+      } catch (_e) {
+        void _e;
       }
     }
 

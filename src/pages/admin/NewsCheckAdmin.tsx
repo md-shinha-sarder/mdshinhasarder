@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "@/lib/router";
 import { CheckCircle2, XCircle, AlertTriangle, Send, ExternalLink, RefreshCw, Zap, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";

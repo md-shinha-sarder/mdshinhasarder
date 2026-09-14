@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePosts } from "@/hooks/usePosts";
 import { TipTapEditor } from "@/components/editor/TipTapEditor";
 import { postPath } from "@/lib/postUrl";
-import { Link } from "react-router-dom";
+import { Link } from "@/lib/router";
 
 
 interface Post {

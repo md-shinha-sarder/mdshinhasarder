@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "@/lib/router";
 import { Menu, X, Search, BadgeCheck, Home, User, Wrench, FolderKanban, Sparkles, Images, Music, BookOpen, Newspaper } from "lucide-react";
 import siteLogo from "@/assets/site-logo.ico";
 
@@ -47,9 +47,18 @@ const Navbar = () => {
     }
   };
 
+  const logoSrc = typeof siteLogo === "string" ? siteLogo : (siteLogo as any)?.src || "/profile.webp";
+
   const Brand = (
     <Link to="/" className="flex items-center gap-1.5 min-w-0" onClick={() => setOpen(false)}>
-      <img src={siteLogo} alt="MD. Shinha Sarder logo" className="w-7 h-7 rounded-full object-cover shadow-gold flex-shrink-0" />
+      <img
+        src={logoSrc}
+        alt="MD. Shinha Sarder logo"
+        className="w-7 h-7 rounded-full object-cover shadow-gold flex-shrink-0"
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).src = "/profile.webp";
+        }}
+      />
       <span className="text-xs sm:text-sm font-serif font-bold text-gradient-gold tracking-tight whitespace-nowrap">MD. Shinha Sarder</span>
       <BadgeCheck className="w-3.5 h-3.5 text-primary fill-primary/20 flex-shrink-0" aria-label="Verified" />
     </Link>

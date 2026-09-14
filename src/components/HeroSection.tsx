@@ -14,9 +14,12 @@ const info = [
 ];
 
 const HeroSection = () => {
+  const profileSrc = typeof profilePhoto === "string" ? profilePhoto : (profilePhoto as any)?.src || "/profile.webp";
+  const bgSrc = typeof heroBg === "string" ? heroBg : (heroBg as any)?.src || "/hero-bg.jpg";
+
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: `url(${heroBg})` }} />
+      <div className="absolute inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: `url(${bgSrc})` }} />
       <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
       <div className="absolute top-1/3 -left-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
@@ -39,8 +42,16 @@ const HeroSection = () => {
               <div className="relative">
                 <div className="absolute -inset-2 bg-gradient-gold rounded-full opacity-30 blur-2xl animate-pulse-glow" />
                 <div className="absolute -inset-0.5 bg-gradient-gold rounded-full opacity-60" />
-                <img src={profilePhoto} alt="MD. Shinha Sarder portrait" width={240} height={240}
-                  className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full object-cover border-4 border-background" />
+                <img
+                  src={profileSrc}
+                  alt="MD. Shinha Sarder portrait"
+                  width={240}
+                  height={240}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = "/profile.webp";
+                  }}
+                  className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full object-cover border-4 border-background"
+                />
                 <span title="Verified" className="absolute bottom-3 right-3 bg-background rounded-full p-1.5 border-2 border-primary shadow-gold">
                   <BadgeCheck className="w-5 h-5 text-primary fill-primary/30" />
                 </span>

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "@/lib/router";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Calendar, Facebook, Twitter, Linkedin, Link as LinkIcon, MessageCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";

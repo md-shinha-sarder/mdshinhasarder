@@ -1,6 +1,6 @@
 import { FaFacebook, FaXTwitter, FaYoutube, FaInstagram, FaLinkedin, FaGithub, FaWhatsapp } from "react-icons/fa6";
 import { Mail, MapPin, Rss, FileText, BookOpen, Map, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "@/lib/router";
 
 const socials = [
   { Icon: FaFacebook, href: "https://www.facebook.com/md.shinha.sarder", label: "Facebook", color: "#1877F2" },

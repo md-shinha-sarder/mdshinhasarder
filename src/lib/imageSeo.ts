@@ -46,6 +46,7 @@ export function enhanceContentImages(html: string, title?: string | null): strin
     if (!hasPriority) out += ` fetchpriority="low"`;
     if (!hasWidth) out += ` width="1200"`;
     if (!hasHeight) out += ` height="800"`;
+    if (!/\breferrerpolicy\s*=/i.test(attrs)) out += ` referrerpolicy="no-referrer"`;
     return `<img ${out} />`;
   });
 }
