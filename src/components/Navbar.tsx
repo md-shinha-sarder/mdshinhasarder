@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Search, BadgeCheck, Home, User, Wrench, FolderKanban, Sparkles, Images, Music, BookOpen, Newspaper } from "lucide-react";
+import { Menu, X, Search, BadgeCheck, Home, User, Wrench, FolderKanban, Sparkles, Images, Video, Film, Music, BookOpen, Newspaper } from "lucide-react";
 import siteLogo from "@/assets/site-logo.ico";
 
 const navLinks = [
@@ -9,6 +9,8 @@ const navLinks = [
   { label: "Skills", href: "#skills", icon: Wrench },
   { label: "Projects", href: "#projects", icon: FolderKanban },
   { label: "Services", href: "#services", icon: Sparkles },
+  { label: "Videos", href: "#videos", icon: Video },
+  { label: "Reels", href: "#reels", icon: Film },
   { label: "Gallery", href: "#gallery", icon: Images },
   { label: "Music", href: "#music", icon: Music },
   { label: "Books", href: "#books", icon: BookOpen },

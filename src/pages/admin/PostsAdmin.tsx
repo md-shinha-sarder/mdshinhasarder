@@ -25,7 +25,7 @@ interface Post {
 const blank: Post = { id: "", slug: "", title: "", excerpt: "", content: "", cover_url: "", tags: [], seo_title: "", seo_description: "", status: "draft" };
 
 const PostsAdmin = () => {
-  const { posts: bloggerPosts } = usePosts();
+  const { posts: bloggerPosts, refetch: refetchLivePosts } = usePosts();
   const [items, setItems] = useState<Post[]>([]);
   const [editing, setEditing] = useState<Post | null>(null);
   const [open, setOpen] = useState(false);
@@ -41,27 +41,53 @@ const PostsAdmin = () => {
   const startEdit = (p: Post) => { setEditing(p); setTagsStr(p.tags.join(", ")); setOpen(true); };
   const startNew = () => { setEditing({ ...blank }); setTagsStr(""); setOpen(true); };
 
+  const slugify = (text: string) =>
+    text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+  const handleTitleChange = (val: string) => {
+    if (!editing) return;
+    const shouldUpdateSlug = !editing.id && (!editing.slug || editing.slug === slugify(editing.title));
+    setEditing({
+      ...editing,
+      title: val,
+      slug: shouldUpdateSlug ? slugify(val) : editing.slug,
+    });
+  };
+
   const save = async () => {
     if (!editing) return;
+    if (!editing.title.trim()) return toast.error("Please enter a title.");
+    const finalSlug = (editing.slug || slugify(editing.title)).trim();
+    if (!finalSlug) return toast.error("Please provide a slug.");
     if (!editing.cover_url) return toast.error("Please add a cover image.");
     const tags = tagsStr.split(",").map((t) => t.trim()).filter(Boolean);
     const payload = {
-      slug: editing.slug, title: editing.title, excerpt: editing.excerpt, content: editing.content,
-      cover_url: editing.cover_url, tags, seo_title: editing.seo_title, seo_description: editing.seo_description,
+      slug: finalSlug, title: editing.title.trim(), excerpt: editing.excerpt, content: editing.content,
+      cover_url: editing.cover_url, tags, seo_title: editing.seo_title || null, seo_description: editing.seo_description || null,
       status: editing.status, published_at: editing.status === "published" ? new Date().toISOString() : null,
     };
     const { error } = editing.id
       ? await supabase.from("posts").update(payload).eq("id", editing.id)
       : await supabase.from("posts").insert(payload);
     if (error) return toast.error(error.message);
-    toast.success("Saved"); setOpen(false); load();
+    toast.success(editing.id ? "Post updated successfully" : "Post created successfully");
+    setOpen(false);
+    load();
+    refetchLivePosts().catch(() => {});
   };
 
   const remove = async (id: string) => {
     if (!confirm("Delete this post?")) return;
     const { error } = await supabase.from("posts").delete().eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Deleted"); load();
+    toast.success("Deleted");
+    load();
+    refetchLivePosts().catch(() => {});
   };
 
   return (
@@ -75,8 +101,8 @@ const PostsAdmin = () => {
             {editing && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Title</Label><Input value={editing.title} onChange={(e) => setEditing({ ...editing, title: e.target.value })} /></div>
-                  <div><Label>Slug</Label><Input value={editing.slug} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} /></div>
+                  <div><Label>Title</Label><Input value={editing.title} onChange={(e) => handleTitleChange(e.target.value)} placeholder="e.g. My Next.js Journey" /></div>
+                  <div><Label>Slug</Label><Input value={editing.slug} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} placeholder="e.g. my-nextjs-journey" /></div>
                 </div>
                 <div><Label>Excerpt</Label><Textarea rows={2} value={editing.excerpt || ""} onChange={(e) => setEditing({ ...editing, excerpt: e.target.value })} /></div>
                 <div>
@@ -122,7 +148,10 @@ const PostsAdmin = () => {
                     <div className="text-xs text-muted-foreground truncate">/{p.slug} · {p.tags.join(", ")}</div>
                   </div>
                 </div>
-                <div className="flex gap-2 shrink-0">
+                <div className="flex gap-2 shrink-0 items-center">
+                  <Link to={`/post/${p.slug}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary p-2">
+                    <ExternalLink size={15} />
+                  </Link>
                   <Button size="icon" variant="ghost" onClick={() => startEdit(p)}><Pencil size={14} /></Button>
                   <Button size="icon" variant="ghost" onClick={() => remove(p.id)}><Trash2 size={14} /></Button>
                 </div>

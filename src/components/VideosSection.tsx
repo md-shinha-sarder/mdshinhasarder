@@ -29,7 +29,7 @@ const extractFromPosts = (content: string, title: string): VideoEntry[] => {
     const yt = src.match(/(?:youtube\.com\/embed\/|youtu\.be\/)([\w-]+)/);
     if (yt) {
       out.push({
-        embed: `https://www.youtube-nocookie.com/embed/${yt[1]}`,
+        embed: `https://www.youtube.com/embed/${yt[1]}`,
         url: `https://www.youtube.com/watch?v=${yt[1]}`,
         thumbnail: `https://i.ytimg.com/vi/${yt[1]}/hqdefault.jpg`,
         title,
@@ -42,7 +42,7 @@ const extractFromPosts = (content: string, title: string): VideoEntry[] => {
   const linkRe = /(?:https?:)?\/\/(?:www\.)?youtube\.com\/watch\?v=([\w-]+)/gi;
   while ((m = linkRe.exec(content)) !== null) {
     out.push({
-      embed: `https://www.youtube-nocookie.com/embed/${m[1]}`,
+      embed: `https://www.youtube.com/embed/${m[1]}`,
       url: `https://www.youtube.com/watch?v=${m[1]}`,
       thumbnail: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg`,
       title,
