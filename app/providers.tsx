@@ -6,6 +6,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { AuthProvider } from '@/hooks/useAuth';
+import { HelmetProvider } from 'react-helmet-async';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
 import { usePathname } from 'next/navigation';
 
@@ -28,15 +29,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const showFloat = !pathname.startsWith('/admin') && !pathname.startsWith('/auth');
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          {children}
-          {showFloat && <WhatsAppFloat />}
-          <Toaster />
-          <Sonner />
-        </AuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthProvider>
+            {children}
+            {showFloat && <WhatsAppFloat />}
+            <Toaster />
+            <Sonner />
+          </AuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 }

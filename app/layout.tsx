@@ -1,6 +1,10 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from './providers';
+
+export const viewport: Viewport = {
+  themeColor: '#080b12',
+};
 
 export const metadata: Metadata = {
   title: "MD. Shinha Sarder — Founder & CEO of IT Tech BD and Biostar TV World",
@@ -98,19 +102,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="bn" className="dark">
-      <head>
-        <meta name="theme-color" content="#080b12" />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+      <body className="min-h-screen bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary">
         <script
+          id="website-schema"
+          key="website-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
         <script
+          id="person-schema"
+          key="person-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
         />
-      </head>
-      <body className="min-h-screen bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary">
         <Providers>
           {children}
         </Providers>

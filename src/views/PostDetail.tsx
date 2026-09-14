@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useParams } from "@/lib/router";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/SafeHelmet";
 import { ArrowLeft, Calendar, Facebook, Twitter, Linkedin, Link as LinkIcon, MessageCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
