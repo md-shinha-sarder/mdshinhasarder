@@ -6,3 +6,7 @@ pages_build_output_dir = "dist"
 [vars]
 NEXTAUTH_URL = "https://mdshinhasarder.com"
 NODE_VERSION = "22.14.0"
+
+[build]
+command = "npm run build"
+output_directory = "dist"
