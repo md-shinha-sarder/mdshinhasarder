@@ -31,7 +31,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   background_color: "222 47% 6%",
   font_heading: "Playfair Display",
   font_body: "Plus Jakarta Sans",
-  seo_title: "MD. Shinha Sarder - Official Website & Blog",
+  seo_title: "MD. Shinha Sarder - Entrepreneur",
   seo_description: "Official website of MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World.",
   seo_keywords: "MD. Shinha Sarder, IT Tech BD, Biostar TV World, Blogger",
   social_facebook: "https://facebook.com/md.shinha.sarder",
@@ -39,6 +39,11 @@ const DEFAULT_SETTINGS: SiteSettings = {
   social_youtube: "https://youtube.com/@MD-Shinha-Sarder",
   social_github: "https://github.com/md-shinha-sarder",
   social_website: "https://mdshinhasarder.com",
+};
+
+const sanitizeTitle = (title: string | null | undefined): string => {
+  if (!title) return "MD. Shinha Sarder - Entrepreneur";
+  return title.replace(/Official Website\s*(&|and)\s*Blog/gi, "Entrepreneur");
 };
 
 export const useSiteSettings = () => {
@@ -52,7 +57,14 @@ export const useSiteSettings = () => {
       .eq("id", 1)
       .maybeSingle()
       .then(({ data }) => {
-        if (data) setSettings({ ...DEFAULT_SETTINGS, ...(data as unknown as SiteSettings) });
+        if (data) {
+          const raw = data as unknown as SiteSettings;
+          setSettings({
+            ...DEFAULT_SETTINGS,
+            ...raw,
+            seo_title: sanitizeTitle(raw.seo_title || DEFAULT_SETTINGS.seo_title),
+          });
+        }
         setLoading(false);
       })
       .catch(() => {
@@ -65,7 +77,7 @@ export const useSiteSettings = () => {
     const root = document.documentElement;
     if (settings.primary_color) root.style.setProperty("--primary", settings.primary_color);
     if (settings.background_color) root.style.setProperty("--background", settings.background_color);
-    if (settings.seo_title) document.title = settings.seo_title;
+    if (settings.seo_title) document.title = sanitizeTitle(settings.seo_title);
     const meta = document.querySelector('meta[name="description"]');
     if (meta && settings.seo_description) meta.setAttribute("content", settings.seo_description);
   }, [settings]);

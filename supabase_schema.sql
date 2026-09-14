@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
   background_color TEXT DEFAULT '222 47% 6%',
   font_heading TEXT DEFAULT 'Playfair Display',
   font_body TEXT DEFAULT 'Plus Jakarta Sans',
-  seo_title TEXT DEFAULT 'MD. Shinha Sarder - Official Website & Blog',
+  seo_title TEXT DEFAULT 'MD. Shinha Sarder - Entrepreneur',
   seo_description TEXT DEFAULT 'Official website of MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World.',
   seo_keywords TEXT DEFAULT 'MD. Shinha Sarder, IT Tech BD, Biostar TV World, Blogger',
   social_facebook TEXT DEFAULT 'https://facebook.com/md.shinha.sarder',

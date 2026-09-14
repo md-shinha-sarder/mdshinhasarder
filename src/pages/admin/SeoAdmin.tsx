@@ -13,14 +13,19 @@ const DEFAULT_SEO = {
   site_tagline: "Founder & CEO of IT Tech BD and Biostar TV World",
   logo_url: "/profile.webp",
   favicon_url: "/favicon.webp",
-  seo_title: "MD. Shinha Sarder - Official Website & Blog",
-  seo_description: "Official website and blog of MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World.",
+  seo_title: "MD. Shinha Sarder - Entrepreneur",
+  seo_description: "Official website of MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World.",
   seo_keywords: "MD. Shinha Sarder, IT Tech BD, Biostar TV World, Blogger",
   social_facebook: "https://facebook.com/md.shinha.sarder",
   social_twitter: "https://x.com/mdshinhasarder",
   social_youtube: "https://youtube.com/@MD-Shinha-Sarder",
   social_github: "https://github.com/md-shinha-sarder",
   social_website: "https://mdshinhasarder.com",
+};
+
+const sanitizeTitle = (title: string | null | undefined): string => {
+  if (!title) return "MD. Shinha Sarder - Entrepreneur";
+  return title.replace(/Official Website\s*(&|and)\s*Blog/gi, "Entrepreneur");
 };
 
 const SeoAdmin = () => {
@@ -38,7 +43,13 @@ const SeoAdmin = () => {
       .eq("id", 1)
       .maybeSingle()
       .then(({ data }) => {
-        if (data) setS({ ...DEFAULT_SEO, ...data });
+        if (data) {
+          setS({
+            ...DEFAULT_SEO,
+            ...data,
+            seo_title: sanitizeTitle(data.seo_title || DEFAULT_SEO.seo_title),
+          });
+        }
         setLoading(false);
       })
       .catch(() => {
