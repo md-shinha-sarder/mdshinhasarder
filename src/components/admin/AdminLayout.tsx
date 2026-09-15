@@ -1,10 +1,11 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { LayoutDashboard, FileText, Newspaper, Image, Settings, Palette, LogOut, Home, ShieldCheck, Menu, X } from "lucide-react";
+import { LayoutDashboard, FileText, Newspaper, Image, Settings, Palette, LogOut, Home, ShieldCheck, Menu, X, Cpu } from "lucide-react";
 
 const items = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
+  { to: "/admin/tech-version", icon: Cpu, label: "Tech & CMS Versions" },
   { to: "/admin/pages", icon: FileText, label: "Pages" },
   { to: "/admin/posts", icon: Newspaper, label: "Posts" },
   { to: "/admin/media", icon: Image, label: "Media" },

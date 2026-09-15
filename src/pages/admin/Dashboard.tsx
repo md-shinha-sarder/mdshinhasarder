@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Newspaper, Image, Rss } from "lucide-react";
+import { FileText, Newspaper, Image, Rss, Cpu, ArrowRight, Zap } from "lucide-react";
 import { usePosts, usePages } from "@/hooks/usePosts";
 import { Link } from "react-router-dom";
 import { postPath } from "@/lib/postUrl";
@@ -34,9 +34,40 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-serif font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Manage your site content, media, SEO, and theme. Blogger content is auto-synced.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-serif font-bold">Dashboard</h1>
+          <p className="text-muted-foreground">Manage your site content, media, SEO, and theme. Blogger content is auto-synced.</p>
+        </div>
+        <Link
+          to="/admin/tech-version"
+          className="px-4 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 text-sm font-medium flex items-center gap-2 transition-all w-fit"
+        >
+          <Cpu size={16} className="text-blue-400" />
+          <span>Tech &amp; CMS Versions</span>
+          <ArrowRight size={14} />
+        </Link>
+      </div>
+
+      {/* Auto-Version Quick Banner */}
+      <div className="bg-gradient-to-r from-blue-950/60 via-slate-900/80 to-blue-950/60 border border-blue-500/30 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 shrink-0">
+            <Zap size={20} />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-white">Full-Stack Core Architecture &amp; Auto-Update Engine</h3>
+            <p className="text-xs text-slate-300 mt-0.5">
+              Powered by <span className="text-blue-300 font-medium">Next.js + React + Java + Python + Node.js</span> (85% core coverage). One-click auto updates all technologies &amp; CMS to latest releases.
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/admin/tech-version"
+          className="px-4 py-2 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 shrink-0 transition-colors"
+        >
+          Manage &amp; Auto-Update Versions
+        </Link>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {cards.map((c) => (

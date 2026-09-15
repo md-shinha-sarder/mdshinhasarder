@@ -26,7 +26,7 @@ const FooterSection = () => (
             Founder &amp; CEO of IT Tech BD and Biostar TV World. Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator. Studying CSE at Northern University of Businesses and Technology, Khulna.
           </p>
           <div className="flex flex-wrap gap-2">
-            {["Founder & CEO", "IT Tech BD", "Biostar TV World", "Next.js", "Python", "YouTuber", "Researcher"].map((t) => (
+            {["Next.js", "React", "Python", "Java", "Node.js", "IT Tech BD", "Biostar TV World", "Founder & CEO"].map((t) => (
               <span key={t} className="text-[11px] font-medium text-blue-300 bg-blue-500/10 border border-blue-400/20 px-2.5 py-0.5 rounded-full">
                 {t}
               </span>
