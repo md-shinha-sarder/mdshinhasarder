@@ -61,18 +61,18 @@ export default function HomePage() {
   return (
     <>
       <Head>
-        <title>MD. Shinha Sarder - Founder &amp; CEO of IT Tech BD &amp; Biostar TV World | Official Website</title>
+        <title>MD. Shinha Sarder</title>
         <meta name="description" content="MD. Shinha Sarder is known as the Founder &amp; CEO of IT Tech BD and Biostar TV World who born on 5 November , 2004. He also known as an Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator. Regular student at CSE program in Northern University of Businesses and Technology, Khulna." />
         <meta name="keywords" content="MD. Shinha Sarder, Shinha Sarder, IT Tech BD, Biostar TV World, Founder &amp; CEO, Entrepreneur, Musical Artist, Author, Researcher, YouTuber, Content Creator, Northern University of Businesses and Technology Khulna, Khulna Zilla School, Shirgati village Aichgati, Bangladesh" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="canonical" href="https://mdshinhasarder.com/" />
         <meta property="og:type" content="profile" />
-        <meta property="og:title" content="MD. Shinha Sarder - Founder &amp; CEO of IT Tech BD &amp; Biostar TV World" />
+        <meta property="og:title" content="MD. Shinha Sarder" />
         <meta property="og:description" content="MD. Shinha Sarder is known as the Founder &amp; CEO of IT Tech BD and Biostar TV World who born on 5 November , 2004. He also known as an Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator." />
         <meta property="og:image" content="https://mdshinhasarder.com/profile.webp" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="MD. Shinha Sarder - Founder &amp; CEO of IT Tech BD &amp; Biostar TV World" />
-        <meta name="twitter:description" content="Founder &amp; CEO of IT Tech BD and Biostar TV World. Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator." />
+        <meta name="twitter:title" content="MD. Shinha Sarder" />
+        <meta name="twitter:description" content="Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator." />
         <meta name="twitter:image" content="https://mdshinhasarder.com/profile.webp" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaPerson) }} />
       </Head>

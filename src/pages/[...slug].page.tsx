@@ -18,7 +18,7 @@ export default function CatchAllPage() {
   return (
     <>
       <Head>
-        <title>MD. Shinha Sarder - Founder &amp; CEO of IT Tech BD &amp; Biostar TV World</title>
+        <title>MD. Shinha Sarder</title>
         <meta name="description" content="MD. Shinha Sarder is known as the Founder &amp; CEO of IT Tech BD and Biostar TV World who born on 5 November , 2004. He also known as an Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator. Regular student at CSE program in Northern University of Businesses and Technology, Khulna." />
       </Head>
       <ClientApp />

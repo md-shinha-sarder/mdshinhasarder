@@ -5,7 +5,7 @@ const info = [
   { icon: Flag, label: "Born", value: "5 November 2004" },
   { icon: MapPin, label: "Birth Place", value: "Shirgati village, Aichgati UnionParishad, Khulna" },
   { icon: Flag, label: "Nationality", value: "Bangladeshi" },
-  { icon: Building, label: "Founder & CEO", value: "IT Tech BD, Biostar TV World" },
+  { icon: Building, label: "Profession", value: "Entrepreneur" },
   { icon: Briefcase, label: "Known For", value: "Entrepreneur, Musical Artist, Author, Researcher, YouTuber & Content Creator" },
   { icon: User, label: "Father", value: "MD. Lutfor Rahaman (Lawyer)" },
   { icon: User, label: "Mother", value: "Samima Sultana (Private Sector Employee)" },

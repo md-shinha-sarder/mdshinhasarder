@@ -5,7 +5,7 @@ import heroBg from "@/assets/hero-bg.jpg";
 const info = [
   { icon: Calendar, label: "Born", value: "5 November 2004" },
   { icon: MapPin, label: "Place", value: "Shirgati, Aichgati, Khulna" },
-  { icon: Briefcase, label: "Founder & CEO", value: "IT Tech BD & Biostar TV World" },
+  { icon: Briefcase, label: "Profession", value: "Entrepreneur" },
   { icon: Code, label: "Education", value: "CSE, Northern University of Business & Tech" },
   { icon: Globe, label: "Website", value: "mdshinhasarder.com", href: "https://mdshinhasarder.com" },
   { icon: Mail, label: "Email", value: "Shinhasarder2343@gmail.com", href: "mailto:Shinhasarder2343@gmail.com" },

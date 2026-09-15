@@ -24,14 +24,14 @@ export interface SiteSettings {
 const DEFAULT_SETTINGS: SiteSettings = {
   id: 1,
   site_title: "MD. Shinha Sarder",
-  site_tagline: "Founder & CEO of IT Tech BD and Biostar TV World",
+  site_tagline: "Entrepreneur",
   logo_url: "/profile.webp",
   favicon_url: "/favicon.webp",
   primary_color: "42 87% 55%",
   background_color: "222 47% 6%",
   font_heading: "Playfair Display",
   font_body: "Plus Jakarta Sans",
-  seo_title: "MD. Shinha Sarder - Founder & CEO of IT Tech BD & Biostar TV World",
+  seo_title: "MD. Shinha Sarder",
   seo_description: "MD. Shinha Sarder is known as the Founder & CEO of IT Tech BD and Biostar TV World who born on 5 November , 2004. He also known as an Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator. Regular student at Computer Science and Engineering (CSE) program in the Northern University of Businesses and Technology, Khulna.",
   seo_keywords: "MD. Shinha Sarder, Shinha Sarder, IT Tech BD, Biostar TV World, Founder & CEO, Entrepreneur, Musical Artist, Author, Researcher, YouTuber, Content Creator, Northern University of Businesses and Technology Khulna, Khulna Zilla School, Shirgati village Aichgati, Bangladesh",
   social_facebook: "https://facebook.com/md.shinha.sarder",
@@ -42,7 +42,8 @@ const DEFAULT_SETTINGS: SiteSettings = {
 };
 
 const sanitizeTitle = (title: string | null | undefined): string => {
-  if (!title) return "MD. Shinha Sarder - Entrepreneur";
+  if (!title) return "MD. Shinha Sarder";
+  if (title.includes("Founder & CEO of IT Tech BD")) return "MD. Shinha Sarder";
   return title.replace(/Official Website\s*(&|and)\s*Blog/gi, "Entrepreneur");
 };
 
