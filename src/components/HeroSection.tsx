@@ -40,8 +40,19 @@ const HeroSection = () => {
               <div className="relative">
                 <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500 rounded-full opacity-35 blur-xl animate-pulse" />
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-sky-500 rounded-full opacity-70 p-[2px]" />
-                <img src={profilePhoto} alt="MD. Shinha Sarder portrait" width={240} height={240}
-                  className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full object-cover border-4 border-[#070e24] shadow-2xl" />
+                <img
+                  src={profilePhoto || "/profile.webp"}
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src !== window.location.origin + "/profile.webp") {
+                      target.src = "/profile.webp";
+                    }
+                  }}
+                  alt="MD. Shinha Sarder portrait"
+                  width={240}
+                  height={240}
+                  className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full object-cover border-4 border-[#070e24] shadow-2xl"
+                />
                 <span title="Verified" className="absolute bottom-3 right-3 bg-[#070e24] rounded-full p-1.5 border-2 border-blue-400 shadow-lg shadow-blue-500/50">
                   <BadgeCheck className="w-5 h-5 text-blue-400 fill-blue-400/30" />
                 </span>

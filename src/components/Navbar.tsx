@@ -51,7 +51,17 @@ const Navbar = () => {
 
   const Brand = (
     <Link to="/" className="flex items-center gap-2 min-w-0 group" onClick={() => setOpen(false)}>
-      <img src={siteLogo} alt="MD. Shinha Sarder logo" className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-400/40 shadow-blue flex-shrink-0 transition-transform group-hover:scale-105" />
+      <img
+        src={siteLogo || "/site-logo.ico"}
+        onError={(e) => {
+          const target = e.currentTarget;
+          if (target.src !== window.location.origin + "/favicon.ico") {
+            target.src = "/favicon.ico";
+          }
+        }}
+        alt="MD. Shinha Sarder logo"
+        className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-400/40 shadow-blue flex-shrink-0 transition-transform group-hover:scale-105"
+      />
       <span className="text-sm sm:text-base font-serif font-bold text-white tracking-tight whitespace-nowrap group-hover:text-blue-300 transition-colors">MD. Shinha Sarder</span>
       <BadgeCheck className="w-4 h-4 text-blue-400 fill-blue-400/25 flex-shrink-0" aria-label="Verified" />
     </Link>

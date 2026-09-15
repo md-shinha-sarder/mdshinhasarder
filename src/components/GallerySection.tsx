@@ -62,7 +62,13 @@ const GallerySection = () => {
                 className="group relative aspect-square overflow-hidden rounded-2xl border border-blue-500/25 hover:border-blue-400/70 transition-all bg-[#0c183a]/90 shadow-xl shadow-blue-950/60 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
               >
                 <img
-                  src={img.src}
+                  src={img.src || "/profile.webp"}
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src !== window.location.origin + "/profile.webp") {
+                      target.src = "/profile.webp";
+                    }
+                  }}
                   alt={buildAlt(img.title, [...img.tags, `photo ${img.idx}`])}
                   width={800}
                   height={800}
