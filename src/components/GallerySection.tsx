@@ -1,7 +1,12 @@
 import { useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { X, ZoomIn } from "lucide-react";
 import { usePosts } from "@/hooks/usePosts";
 import { buildAlt } from "@/lib/imageSeo";
+import profilePhoto from "@/assets/profile-photo.webp";
+
+const defaultGalleryPhotos = [
+  { src: profilePhoto, title: "MD. Shinha Sarder - Official Portrait", tags: ["portrait", "engineer", "founder"], idx: 1 },
+];
 
 const GallerySection = () => {
   const { posts, loading } = usePosts();
@@ -25,30 +30,51 @@ const GallerySection = () => {
         }
       });
     });
+    // Add default photo if list is empty
+    if (out.length === 0) {
+      return defaultGalleryPhotos;
+    }
     return out;
   }, [posts]);
 
   return (
-    <section id="gallery" className="py-24">
-      <div className="container mx-auto px-6">
-        <h2 className="text-3xl sm:text-4xl font-serif font-bold text-center mb-3">
-          Photo <span className="text-gradient-gold">Gallery</span>
-        </h2>
-        <p className="text-center text-muted-foreground mb-12">Moments captured from articles, events and projects.</p>
+    <section id="gallery" className="py-24 relative">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="text-center mb-14">
+          <span className="text-xs uppercase tracking-[0.25em] text-blue-400 font-semibold px-3 py-1 rounded-full border border-blue-400/20 bg-blue-500/10">Visual Archive</span>
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white mt-3 mb-3">
+            Photo <span className="text-gradient-blue">Gallery</span>
+          </h2>
+          <p className="text-slate-300 max-w-2xl mx-auto text-sm sm:text-base">Moments captured from articles, technical events, presentations, and projects.</p>
+        </div>
 
-        {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {Array.from({ length: 8 }).map((_, i) => <div key={i} className="aspect-square rounded-xl bg-card/50 animate-pulse" />)}
+        {loading && images.length === 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => <div key={i} className="aspect-square rounded-2xl bg-[#0c183a]/60 border border-blue-500/20 animate-pulse" />)}
           </div>
-        ) : images.length === 0 ? (
-          <p className="text-center text-muted-foreground">No photos yet.</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {images.slice(0, 24).map((img, i) => (
-              <button key={i} onClick={() => setOpen(img.src)} className="group relative aspect-square overflow-hidden rounded-xl border border-border hover:border-primary/60 transition-colors">
-                <img src={img.src} alt={buildAlt(img.title, [...img.tags, `photo ${img.idx}`])} width={800} height={800} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                <span className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                  <span className="text-xs text-foreground line-clamp-2">{img.title}</span>
+              <button
+                key={i}
+                type="button"
+                onClick={() => setOpen(img.src)}
+                className="group relative aspect-square overflow-hidden rounded-2xl border border-blue-500/25 hover:border-blue-400/70 transition-all bg-[#0c183a]/90 shadow-xl shadow-blue-950/60 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+              >
+                <img
+                  src={img.src}
+                  alt={buildAlt(img.title, [...img.tags, `photo ${img.idx}`])}
+                  width={800}
+                  height={800}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <span className="absolute inset-0 bg-gradient-to-t from-[#070e24]/95 via-[#070e24]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3.5 text-left">
+                  <span className="text-blue-300 inline-flex items-center gap-1 text-[11px] font-semibold mb-1">
+                    <ZoomIn size={12} /> Click to enlarge
+                  </span>
+                  <span className="text-xs font-medium text-white line-clamp-2">{img.title}</span>
                 </span>
               </button>
             ))}
@@ -56,11 +82,17 @@ const GallerySection = () => {
         )}
 
         {open && (
-          <div onClick={() => setOpen(null)} className="fixed inset-0 z-[70] bg-background/90 backdrop-blur-sm flex items-center justify-center p-6 animate-fade-in">
-            <button onClick={() => setOpen(null)} aria-label="Close" className="absolute top-6 right-6 w-10 h-10 rounded-full border border-border bg-card flex items-center justify-center hover:text-primary hover:border-primary">
-              <X size={18} />
+          <div onClick={() => setOpen(null)} className="fixed inset-0 z-[70] bg-[#070e24]/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-fade-in">
+            <button
+              onClick={() => setOpen(null)}
+              aria-label="Close"
+              className="absolute top-6 right-6 w-11 h-11 rounded-xl border border-blue-400/40 bg-[#0c183a]/90 text-white flex items-center justify-center hover:bg-blue-600 hover:border-blue-400 transition-all shadow-lg"
+            >
+              <X size={20} />
             </button>
-            <img src={open} alt="Photo by MD. Shinha Sarder" loading="eager" decoding="async" className="max-w-full max-h-full rounded-xl shadow-card" />
+            <div className="max-w-4xl max-h-[85vh] p-2 rounded-2xl border border-blue-500/40 bg-[#0c183a]/95 shadow-2xl shadow-blue-950">
+              <img src={open} alt="Enlarged photo" loading="eager" decoding="async" className="max-w-full max-h-[80vh] rounded-xl object-contain mx-auto" />
+            </div>
           </div>
         )}
       </div>

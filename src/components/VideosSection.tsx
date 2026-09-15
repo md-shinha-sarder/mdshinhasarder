@@ -86,33 +86,36 @@ const VideosSection = () => {
   if (videos.length === 0) return null;
 
   return (
-    <section id="videos" className="py-24 bg-secondary/20">
-      <div className="container mx-auto px-6">
-        <h2 className="text-3xl sm:text-4xl font-serif font-bold text-center mb-3">
-          Video <span className="text-gradient-gold">Library</span>
-        </h2>
-        <p className="text-center text-muted-foreground mb-12">Long-form videos from YouTube and articles.</p>
+    <section id="videos" className="py-24 relative">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="text-center mb-14">
+          <span className="text-xs uppercase tracking-[0.25em] text-blue-400 font-semibold px-3 py-1 rounded-full border border-blue-400/20 bg-blue-500/10">Streaming &amp; Content</span>
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white mt-3 mb-3">
+            Video <span className="text-gradient-blue">Library</span>
+          </h2>
+          <p className="text-slate-300 max-w-2xl mx-auto text-sm sm:text-base">High-definition long-form videos, coding tutorials, and technical explanations.</p>
+        </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {videos.map((v, i) => (
             <button
               key={i}
               type="button"
               onClick={() => setActiveVideo(v)}
-              className="group relative aspect-video rounded-xl overflow-hidden border border-border hover:border-primary/60 transition-colors bg-card focus:outline-none focus:ring-2 focus:ring-primary/50 text-left cursor-pointer"
+              className="group relative aspect-video rounded-2xl overflow-hidden border border-blue-500/25 hover:border-blue-400/70 transition-all bg-[#0c183a]/90 shadow-xl shadow-blue-950/60 focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-left cursor-pointer hover:-translate-y-1"
             >
               {v.thumbnail ? (
                 <img src={v.thumbnail} alt={v.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               ) : (
-                <div className="w-full h-full bg-gradient-card" />
+                <div className="w-full h-full bg-gradient-to-br from-[#0c183a] to-[#070e24]" />
               )}
-              <span className="absolute inset-0 bg-background/30 group-hover:bg-background/10 transition-colors flex items-center justify-center">
-                <span className="w-14 h-14 rounded-full bg-primary/90 text-primary-foreground flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                  <Play size={22} className="ml-1" />
+              <span className="absolute inset-0 bg-[#070e24]/40 group-hover:bg-[#070e24]/10 transition-colors flex items-center justify-center">
+                <span className="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/50">
+                  <Play size={22} className="ml-1 fill-white" />
                 </span>
               </span>
-              <span className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/95 via-background/70 to-transparent p-3 text-left">
-                <span className="text-xs font-medium text-foreground line-clamp-2">{v.title}</span>
+              <span className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#070e24]/95 via-[#070e24]/75 to-transparent p-3.5 text-left">
+                <span className="text-xs sm:text-sm font-medium text-white line-clamp-2 drop-shadow-sm">{v.title}</span>
               </span>
             </button>
           ))}
@@ -123,7 +126,7 @@ const VideosSection = () => {
             <button
               onClick={loadMore}
               disabled={loading}
-              className="px-6 py-2.5 rounded-lg border border-border text-sm hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
+              className="px-6 py-2.5 rounded-xl border border-blue-500/30 bg-[#0c183a]/80 text-sm font-medium text-white hover:border-blue-400 hover:bg-blue-600/20 transition-all disabled:opacity-50"
             >
               {loading ? "Loading…" : "Load more videos"}
             </button>
@@ -133,7 +136,7 @@ const VideosSection = () => {
         {activeVideo && (
           <div
             onClick={() => setActiveVideo(null)}
-            className="fixed inset-0 z-[70] bg-background/95 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+            className="fixed inset-0 z-[70] bg-[#070e24]/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
           >
             <div className="absolute top-6 right-6 flex items-center gap-3 z-20">
               {activeVideo.url && (
@@ -142,22 +145,22 @@ const VideosSection = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="px-3 py-1.5 rounded-full border border-border bg-card/80 text-xs font-medium flex items-center gap-1.5 hover:border-primary hover:text-primary transition-colors text-foreground"
+                  className="px-4 py-2 rounded-xl border border-blue-400/40 bg-[#0c183a]/90 text-xs font-semibold flex items-center gap-1.5 hover:border-blue-400 hover:bg-blue-600/25 transition-all text-white shadow-lg"
                 >
-                  <ExternalLink size={13} /> Open on YouTube
+                  <ExternalLink size={13} className="text-blue-400" /> Open on YouTube
                 </a>
               )}
               <button
                 onClick={() => setActiveVideo(null)}
                 aria-label="Close"
-                className="w-10 h-10 rounded-full border border-border bg-card flex items-center justify-center hover:text-primary hover:border-primary"
+                className="w-10 h-10 rounded-xl border border-blue-400/40 bg-[#0c183a]/90 text-white flex items-center justify-center hover:bg-blue-600 hover:border-blue-400 transition-all shadow-lg"
               >
                 <X size={18} />
               </button>
             </div>
             <div
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-4xl aspect-video rounded-xl overflow-hidden border border-border shadow-2xl bg-black"
+              className="w-full max-w-4xl aspect-video rounded-2xl overflow-hidden border border-blue-500/50 shadow-2xl shadow-blue-950 bg-black"
             >
               <iframe
                 src={getSafeEmbedUrl(activeVideo.embed)}

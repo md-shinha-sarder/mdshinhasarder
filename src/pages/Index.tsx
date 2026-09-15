@@ -20,7 +20,7 @@ const Index = () => {
   useSiteSettings();
   const { sections } = useHomeSections();
   return (
-    <div className="relative min-h-screen bg-[#080b12] text-foreground selection:bg-amber-400/20 selection:text-amber-200">
+    <div className="relative min-h-screen bg-[#070e24] text-foreground selection:bg-blue-500/30 selection:text-blue-100">
       <SiteBackground />
       <div className="relative z-10">
         <Navbar />

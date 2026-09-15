@@ -12,44 +12,59 @@ const socials = [
 ];
 
 const FooterSection = () => (
-  <footer className="border-t border-border pt-16 pb-8 bg-gradient-to-b from-background to-card/50">
-    <div className="container mx-auto px-6">
-      <div className="grid md:grid-cols-3 gap-10 mb-12">
-        <div>
-          <h3 className="text-2xl font-serif font-bold text-gradient-gold mb-3 flex items-center gap-2"><Sparkles size={18} className="text-primary" /> MD. Shinha Sarder</h3>
-          <p className="text-sm text-muted-foreground text-justify leading-relaxed">
-            Software Developer &amp; Entrepreneur. Founder of IT Tech BD and Biostar TV World.
+  <footer className="relative border-t border-blue-500/25 pt-16 pb-8 bg-gradient-to-b from-[#091432] via-[#070e24] to-[#040816] overflow-hidden">
+    {/* Ambient blue top glow */}
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-36 bg-blue-600/15 blur-3xl pointer-events-none" />
+
+    <div className="container mx-auto px-6 relative z-10">
+      <div className="grid md:grid-cols-4 gap-10 mb-12">
+        <div className="md:col-span-2">
+          <h3 className="text-2xl font-serif font-bold text-white mb-3 flex items-center gap-2">
+            <Sparkles size={18} className="text-blue-400" /> MD. Shinha Sarder
+          </h3>
+          <p className="text-sm text-slate-300 text-justify leading-relaxed mb-4 max-w-md">
+            Engineer, Full-Stack Developer &amp; Entrepreneur. Founder of IT Tech BD and Biostar TV World.
+            Specialized in Next.js, Python automation, Node.js, PHP APIs, and modern cloud databases.
           </p>
+          <div className="flex flex-wrap gap-2">
+            {["Next.js", "Python", "Node.js", "PHP", "Supabase / SQL", "Tailwind CSS"].map((t) => (
+              <span key={t} className="text-[11px] font-medium text-blue-300 bg-blue-500/10 border border-blue-400/20 px-2.5 py-0.5 rounded-full">
+                {t}
+              </span>
+            ))}
+          </div>
         </div>
         <div>
-          <h4 className="font-serif font-semibold mb-4 text-foreground">Quick Links</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><a href="/#about" className="hover:text-primary transition-colors inline-flex items-center gap-2"><BookOpen size={12} /> Biography</a></li>
-            <li><Link to="/posts" className="hover:text-primary transition-colors inline-flex items-center gap-2"><FileText size={12} /> All Posts</Link></li>
-            <li><a href="/sitemap.xml" className="hover:text-primary transition-colors inline-flex items-center gap-2"><Map size={12} /> Sitemap</a></li>
-            <li><a href="/rss.xml" className="hover:text-primary transition-colors inline-flex items-center gap-2"><Rss size={12} /> RSS Feed</a></li>
+          <h4 className="font-serif font-semibold mb-4 text-white">Quick Links</h4>
+          <ul className="space-y-2.5 text-sm text-slate-300">
+            <li><a href="/#about" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Biography</a></li>
+            <li><a href="/#skills" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Tech Stack</a></li>
+            <li><Link to="/posts" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> All Posts</Link></li>
+            <li><a href="/sitemap.xml" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Map size={13} className="text-blue-400" /> Sitemap XML</a></li>
+            <li><a href="/rss.xml" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Rss size={13} className="text-blue-400" /> RSS Feed</a></li>
+            <li><a href="/api.php?action=info" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-400" /> PHP API Status</a></li>
           </ul>
         </div>
         <div>
-          <h4 className="font-serif font-semibold mb-4 text-foreground">Contact</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-center gap-2"><FaWhatsapp size={14} style={{ color: "#25D366" }} /> <a href="https://wa.me/8801576716992" className="hover:text-primary">+880 1576-716992</a></li>
-            <li className="flex items-center gap-2"><Mail size={14} className="text-primary" /> <a href="mailto:Shinhasarder2343@gmail.com" className="hover:text-primary break-all">Shinhasarder2343@gmail.com</a></li>
-            <li className="flex items-center gap-2"><MapPin size={14} className="text-primary" /> Khulna, Bangladesh</li>
+          <h4 className="font-serif font-semibold mb-4 text-white">Contact &amp; Location</h4>
+          <ul className="space-y-2.5 text-sm text-slate-300">
+            <li className="flex items-center gap-2"><FaWhatsapp size={15} style={{ color: "#25D366" }} /> <a href="https://wa.me/8801576716992" className="hover:text-blue-400 font-medium">+880 1576-716992</a></li>
+            <li className="flex items-center gap-2"><Mail size={15} className="text-blue-400" /> <a href="mailto:Shinhasarder2343@gmail.com" className="hover:text-blue-400 break-all">Shinhasarder2343@gmail.com</a></li>
+            <li className="flex items-center gap-2"><MapPin size={15} className="text-blue-400" /> Khulna, Bangladesh</li>
           </ul>
         </div>
       </div>
 
-      <div className="flex justify-center gap-3 mb-8 flex-wrap">
+      <div className="flex justify-center gap-3.5 mb-8 flex-wrap">
         {socials.map((s) => (
           <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
-            className="w-10 h-10 rounded-full border border-border flex items-center justify-center bg-card/60 hover:scale-110 hover:border-primary/40 transition-all">
+            className="w-10 h-10 rounded-full border border-blue-500/25 flex items-center justify-center bg-[#0c183b] hover:scale-110 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-500/30 transition-all">
             <s.Icon size={18} style={{ color: s.color }} />
           </a>
         ))}
       </div>
-      <div className="pt-6 border-t border-border text-center">
-        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} MD. Shinha Sarder. All Rights Reserved.</p>
+      <div className="pt-6 border-t border-blue-500/20 text-center">
+        <p className="text-xs text-slate-400">© {new Date().getFullYear()} MD. Shinha Sarder. All Rights Reserved. Built with Next.js architecture &amp; Blue UI/UX.</p>
       </div>
     </div>
   </footer>

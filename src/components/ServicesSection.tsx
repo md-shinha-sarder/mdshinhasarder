@@ -10,22 +10,24 @@ const services = [
 ];
 
 const ServicesSection = () => (
-  <section id="services" className="py-24 bg-gradient-to-b from-transparent via-primary/5 to-transparent">
-    <div className="container mx-auto px-6">
-      <p className="text-center text-xs uppercase tracking-[0.3em] text-primary mb-3">Services</p>
-      <h2 className="text-3xl sm:text-4xl font-serif font-bold text-center mb-3">
-        What I <span className="text-gradient-gold">Offer</span>
-      </h2>
-      <p className="text-center text-muted-foreground mb-14">Digital marketing and social media services to grow your online presence.</p>
+  <section id="services" className="py-24 relative">
+    <div className="container mx-auto px-4 sm:px-6">
+      <div className="text-center mb-14">
+        <span className="text-xs uppercase tracking-[0.25em] text-blue-400 font-semibold px-3 py-1 rounded-full border border-blue-400/20 bg-blue-500/10">Services &amp; Capabilities</span>
+        <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white mt-3 mb-3">
+          What I <span className="text-gradient-blue">Offer</span>
+        </h2>
+        <p className="text-slate-300 max-w-2xl mx-auto text-sm sm:text-base">Digital marketing, media management, and software solutions designed to expand your digital footprint.</p>
+      </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {services.map((s) => (
-          <div key={s.title} className="group bg-gradient-card border border-border rounded-2xl p-6 shadow-card hover:border-primary/50 transition-all hover:-translate-y-1">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-              <s.icon className="text-primary" size={22} />
+          <div key={s.title} className="group bg-gradient-to-br from-[#0c183a]/90 via-[#0a1532]/90 to-[#070e24]/95 border border-blue-500/25 rounded-2xl p-6 sm:p-7 shadow-xl shadow-blue-950/60 hover:border-blue-400/50 transition-all hover:-translate-y-1">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/15 border border-blue-400/30 flex items-center justify-center mb-4 group-hover:bg-blue-500/25 group-hover:scale-110 transition-all">
+              <s.icon className="text-blue-400" size={22} />
             </div>
-            <h3 className="font-serif font-semibold text-lg mb-2 group-hover:text-primary transition-colors">{s.title}</h3>
-            <p className="text-sm text-muted-foreground text-justify">{s.desc}</p>
+            <h3 className="font-serif font-semibold text-lg text-white mb-2 group-hover:text-blue-300 transition-colors">{s.title}</h3>
+            <p className="text-sm text-slate-300 text-justify leading-relaxed">{s.desc}</p>
           </div>
         ))}
       </div>

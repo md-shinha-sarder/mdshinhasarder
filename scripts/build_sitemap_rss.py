@@ -28,21 +28,63 @@ STATIC_ROUTES = [
 ]
 
 def fetch_published_posts():
-    """Fetch all published posts from Supabase REST API."""
-    req_url = f"{SUPABASE_URL}/rest/v1/posts?select=slug,title,excerpt,created_at,updated_at&published=eq.true&order=created_at.desc&limit=100"
+    """Fetch all published posts from Supabase REST API or Blogger fallback."""
+    req_url = f"{SUPABASE_URL}/rest/v1/posts?select=slug,title,excerpt,published_at,created_at,cover_url&status=eq.published&order=published_at.desc&limit=100"
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Accept": "application/json"
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (compatible; PythonSitemapBot/1.0)"
     }
     try:
         req = urllib.request.Request(req_url, headers=headers)
         with urllib.request.urlopen(req, timeout=10) as response:
             if response.status == 200:
                 data = json.loads(response.read().decode("utf-8"))
-                return data
+                if data and len(data) > 0:
+                    return data
     except Exception as err:
         print(f"[Python SEO Script] Warning: Could not fetch posts from Supabase: {err}")
+
+    # Fallback to Blogger feed if Supabase has no posts
+    blogger_url = "https://mdshinhasarder.blogspot.com/feeds/posts/default?alt=json&max-results=50"
+    try:
+        req = urllib.request.Request(blogger_url, headers={"User-Agent": "Mozilla/5.0 (compatible; PythonSitemapBot/1.0)"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            if resp.status == 200:
+                feed_data = json.loads(resp.read().decode("utf-8"))
+                entries = feed_data.get("feed", {}).get("entry", [])
+                out = []
+                for e in entries:
+                    title = e.get("title", {}).get("$t", "")
+                    published = e.get("published", {}).get("$t", "")
+                    updated = e.get("updated", {}).get("$t", published)
+                    # Get canonical link
+                    slug = ""
+                    for link in e.get("link", []):
+                        if link.get("rel") == "alternate":
+                            href = link.get("href", "")
+                            # extract slug e.g. /2024/05/my-post.html
+                            m = re.search(r"blogspot\.com/(\d{4}/\d{2}/[^/?#]+(?:\.html)?)", href)
+                            if m:
+                                slug = m.group(1).replace(".html", "")
+                            else:
+                                slug = href.rstrip("/").split("/")[-1].replace(".html", "")
+                            break
+                    if slug and title:
+                        out.append({
+                            "slug": slug,
+                            "title": title,
+                            "excerpt": e.get("summary", {}).get("$t", title)[:200],
+                            "published_at": published,
+                            "created_at": published,
+                            "updated_at": updated
+                        })
+                if out:
+                    print(f"[Python SEO Script] Fetched {len(out)} posts from Blogger feed fallback.")
+                    return out
+    except Exception as err:
+        print(f"[Python SEO Script] Warning: Could not fetch posts from Blogger: {err}")
     return []
 
 def generate_sitemap(posts, out_dir):
