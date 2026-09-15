@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+  <url>
+    <loc>https://mdshinhasarder.com/#videos</loc>
+    <video:video>
+      <video:thumbnail_loc>https://mdshinhasarder.com/profile.webp</video:thumbnail_loc>
+      <video:title>MD. Shinha Sarder - Official Videos &amp; Content</video:title>
+      <video:description>Official video releases, tech reviews and content by MD. Shinha Sarder</video:description>
+      <video:player_loc>https://www.youtube.com/@MD-Shinha-Sarder</video:player_loc>
+    </video:video>
+  </url>
+</urlset>

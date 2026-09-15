@@ -4,9 +4,9 @@ import heroBg from "@/assets/hero-bg.jpg";
 
 const info = [
   { icon: Calendar, label: "Born", value: "5 November 2004" },
-  { icon: MapPin, label: "Place", value: "Khulna, Bangladesh" },
-  { icon: Briefcase, label: "Profession", value: "Engineer & Entrepreneur" },
-  { icon: Code, label: "Tech Stack", value: "Next.js, Python, Node.js, PHP, SQL" },
+  { icon: MapPin, label: "Place", value: "Shirgati, Aichgati, Khulna" },
+  { icon: Briefcase, label: "Founder & CEO", value: "IT Tech BD & Biostar TV World" },
+  { icon: Code, label: "Education", value: "CSE, Northern University of Business & Tech" },
   { icon: Globe, label: "Website", value: "mdshinhasarder.com", href: "https://mdshinhasarder.com" },
   { icon: Mail, label: "Email", value: "Shinhasarder2343@gmail.com", href: "mailto:Shinhasarder2343@gmail.com" },
   { icon: Phone, label: "WhatsApp", value: "+880 1576-716992", href: "https://wa.me/8801576716992" },
@@ -25,13 +25,13 @@ const HeroSection = () => {
       <div className="relative z-10 container mx-auto px-4 sm:px-6 pt-28 pb-16">
         <div className="text-center mb-8 animate-fade-up">
           <span className="inline-flex items-center gap-2 text-[11px] text-blue-300 font-semibold tracking-widest uppercase mb-4 px-3.5 py-1.5 rounded-full border border-blue-400/30 bg-blue-500/10 shadow-sm shadow-blue-500/20">
-            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" /> Official Developer &amp; Portfolio Portal
+            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" /> Official Website &amp; Portfolio
           </span>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold leading-tight mb-2 flex flex-wrap items-center justify-center gap-2.5 text-white">
             <span>MD. Shinha <span className="text-gradient-blue">Sarder</span></span>
             <BadgeCheck className="w-6 h-6 sm:w-7 sm:h-7 text-blue-400 fill-blue-400/25" aria-label="Verified" />
           </h1>
-          <p className="text-xs sm:text-sm uppercase tracking-[0.25em] text-blue-300 font-medium">Engineer · Full-Stack Developer · Entrepreneur</p>
+          <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-blue-300 font-medium">Founder &amp; CEO · Entrepreneur · Musical Artist · Author · YouTuber</p>
         </div>
 
         <div className="rounded-2xl border border-blue-500/30 bg-gradient-to-br from-[#0c183a]/95 via-[#0a1532]/95 to-[#070e24]/98 shadow-2xl shadow-blue-950/80 overflow-hidden animate-fade-in backdrop-blur-xl max-w-4xl mx-auto">

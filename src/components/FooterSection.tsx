@@ -23,11 +23,10 @@ const FooterSection = () => (
             <Sparkles size={18} className="text-blue-400" /> MD. Shinha Sarder
           </h3>
           <p className="text-sm text-slate-300 text-justify leading-relaxed mb-4 max-w-md">
-            Engineer, Full-Stack Developer &amp; Entrepreneur. Founder of IT Tech BD and Biostar TV World.
-            Specialized in Next.js, Python automation, Node.js, PHP APIs, and modern cloud databases.
+            Founder &amp; CEO of IT Tech BD and Biostar TV World. Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator. Studying CSE at Northern University of Businesses and Technology, Khulna.
           </p>
           <div className="flex flex-wrap gap-2">
-            {["Next.js", "Python", "Node.js", "PHP", "Supabase / SQL", "Tailwind CSS"].map((t) => (
+            {["Founder & CEO", "IT Tech BD", "Biostar TV World", "Next.js", "Python", "YouTuber", "Researcher"].map((t) => (
               <span key={t} className="text-[11px] font-medium text-blue-300 bg-blue-500/10 border border-blue-400/20 px-2.5 py-0.5 rounded-full">
                 {t}
               </span>

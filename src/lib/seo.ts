@@ -6,7 +6,7 @@ export const SITE = {
   url: "https://mdshinhasarder.com",
   twitter: "@mdshinhasarder",
   description:
-    "MD. Shinha Sarder is known as the Founder & CEO of IT Tech BD and Biostar TV World who was born on 5 November, 2004. He is also known as an Engineer, Developer.",
+    "MD. Shinha Sarder is known as the Founder & CEO of IT Tech BD and Biostar TV World who born on 5 November , 2004. He also known as an Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator. He regularly upload Content in YouTube, Facebook and other social media. He is a regular student at Computer Science and Engineering (CSE) program in the Northern University of Businesses and Technology, Khulna. He was a former student of Khulna Zilla School. His father (MD. Lutfor Rahaman) is a lawyer. His mother (Samima Sultana) is a private sector employee. He born into a Muslim family in Shirgati village, Aichgati UnionParishad, Khulna.",
 };
 
 const stripHtml = (s: string) =>

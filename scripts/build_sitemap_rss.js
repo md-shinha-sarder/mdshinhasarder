@@ -113,7 +113,60 @@ async function main() {
   sitemapLines.push("</urlset>");
   const sitemapXml = sitemapLines.join("\n");
 
-  // 2. RSS
+  // 2. News Sitemap (Google News)
+  const newsLines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">',
+  ];
+  for (const p of posts.slice(0, 50)) {
+    if (!p.slug) continue;
+    const pubDate = (p.published_at || nowIso).split("T")[0];
+    const title = (p.title || "News Article").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    newsLines.push(
+      `  <url>\n    <loc>${SITE_URL}/post/${p.slug}</loc>\n    <news:news>\n      <news:publication>\n        <news:name>MD. Shinha Sarder</news:name>\n        <news:language>en</news:language>\n      </news:publication>\n      <news:publication_date>${pubDate}</news:publication_date>\n      <news:title>${title}</news:title>\n    </news:news>\n  </url>`
+    );
+  }
+  newsLines.push("</urlset>");
+  const newsXml = newsLines.join("\n");
+
+  // 3. Image Sitemap
+  const imageLines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
+    `  <url>\n    <loc>${SITE_URL}/</loc>\n    <image:image>\n      <image:loc>${SITE_URL}/profile.webp</image:loc>\n      <image:title>MD. Shinha Sarder - Founder &amp; CEO of IT Tech BD and Biostar TV World</image:title>\n      <image:caption>MD. Shinha Sarder portrait photograph</image:caption>\n    </image:image>\n  </url>`,
+  ];
+  for (const p of posts) {
+    if (!p.slug || !p.cover_url) continue;
+    const cleanImg = p.cover_url.replace(/&/g, "&amp;");
+    const cleanTitle = (p.title || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    imageLines.push(
+      `  <url>\n    <loc>${SITE_URL}/post/${p.slug}</loc>\n    <image:image>\n      <image:loc>${cleanImg}</image:loc>\n      <image:title>${cleanTitle}</image:title>\n    </image:image>\n  </url>`
+    );
+  }
+  imageLines.push("</urlset>");
+  const imageXml = imageLines.join("\n");
+
+  // 4. Video Sitemap
+  const videoLines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">',
+    `  <url>\n    <loc>${SITE_URL}/#videos</loc>\n    <video:video>\n      <video:thumbnail_loc>${SITE_URL}/profile.webp</video:thumbnail_loc>\n      <video:title>MD. Shinha Sarder - Official Videos &amp; Content</video:title>\n      <video:description>Official video releases, tech reviews and content by MD. Shinha Sarder</video:description>\n      <video:player_loc>https://www.youtube.com/@MD-Shinha-Sarder</video:player_loc>\n    </video:video>\n  </url>`,
+    '</urlset>',
+  ];
+  const videoXml = videoLines.join("\n");
+
+  // 5. Sitemap Index
+  const sitemapIndex = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    `  <sitemap><loc>${SITE_URL}/sitemap.xml</loc><lastmod>${nowIso}</lastmod></sitemap>`,
+    `  <sitemap><loc>${SITE_URL}/news-sitemap.xml</loc><lastmod>${nowIso}</lastmod></sitemap>`,
+    `  <sitemap><loc>${SITE_URL}/image-sitemap.xml</loc><lastmod>${nowIso}</lastmod></sitemap>`,
+    `  <sitemap><loc>${SITE_URL}/video-sitemap.xml</loc><lastmod>${nowIso}</lastmod></sitemap>`,
+    '</sitemapindex>',
+  ].join("\n");
+
+  // 6. RSS & Atom
   const rfcDate = new Date().toUTCString();
   const rssLines = [
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -121,7 +174,7 @@ async function main() {
     '  <channel>',
     '    <title>MD. Shinha Sarder</title>',
     `    <link>${SITE_URL}</link>`,
-    '    <description>Articles, technology insights and publications by MD. Shinha Sarder.</description>',
+    '    <description>Founder &amp; CEO of IT Tech BD and Biostar TV World. Articles, technology insights and publications by MD. Shinha Sarder.</description>',
     '    <language>en-US</language>',
     `    <lastBuildDate>${rfcDate}</lastBuildDate>`,
     `    <atom:link href="${SITE_URL}/rss.xml" rel="self" type="application/rss+xml"/>`,
@@ -137,18 +190,45 @@ async function main() {
   rssLines.push("  </channel>\n</rss>");
   const rssXml = rssLines.join("\n");
 
+  // Atom Feed
+  const atomLines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<feed xmlns="http://www.w3.org/2005/Atom">',
+    '  <title>MD. Shinha Sarder</title>',
+    `  <link href="${SITE_URL}/" />`,
+    `  <link href="${SITE_URL}/atom.xml" rel="self" />`,
+    `  <updated>${new Date().toISOString()}</updated>`,
+    '  <id>https://mdshinhasarder.com/</id>',
+    '  <author><name>MD. Shinha Sarder</name></author>',
+  ];
+  for (const p of posts.slice(0, 15)) {
+    const title = (p.title || "Article").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const desc = (p.excerpt || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const updated = (p.updated_at || p.published_at || new Date().toISOString());
+    atomLines.push(
+      `  <entry>\n    <title>${title}</title>\n    <link href="${SITE_URL}/post/${p.slug}" />\n    <id>${SITE_URL}/post/${p.slug}</id>\n    <updated>${updated}</updated>\n    <summary>${desc}</summary>\n  </entry>`
+    );
+  }
+  atomLines.push('</feed>');
+  const atomXml = atomLines.join("\n");
+
   // Write to public and outDir
   const targets = ["public", outDir];
   for (const dir of targets) {
     try {
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(path.join(dir, "sitemap.xml"), sitemapXml, "utf-8");
+      fs.writeFileSync(path.join(dir, "sitemap-index.xml"), sitemapIndex, "utf-8");
+      fs.writeFileSync(path.join(dir, "news-sitemap.xml"), newsXml, "utf-8");
+      fs.writeFileSync(path.join(dir, "image-sitemap.xml"), imageXml, "utf-8");
+      fs.writeFileSync(path.join(dir, "video-sitemap.xml"), videoXml, "utf-8");
       fs.writeFileSync(path.join(dir, "rss.xml"), rssXml, "utf-8");
+      fs.writeFileSync(path.join(dir, "atom.xml"), atomXml, "utf-8");
     } catch (err) {
       console.warn(`[SEO Script] Could not write to ${dir}:`, err.message);
     }
   }
-  console.log(`[SEO Script] Generated sitemap & RSS successfully for targets: ${targets.join(", ")}`);
+  console.log(`[SEO Script] Generated all Sitemaps (main, news, image, video, index) & Feeds (RSS, Atom) for targets: ${targets.join(", ")}`);
 }
 
 main().catch((err) => {

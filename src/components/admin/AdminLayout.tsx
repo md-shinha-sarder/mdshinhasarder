@@ -8,7 +8,7 @@ const items = [
   { to: "/admin/pages", icon: FileText, label: "Pages" },
   { to: "/admin/posts", icon: Newspaper, label: "Posts" },
   { to: "/admin/media", icon: Image, label: "Media" },
-  { to: "/admin/news-check", icon: ShieldCheck, label: "News Eligibility" },
+  { to: "/admin/news-check", icon: ShieldCheck, label: "Biography & News SEO" },
   { to: "/admin/seo", icon: Settings, label: "SEO Settings" },
   { to: "/admin/theme", icon: Palette, label: "Theme" },
 ];
