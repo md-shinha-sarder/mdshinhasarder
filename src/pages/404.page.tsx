@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import Head from "next/head";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const ClientApp = dynamic(() => import("@/App"), {
   ssr: false,
@@ -15,11 +16,11 @@ const ClientApp = dynamic(() => import("@/App"), {
 
 export default function Custom404() {
   return (
-    <>
+    <ErrorBoundary>
       <Head>
         <title>MD. Shinha Sarder Portfolio</title>
       </Head>
       <ClientApp />
-    </>
+    </ErrorBoundary>
   );
 }

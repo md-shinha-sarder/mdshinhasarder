@@ -44,8 +44,6 @@ export function enhanceContentImages(html: string, title?: string | null): strin
     if (!hasLoading) out += ` loading="lazy"`;
     if (!hasDecoding) out += ` decoding="async"`;
     if (!hasPriority) out += ` fetchpriority="low"`;
-    if (!hasWidth) out += ` width="1200"`;
-    if (!hasHeight) out += ` height="800"`;
     return `<img ${out} />`;
   });
 }

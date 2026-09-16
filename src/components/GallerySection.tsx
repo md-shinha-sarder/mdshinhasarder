@@ -74,7 +74,7 @@ const GallerySection = () => {
                   height={800}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                 />
                 <span className="absolute inset-0 bg-gradient-to-t from-[#070e24]/95 via-[#070e24]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3.5 text-left">
                   <span className="text-blue-300 inline-flex items-center gap-1 text-[11px] font-semibold mb-1">

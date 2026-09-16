@@ -7,6 +7,7 @@ Runs on Node.js / Cloudflare Pages / CI environments to generate static sitemap 
 import os
 import json
 import sys
+import re
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone

@@ -252,3 +252,21 @@ a.highlight-link:hover {
   padding: 0.1rem 0.3rem !important;
   border-radius: 0.25rem !important;
 }
+
+/* Full photo display guarantee - show full photo regardless of pixel size or aspect ratio */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.prose img,
+.ProseMirror img,
+article img {
+  max-width: 100% !important;
+  height: auto !important;
+  object-fit: contain !important;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+

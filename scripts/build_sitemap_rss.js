@@ -47,6 +47,25 @@ function fetchJson(url, headers = {}) {
 }
 
 async function getPosts() {
+  // 1. Check local pre-synced posts
+  try {
+    const syncPath = path.resolve("public", "posts-sync.json");
+    if (fs.existsSync(syncPath)) {
+      const parsed = JSON.parse(fs.readFileSync(syncPath, "utf-8"));
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((p) => ({
+          slug: p.slug,
+          title: p.title,
+          excerpt: p.excerpt,
+          cover_url: p.image,
+          published_at: p.published,
+          created_at: p.published,
+        }));
+      }
+    }
+  } catch {}
+
+  // 2. Supabase DB
   const supabaseUrl = `${SUPABASE_URL}/rest/v1/posts?select=slug,title,excerpt,published_at,created_at,cover_url&status=eq.published&order=published_at.desc&limit=100`;
   const res = await fetchJson(supabaseUrl, {
     apikey: SUPABASE_KEY,
@@ -57,8 +76,21 @@ async function getPosts() {
     return res;
   }
 
-  // Blogger fallback
-  const bloggerUrl = "https://mdshinhasarder.blogspot.com/feeds/posts/default?alt=json&max-results=50";
+  // 3. Edge function fallback
+  const edgeRes = await fetchJson("https://ihegjzwlvthfqwredssj.supabase.co/functions/v1/fetch-posts?type=posts");
+  if (edgeRes?.posts && Array.isArray(edgeRes.posts) && edgeRes.posts.length > 0) {
+    return edgeRes.posts.map((p) => ({
+      slug: p.slug,
+      title: p.title,
+      excerpt: p.excerpt,
+      cover_url: p.image,
+      published_at: p.published,
+      created_at: p.published,
+    }));
+  }
+
+  // 4. Blogger fallback
+  const bloggerUrl = "https://shinhaauthor.blogspot.com/feeds/posts/default?alt=json&max-results=50";
   const bRes = await fetchJson(bloggerUrl);
   if (bRes?.feed?.entry) {
     return bRes.feed.entry.map((e) => {

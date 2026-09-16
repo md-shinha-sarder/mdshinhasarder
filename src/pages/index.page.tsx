@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import Head from "next/head";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const ClientApp = dynamic(() => import("@/App"), {
   ssr: false,
@@ -76,7 +77,9 @@ export default function HomePage() {
         <meta name="twitter:image" content="https://mdshinhasarder.com/profile.webp" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaPerson) }} />
       </Head>
-      <ClientApp />
+      <ErrorBoundary>
+        <ClientApp />
+      </ErrorBoundary>
     </>
   );
 }

@@ -1,15 +1,15 @@
-import { User, MapPin, Flag, Building, GraduationCap, BookOpen, Briefcase } from "lucide-react";
+import { User, MapPin, Flag, GraduationCap, BookOpen, Briefcase, Calendar, Sparkles, Heart, Users } from "lucide-react";
 
 const info = [
   { icon: User, label: "Full Name", value: "MD. Shinha Sarder" },
-  { icon: Flag, label: "Born", value: "5 November 2004" },
+  { icon: Calendar, label: "Born", value: "5 November 2004" },
   { icon: MapPin, label: "Birth Place", value: "Shirgati village, Aichgati UnionParishad, Khulna" },
   { icon: Flag, label: "Nationality", value: "Bangladeshi" },
-  { icon: Building, label: "Profession", value: "Entrepreneur" },
-  { icon: Briefcase, label: "Known For", value: "Entrepreneur, Musical Artist, Author, Researcher, YouTuber & Content Creator" },
+  { icon: Briefcase, label: "Profession", value: "Entrepreneur" },
+  { icon: Sparkles, label: "Known For", value: "Entrepreneur, Musical Artist, Author, Researcher, YouTuber & Content Creator" },
   { icon: User, label: "Father", value: "MD. Lutfor Rahaman (Lawyer)" },
-  { icon: User, label: "Mother", value: "Samima Sultana (Private Sector Employee)" },
-  { icon: User, label: "Religion / Family", value: "Muslim Family" },
+  { icon: Heart, label: "Mother", value: "Samima Sultana (Private Sector Employee)" },
+  { icon: Users, label: "Religion / Family", value: "Muslim Family" },
 ];
 
 const education = [

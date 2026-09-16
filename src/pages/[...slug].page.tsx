@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import type { GetStaticPaths, GetStaticProps } from "next";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const ClientApp = dynamic(() => import("@/App"), {
   ssr: false,
@@ -16,13 +17,16 @@ const ClientApp = dynamic(() => import("@/App"), {
 
 export default function CatchAllPage() {
   return (
-    <>
+    <ErrorBoundary>
       <Head>
         <title>MD. Shinha Sarder</title>
-        <meta name="description" content="MD. Shinha Sarder is known as the Founder &amp; CEO of IT Tech BD and Biostar TV World who born on 5 November , 2004. He also known as an Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator. Regular student at CSE program in Northern University of Businesses and Technology, Khulna." />
+        <meta
+          name="description"
+          content="MD. Shinha Sarder is known as the Founder &amp; CEO of IT Tech BD and Biostar TV World. Entrepreneur, Musical Artist, Author, Researcher, YouTuber, and Content Creator."
+        />
       </Head>
       <ClientApp />
-    </>
+    </ErrorBoundary>
   );
 }
 
