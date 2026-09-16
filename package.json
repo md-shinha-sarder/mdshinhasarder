@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 3000",
     "dev:next": "next dev --port 3000",
-    "build": "vite build && next build && node scripts/build_sitemap_rss.js dist",
+    "build": "node scripts/build.js",
     "build:vite": "vite build",
-    "build:next": "next build",
+    "build:next": "node -e \"process.env.NODE_ENV='production'\" && next build",
     "build:seo": "node scripts/build_sitemap_rss.js dist",
     "start": "node server.js",
     "start:next": "next start",

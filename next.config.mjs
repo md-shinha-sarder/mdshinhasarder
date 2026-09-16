@@ -13,6 +13,14 @@ const nextConfig = {
     // Next.js should not fail build on pre-existing type warnings
     ignoreBuildErrors: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: "/media/:path*",
+        destination: "https://hpnndbmyibbgrlskskyt.supabase.co/storage/v1/object/public/media/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
