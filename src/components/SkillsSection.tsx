@@ -1,4 +1,5 @@
 import { Cpu, Zap, Layers, Sparkles } from "lucide-react";
+import SkillCircleGraph from "@/components/SkillCircleGraph";
 
 const groups: { title: string; icon?: string; items: { name: string; percent: number; desc?: string; badge?: string }[] }[] = [
   {
@@ -38,65 +39,77 @@ const groups: { title: string; icon?: string; items: { name: string; percent: nu
 ];
 
 const SkillsSection = () => (
-  <section id="skills" className="py-24 relative">
+  <section id="skills" className="py-20 relative transition-colors duration-300">
     <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
-      <div className="text-center mb-14">
-        <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-blue-400 font-semibold px-4 py-1.5 rounded-full border border-blue-400/30 bg-blue-500/10 shadow-sm shadow-blue-500/20 backdrop-blur-md">
-          <Cpu size={14} className="text-blue-400" /> Technical Mastery &amp; Stack
+      <div className="text-center mb-12">
+        <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-blue-600 dark:text-blue-400 font-semibold px-4 py-1.5 rounded-full border border-blue-200 dark:border-blue-400/30 bg-blue-50 dark:bg-blue-500/10 shadow-sm backdrop-blur-md">
+          <Cpu size={14} className="text-blue-600 dark:text-blue-400" /> Technical Mastery &amp; Stack
         </span>
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white mt-4 mb-4 tracking-tight">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-slate-900 dark:text-white mt-4 mb-4 tracking-tight">
           Programming &amp; <span className="text-gradient-blue">Tech Stack</span>
         </h2>
-        <p className="text-slate-200 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed text-justify sm:text-center">
-          Engineered with a high-performance stack combining <strong className="text-white font-semibold">Next.js + React + Java + Python + Node.js</strong> exceeding 85% execution weight, backed by PostgreSQL/Supabase and optimized for ultra-fast, zero-friction page speeds.
+        <p className="text-slate-600 dark:text-slate-200 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed text-justify sm:text-center">
+          Engineered with a high-performance stack combining <strong className="text-slate-900 dark:text-white font-semibold">Next.js + React + Java + Python + Node.js</strong> exceeding 85% execution weight, backed by PostgreSQL/Supabase and optimized for ultra-fast, zero-friction page speeds.
         </p>
 
         {/* Stack Highlights Pills */}
         <div className="flex flex-wrap items-center justify-center gap-2.5 mt-6 max-w-3xl mx-auto">
-          <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-500/15 text-sky-300 border border-sky-400/30 flex items-center gap-1.5">
+          <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-50 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-400/30 flex items-center gap-1.5">
             <Zap size={13} /> Next.js (Direct Framework)
           </span>
-          <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-300 border border-blue-400/30">
+          <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-400/30">
             React (Declarative UI)
           </span>
-          <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-400/30">
+          <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-400/30">
             Python (AI &amp; Automation)
           </span>
-          <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-red-500/15 text-red-300 border border-red-400/30">
+          <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-400/30">
             Java (CSE Systems)
           </span>
-          <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-400/30">
+          <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-400/30">
             Node.js (High-Speed Runtime)
           </span>
-          <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-500/10 text-slate-300 border border-slate-500/20">
+          <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-500/20">
             TypeScript (Lightweight compile-only)
           </span>
         </div>
       </div>
 
+      {/* User Requested Circular Graph System */}
+      <div className="mb-12">
+        <SkillCircleGraph />
+      </div>
+
+      {/* Grouped Stack Bar Gauges */}
       <div className="grid md:grid-cols-2 gap-6">
         {groups.map((g) => (
-          <div key={g.title} className="bg-gradient-to-br from-[#0c183a]/95 via-[#0a1532]/95 to-[#070e24]/98 border border-blue-500/30 rounded-3xl p-6 sm:p-7 shadow-2xl shadow-blue-950/80 hover:border-blue-400/60 transition-all duration-300 hover:-translate-y-1">
-            <h3 className="text-lg font-serif font-semibold text-white mb-5 flex items-center gap-2.5">
-              <span className="w-2 h-2 rounded-full bg-blue-400 shadow-sm shadow-blue-400/50" /> {g.title}
+          <div
+            key={g.title}
+            className="bg-white dark:bg-gradient-to-br dark:from-[#0c183a]/95 dark:via-[#0a1532]/95 dark:to-[#070e24]/98 border border-slate-200 dark:border-blue-500/30 rounded-3xl p-6 sm:p-7 shadow-lg dark:shadow-2xl dark:shadow-blue-950/80 hover:border-blue-400/60 transition-all duration-300 hover:-translate-y-1"
+          >
+            <h3 className="text-lg font-serif font-semibold text-slate-900 dark:text-white mb-5 flex items-center gap-2.5">
+              <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 shadow-sm" /> {g.title}
             </h3>
             <div className="space-y-4">
               {g.items.map((s) => (
                 <div key={s.name}>
                   <div className="flex justify-between items-center mb-1.5 text-sm">
                     <div className="flex items-center gap-2">
-                      <span className="text-white font-medium">{s.name}</span>
+                      <span className="text-slate-800 dark:text-white font-medium">{s.name}</span>
                       {s.badge && (
-                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-400/30">
                           {s.badge}
                         </span>
                       )}
-                      {s.desc && <span className="hidden sm:inline text-xs text-slate-400">({s.desc})</span>}
+                      {s.desc && <span className="hidden sm:inline text-xs text-slate-500 dark:text-slate-400">({s.desc})</span>}
                     </div>
-                    <span className="text-blue-300 font-semibold text-xs sm:text-sm font-mono">{s.percent}%</span>
+                    <span className="text-blue-600 dark:text-blue-300 font-semibold text-xs sm:text-sm font-mono">{s.percent}%</span>
                   </div>
-                  <div className="h-2 rounded-full bg-[#050b1d] border border-blue-500/15 overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-blue-600 via-sky-400 to-blue-400 transition-all duration-1000 shadow-sm shadow-blue-400/40" style={{ width: `${s.percent}%` }} />
+                  <div className="h-2 rounded-full bg-slate-100 dark:bg-[#050b1d] border border-slate-200 dark:border-blue-500/15 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-blue-600 via-sky-400 to-blue-400 transition-all duration-1000 shadow-sm"
+                      style={{ width: `${s.percent}%` }}
+                    />
                   </div>
                 </div>
               ))}

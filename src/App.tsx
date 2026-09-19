@@ -7,6 +7,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/hooks/useTheme";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index.tsx";
@@ -14,6 +15,13 @@ import NotFound from "./pages/NotFound.tsx";
 import Auth from "./pages/Auth.tsx";
 import PostDetail from "./pages/PostDetail.tsx";
 import AllPosts from "./pages/AllPosts.tsx";
+import BiographyPage from "./pages/BiographyPage.tsx";
+import SongsPage from "./pages/SongsPage.tsx";
+import BooksPage from "./pages/BooksPage.tsx";
+import GalleryPage from "./pages/GalleryPage.tsx";
+import PublicationsPage from "./pages/PublicationsPage.tsx";
+import SkillsPage from "./pages/SkillsPage.tsx";
+import ProjectsPage from "./pages/ProjectsPage.tsx";
 import AdminLayout from "./components/admin/AdminLayout.tsx";
 import Dashboard from "./pages/admin/Dashboard.tsx";
 import PagesAdmin from "./pages/admin/PagesAdmin.tsx";
@@ -50,6 +58,15 @@ const AppRoutes = () => {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/biography" element={<BiographyPage />} />
+        <Route path="/about" element={<BiographyPage />} />
+        <Route path="/skills" element={<SkillsPage />} />
+        <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/songs" element={<SongsPage />} />
+        <Route path="/music" element={<SongsPage />} />
+        <Route path="/books" element={<BooksPage />} />
+        <Route path="/gallery" element={<GalleryPage />} />
+        <Route path="/publications" element={<PublicationsPage />} />
         <Route path="/posts" element={<AllPosts />} />
         <Route path="/post/:slug" element={<PostDetail />} />
         <Route path="/article/:slug" element={<PostDetail />} />
@@ -79,13 +96,15 @@ const App = () => (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AuthProvider>
-              <AppRoutes />
-            </AuthProvider>
-          </BrowserRouter>
+          <ThemeProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AuthProvider>
+                <AppRoutes />
+              </AuthProvider>
+            </BrowserRouter>
+          </ThemeProvider>
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>

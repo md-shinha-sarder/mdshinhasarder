@@ -36,12 +36,13 @@ const FooterSection = () => (
         <div>
           <h4 className="font-serif font-semibold mb-4 text-white">Quick Links</h4>
           <ul className="space-y-2.5 text-sm text-slate-300">
-            <li><a href="/#about" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Biography</a></li>
-            <li><a href="/#skills" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Tech Stack</a></li>
+            <li><Link to="/biography" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Full Biography</Link></li>
+            <li><Link to="/skills" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Technical Skills</Link></li>
+            <li><Link to="/projects" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Projects &amp; Ventures</Link></li>
+            <li><Link to="/publications" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Publications</Link></li>
+            <li><Link to="/books" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Published Books</Link></li>
+            <li><Link to="/songs" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-400" /> Music &amp; Player</Link></li>
             <li><Link to="/posts" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> All Posts</Link></li>
-            <li><a href="/sitemap.xml" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Map size={13} className="text-blue-400" /> Sitemap XML</a></li>
-            <li><a href="/rss.xml" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Rss size={13} className="text-blue-400" /> RSS Feed</a></li>
-            <li><a href="/api.php?action=info" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-400" /> PHP API Status</a></li>
           </ul>
         </div>
         <div>

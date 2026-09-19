@@ -1,41 +1,34 @@
+import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
-import HeroSection from "@/components/HeroSection";
-import AboutSection from "@/components/AboutSection";
-import SkillsSection from "@/components/SkillsSection";
-import ProjectsSection from "@/components/ProjectsSection";
-import ServicesSection from "@/components/ServicesSection";
-import GallerySection from "@/components/GallerySection";
-import VideosSection from "@/components/VideosSection";
-import ReelsSection from "@/components/ReelsSection";
-import MusicSection from "@/components/MusicSection";
-import BooksSection from "@/components/BooksSection";
-import PublicationsSection from "@/components/PublicationsSection";
-import BlogSection from "@/components/BlogSection";
+import KnowledgePanelWidget from "@/components/KnowledgePanelWidget";
 import FooterSection from "@/components/FooterSection";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { useHomeSections } from "@/hooks/useHomeSections";
 
 const Index = () => {
   useSiteSettings();
-  const { sections } = useHomeSections();
+
   return (
-    <div className="relative min-h-screen bg-[#070e24] text-foreground selection:bg-blue-500/30 selection:text-blue-100">
+    <div className="relative min-h-screen bg-black text-slate-100 selection:bg-blue-500/30 selection:text-blue-200">
+      <Helmet>
+        <title>MD. Shinha Sarder — Entrepreneur</title>
+        <meta
+          name="description"
+          content="MD. Shinha Sarder is known as the Founder &amp; CEO of IT Tech BD and Biostar TV World. Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator."
+        />
+        <link rel="canonical" href="https://mdshinhasarder.com/" />
+      </Helmet>
+
       <SiteBackground />
-      <div className="relative z-10">
+
+      <div className="relative z-10 flex flex-col min-h-screen">
         <Navbar />
-        {sections.hero && <HeroSection />}
-        {sections.about && <AboutSection />}
-        {sections.skills && <SkillsSection />}
-        {sections.projects && <ProjectsSection />}
-        {sections.services && <ServicesSection />}
-        {sections.gallery && <GallerySection />}
-        {sections.videos && <VideosSection />}
-        {sections.reels && <ReelsSection />}
-        {sections.music && <MusicSection />}
-        {sections.books && <BooksSection />}
-        {sections.publications && <PublicationsSection />}
-        {sections.blog && <BlogSection />}
+
+        {/* Unified Hero & Knowledge Panel Section */}
+        <main className="flex-1 container mx-auto px-3 sm:px-6 pt-20 pb-10 max-w-6xl">
+          <KnowledgePanelWidget />
+        </main>
+
         <FooterSection />
       </div>
     </div>
