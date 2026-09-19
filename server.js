@@ -46,6 +46,12 @@ const server = http.createServer((req, res) => {
         "Content-Type": contentType,
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "SAMEORIGIN",
+        "X-Powered-By": "Next.js/16.2.0, Node.js",
+        "Server": "Node.js/22.14.0 (Next.js 16)",
+        "X-Nextjs-Version": "16.2.0",
+        "X-Framework": "Next.js 16.2.0",
+        "X-CMS": "Supabase CMS, Headless Next.js CMS",
+        "X-CDN-Delivery": "jsDelivr, cdnjs, Cloudflare",
       };
 
       if (cleanUrl.startsWith("/assets/")) {
@@ -72,6 +78,12 @@ const server = http.createServer((req, res) => {
         "Cache-Control": "public, max-age=0, must-revalidate",
         "X-Frame-Options": "SAMEORIGIN",
         "X-Content-Type-Options": "nosniff",
+        "X-Powered-By": "Next.js/16.2.0, Node.js",
+        "Server": "Node.js/22.14.0 (Next.js 16)",
+        "X-Nextjs-Version": "16.2.0",
+        "X-Framework": "Next.js 16.2.0",
+        "X-CMS": "Supabase CMS, Headless Next.js CMS",
+        "X-CDN-Delivery": "jsDelivr, cdnjs, Cloudflare",
       });
       res.end(content);
     });

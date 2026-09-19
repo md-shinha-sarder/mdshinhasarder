@@ -90,10 +90,13 @@ export const KnowledgePanelWidget = () => {
   const photos = [
     { src: "/profile.webp", label: "Official Portrait" },
     { src: "/hero-portrait.jpg", label: "Author & Researcher" },
+    { src: "/profile-photo.webp", label: "Founder & CEO" },
     { src: "/hero-bg.jpg", label: "Developer & Creator" },
-    { src: "https://books.google.com/books/content?id=7veEEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api", label: "From Khulna to the Cloud" },
+    { src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjQV79hudXoSC3A3-63meKOFFLT-Um2ZMI_i3U65Qo6hitbx9o1eyq9vN6HZUD7NV_dI7ndaPm6l7P4h0crBvneHt4ueHVdP4koqJOMNEoBnvmnIwH7oM4ac_2HnwOvdvrgsz2twPB1mY-c8q5eCkDVCgws_iesMFEk9fnK0o9rdhPou_wyAEsKnbEraNbb/s266/1000020228.jpg", label: "Python Programming Analysis" },
+    { src: "https://books.google.com/books/content?id=fjSEEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api", label: "Mastering C++" },
+    { src: "https://m.media-amazon.com/images/I/41NRQbBcsoL._SX354_SY354_BL0_QL100__UX716_FMwebp_QL85_.jpg", label: "The Entrepreneur Journey" },
+    { src: "https://books.google.com/books/content?id=7veEEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api", label: "Journey of Koyra To Khulna" },
     { src: "https://books.google.com/books/content?id=z_eEEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api", label: "Days of a Dreaming Boy" },
-    { src: "https://books.google.com/books/content?id=fjSEEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api", label: "Artificial Intelligence" },
     { src: "https://books.google.com/books/content?id=e6uAEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api", label: "Life in Lines" },
   ];
 
@@ -537,21 +540,45 @@ export const KnowledgePanelWidget = () => {
                 <Youtube className="w-5 h-5 text-red-500" />
                 <span className="font-semibold text-sm text-white truncate max-w-md">{selectedVideo.title}</span>
               </div>
-              <button
-                onClick={() => setSelectedVideo(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
-              >
-                <X size={18} />
-              </button>
+              <div className="flex items-center gap-2">
+                <a
+                  href={`https://www.youtube.com/watch?v=${selectedVideo.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-semibold shadow-sm transition-colors"
+                >
+                  <span>Open on YouTube</span>
+                  <ExternalLink size={12} />
+                </a>
+                <button
+                  onClick={() => setSelectedVideo(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
             <div className="aspect-video w-full bg-black">
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${selectedVideo.id}?autoplay=1`}
+                src={`https://www.youtube.com/embed/${selectedVideo.id}?autoplay=1&rel=0&playsinline=1`}
                 title={selectedVideo.title}
                 className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
               />
+            </div>
+            <div className="p-3 bg-slate-900/60 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-400">
+              <span className="truncate">Official video stream for &ldquo;{selectedVideo.title}&rdquo;</span>
+              <a
+                href={`https://www.youtube.com/watch?v=${selectedVideo.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-red-400 hover:underline inline-flex items-center gap-1 shrink-0"
+              >
+                <span>If stream doesn&apos;t play in iframe, click here to watch directly</span>
+                <ExternalLink size={12} />
+              </a>
             </div>
           </div>
         </div>

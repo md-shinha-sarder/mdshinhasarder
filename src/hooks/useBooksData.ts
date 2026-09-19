@@ -203,9 +203,64 @@ export const DEFAULT_BOOKS: Book[] = [
     description:
       "An analytical monograph exploring structural discrete graph algorithms, spanning trees, Hamiltonian cycles, network flows, and modern engineering applications.",
   },
+  {
+    id: "python-programming-analysis",
+    slug: "python-programming-analysis-review",
+    title: "Python Programming Analysis and Review Explained by Developer MD. Shinha Sarder",
+    publishedDate: "2025",
+    category: "Computer Science & Python",
+    cover: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjQV79hudXoSC3A3-63meKOFFLT-Um2ZMI_i3U65Qo6hitbx9o1eyq9vN6HZUD7NV_dI7ndaPm6l7P4h0crBvneHt4ueHVdP4koqJOMNEoBnvmnIwH7oM4ac_2HnwOvdvrgsz2twPB1mY-c8q5eCkDVCgws_iesMFEk9fnK0o9rdhPou_wyAEsKnbEraNbb/s266/1000020228.jpg",
+    chaptraUrl: "https://www.chaptra.com/author/md-shinha-sarder",
+    description:
+      "In-depth technical analysis and developer review of Python in modern computing, exploring automated data pipelines, web scraping architectures, AI scripting, and software design principles.",
+  },
+  {
+    id: "mastering-cpp-programming",
+    slug: "mastering-cpp-programming-language",
+    title: "Mastering C++ Programming Language: Professional C++ Development",
+    publishedDate: "2025",
+    category: "Programming & Software Engineering",
+    cover: "https://books.google.com/books/content?id=fjSEEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    chaptraUrl: "https://www.chaptra.com/author/md-shinha-sarder",
+    description:
+      "Comprehensive professional developer handbook exploring modern C++20/C++23 standards, memory management, pointer safety, object-oriented systems, and high-performance algorithmic execution.",
+  },
+  {
+    id: "the-entrepreneur-journey-biography",
+    slug: "the-entrepreneur-journey-biography",
+    title: "The Entrepreneur Journey: Biography - MD. Shinha Sarder",
+    publishedDate: "2025",
+    category: "Biography & Entrepreneurship",
+    cover: "https://m.media-amazon.com/images/I/41NRQbBcsoL._SX354_SY354_BL0_QL100__UX716_FMwebp_QL85_.jpg",
+    chaptraUrl: "https://www.chaptra.com/author/md-shinha-sarder",
+    description:
+      "Chronicles the entrepreneurial journey of MD. Shinha Sarder from Shirgati village and Khulna to founding IT Tech BD and Biostar TV World, balancing CSE studies with startup leadership.",
+  },
+  {
+    id: "journey-of-koyra-to-khulna",
+    slug: "journey-of-koyra-to-khulna",
+    title: "Journey of Koyra To Khulna: A Simple Story Guide",
+    publishedDate: "2025",
+    category: "Memoir & Regional History",
+    cover: "https://books.google.com/books/content?id=7veEEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    chaptraUrl: "https://www.chaptra.com/author/md-shinha-sarder",
+    description:
+      "A personal narrative and descriptive story guide capturing the journey from coastal Koyra to the city of Khulna, reflecting rural roots, academic drive, and technical ambitions.",
+  },
+  {
+    id: "data-structure-cse",
+    slug: "data-structure-cse-principles",
+    title: "Data Structure: Principles & Algorithmic Analysis",
+    publishedDate: "2025",
+    category: "Computer Science & Engineering",
+    cover: "https://books.google.com/books/content?id=ZGSDEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    chaptraUrl: "https://www.chaptra.com/author/md-shinha-sarder",
+    description:
+      "Foundational computer science reference detailing linear and non-linear data structures, trees, graphs, sorting mechanisms, and algorithmic complexity.",
+  },
 ];
 
-const STORAGE_KEY = "md_shinha_books_catalog_v3";
+const STORAGE_KEY = "md_shinha_books_catalog_v5";
 
 export function useBooksData() {
   const [books, setBooks] = useState<Book[]>(() => {

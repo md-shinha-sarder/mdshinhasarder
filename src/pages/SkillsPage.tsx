@@ -41,11 +41,11 @@ const allSkills: SkillItem[] = [
     highlight: true,
   },
   {
-    name: "Next.js",
+    name: "Next.js (v16)",
     percent: 98,
     level: "Expert / Direct Meta-Framework",
     category: "frameworks",
-    desc: "App Router, SSR/SSG hybrid caching, Turbopack, and edge rendering.",
+    desc: "Next.js 16 App Router, Turbopack compiler, SSR/SSG hybrid caching, and edge rendering.",
     useCase: "Primary web framework across all modern ventures, delivering sub-second page loads and automated SEO.",
     highlight: true,
   },

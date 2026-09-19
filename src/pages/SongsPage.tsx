@@ -108,6 +108,13 @@ export default function SongsPage() {
     if (s?.youtubeId) {
       setActiveVideoId(s.youtubeId);
     }
+    // Scroll to video player
+    setTimeout(() => {
+      const el = document.getElementById("video-stream-player");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
   };
 
   useEffect(() => {
@@ -195,23 +202,61 @@ export default function SongsPage() {
           </div>
 
           {/* Featured Video Player */}
-          <div className="my-8">
-            <div className="flex items-center justify-between mb-3">
+          <div id="video-stream-player" className="my-8 scroll-mt-24">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
               <div className="flex items-center gap-2">
                 <Youtube className="w-5 h-5 text-red-500" />
-                <span className="text-sm font-semibold text-white">Now Playing: {activeSong?.title}</span>
+                <span className="text-sm font-semibold text-white">Now Streaming: {activeSong?.title}</span>
               </div>
-              <span className="text-xs text-slate-400">Official YouTube Stream</span>
+              <div className="flex items-center gap-2">
+                <a
+                  href={activeSong?.youtubeUrl || `https://www.youtube.com/watch?v=${activeVideoId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-semibold shadow-sm transition-colors"
+                >
+                  <Youtube size={13} />
+                  <span>Stream on YouTube (Direct HD)</span>
+                  <ExternalLink size={11} />
+                </a>
+              </div>
             </div>
 
-            <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800/60 shadow-2xl">
+            <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800/60 shadow-2xl relative">
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${activeVideoId}?autoplay=0&rel=0`}
+                src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=1&rel=0&playsinline=1`}
                 title={activeSong?.title || "MD. Shinha Sarder Music Video"}
                 className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
               />
+            </div>
+
+            <div className="mt-2.5 p-3 rounded-xl bg-slate-900/50 border border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+              <span className="text-center sm:text-left">
+                If YouTube restricts embed playback on your browser, stream the official video directly on YouTube.
+              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href={activeSong?.youtubeUrl || `https://www.youtube.com/watch?v=${activeVideoId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-2.5 py-1 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white border border-red-500/30 transition-colors font-medium flex items-center gap-1"
+                >
+                  <span>Open Video in YouTube</span>
+                  <ExternalLink size={11} />
+                </a>
+                <a
+                  href="https://www.deezer.com/artist/338551431"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-white border border-amber-500/20 transition-colors font-medium flex items-center gap-1"
+                >
+                  <Radio size={11} />
+                  <span>Deezer Audio</span>
+                </a>
+              </div>
             </div>
           </div>
 
@@ -307,17 +352,17 @@ export default function SongsPage() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                    {/* Watch video button */}
+                    {/* Watch video stream button */}
                     <button
                       onClick={() => selectSongAndVideo(idx)}
                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                         activeVideoId === song.youtubeId
-                          ? "bg-red-600 text-white font-semibold"
+                          ? "bg-red-600 text-white font-semibold shadow-sm"
                           : "bg-red-950/40 hover:bg-red-600 text-red-300 hover:text-white border border-red-800/40"
                       }`}
                     >
                       <Play size={12} className="fill-current" />
-                      <span>Watch</span>
+                      <span>{activeVideoId === song.youtubeId ? "Now Streaming" : "Stream"}</span>
                     </button>
 
                     {/* Synth toggle */}
@@ -333,12 +378,23 @@ export default function SongsPage() {
                       {isCurrent && isPlayingSynth ? <Pause size={14} /> : <Music size={14} />}
                     </button>
 
+                    {/* Deezer track / artist link */}
+                    <a
+                      href={song.deezerUrl || "https://www.deezer.com/artist/338551431"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="p-2 rounded-lg bg-slate-800 hover:bg-amber-500/20 text-slate-400 hover:text-amber-300 transition-colors"
+                      title="Stream on Deezer"
+                    >
+                      <Radio size={14} />
+                    </a>
+
                     {/* YouTube external link */}
                     <a
                       href={song.youtubeUrl || OFFICIAL_YOUTUBE_CHANNEL}
                       target="_blank"
                       rel="noreferrer"
-                      className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                      className="p-2 rounded-lg bg-slate-800 hover:bg-red-600/30 text-slate-400 hover:text-red-400 transition-colors"
                       title="Open on YouTube"
                     >
                       <ExternalLink size={14} />

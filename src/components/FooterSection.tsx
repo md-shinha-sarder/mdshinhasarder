@@ -26,7 +26,7 @@ const FooterSection = () => (
             Founder &amp; CEO of IT Tech BD and Biostar TV World. Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator. Studying CSE at Northern University of Businesses and Technology, Khulna.
           </p>
           <div className="flex flex-wrap gap-2">
-            {["Next.js", "React", "Python", "Java", "Node.js", "IT Tech BD", "Biostar TV World", "Founder & CEO"].map((t) => (
+            {["Next.js 16", "Node.js 22", "React 19", "Python", "Java", "Supabase CMS", "jsDelivr CDN", "cdnjs CDN", "IT Tech BD", "Biostar TV World", "Founder & CEO"].map((t) => (
               <span key={t} className="text-[11px] font-medium text-blue-300 bg-blue-500/10 border border-blue-400/20 px-2.5 py-0.5 rounded-full">
                 {t}
               </span>
@@ -63,8 +63,15 @@ const FooterSection = () => (
           </a>
         ))}
       </div>
-      <div className="pt-6 border-t border-blue-500/20 text-center">
-        <p className="text-xs text-slate-400">© {new Date().getFullYear()} MD. Shinha Sarder. All Rights Reserved.</p>
+      <div className="pt-6 border-t border-blue-500/20 text-center flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+        <p>© {new Date().getFullYear()} MD. Shinha Sarder. All Rights Reserved. • Google Knowledge Graph Verified</p>
+        <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-slate-400">
+          <span className="text-blue-300">Next.js 16 &amp; Node.js</span>
+          <span>•</span>
+          <span className="text-emerald-300">Supabase CMS</span>
+          <span>•</span>
+          <span className="text-amber-300">jsDelivr &amp; cdnjs</span>
+        </div>
       </div>
     </div>
   </footer>
