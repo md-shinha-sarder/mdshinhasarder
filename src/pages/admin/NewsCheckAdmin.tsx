@@ -108,8 +108,8 @@ const NewsCheckAdmin = () => {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-gradient-gold">Google News Eligibility</h1>
-          <p className="text-sm text-muted-foreground mt-1">Validates NewsArticle requirements, description length and sitemap inclusion for every post.</p>
+          <h1 className="text-2xl font-serif font-bold text-gradient-gold">Google SEO &amp; Search Rank #1 Audit</h1>
+          <p className="text-sm text-muted-foreground mt-1">Validates entity requirements, schema metadata, fast indexing and Google search ranking health.</p>
           {auditedAt && <p className="text-[11px] text-muted-foreground/70 mt-1">Last audit: {auditedAt.toLocaleTimeString()}</p>}
         </div>
         <div className="flex gap-2 flex-wrap">

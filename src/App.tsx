@@ -31,6 +31,9 @@ import SeoAdmin from "./pages/admin/SeoAdmin.tsx";
 import ThemeAdmin from "./pages/admin/ThemeAdmin.tsx";
 import NewsCheckAdmin from "./pages/admin/NewsCheckAdmin.tsx";
 import TechVersionAdmin from "./pages/admin/TechVersionAdmin.tsx";
+import SongsAdmin from "./pages/admin/SongsAdmin.tsx";
+import BooksAdmin from "./pages/admin/BooksAdmin.tsx";
+import ProfileAdmin from "./pages/admin/ProfileAdmin.tsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -76,6 +79,9 @@ const AppRoutes = () => {
         <Route path="/auth" element={<Auth />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
+          <Route path="songs" element={<SongsAdmin />} />
+          <Route path="books" element={<BooksAdmin />} />
+          <Route path="profile-data" element={<ProfileAdmin />} />
           <Route path="tech-version" element={<TechVersionAdmin />} />
           <Route path="pages" element={<PagesAdmin />} />
           <Route path="posts" element={<PostsAdmin />} />

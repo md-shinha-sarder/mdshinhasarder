@@ -42,6 +42,9 @@ const DEFAULT_SETTINGS: SiteSettings = {
 };
 
 const sanitizeTitle = (title: string | null | undefined): string => {
+  if (typeof window !== "undefined" && (window.location.pathname === "/" || !window.location.pathname)) {
+    return "MD. Shinha Sarder";
+  }
   if (!title) return "MD. Shinha Sarder";
   if (title.includes("Founder & CEO of IT Tech BD")) return "MD. Shinha Sarder";
   return title.replace(/Official Website\s*(&|and)\s*Blog/gi, "Entrepreneur");

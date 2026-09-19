@@ -1,16 +1,35 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { LayoutDashboard, FileText, Newspaper, Image, Settings, Palette, LogOut, Home, ShieldCheck, Menu, X, Cpu } from "lucide-react";
+import {
+  LayoutDashboard,
+  FileText,
+  Newspaper,
+  Image,
+  Settings,
+  Palette,
+  LogOut,
+  Home,
+  ShieldCheck,
+  Menu,
+  X,
+  Cpu,
+  Music,
+  BookOpen,
+  UserCheck,
+} from "lucide-react";
 
 const items = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
-  { to: "/admin/tech-version", icon: Cpu, label: "Tech & CMS Versions" },
+  { to: "/admin/songs", icon: Music, label: "Songs & YouTube Videos" },
+  { to: "/admin/books", icon: BookOpen, label: "Books & Catalog" },
+  { to: "/admin/profile-data", icon: UserCheck, label: "Profile & Biography" },
   { to: "/admin/pages", icon: FileText, label: "Pages" },
   { to: "/admin/posts", icon: Newspaper, label: "Posts" },
   { to: "/admin/media", icon: Image, label: "Media" },
-  { to: "/admin/news-check", icon: ShieldCheck, label: "Biography & News SEO" },
+  { to: "/admin/news-check", icon: ShieldCheck, label: "SEO & Entity Audit" },
   { to: "/admin/seo", icon: Settings, label: "SEO Settings" },
+  { to: "/admin/tech-version", icon: Cpu, label: "Tech Versions" },
   { to: "/admin/theme", icon: Palette, label: "Theme" },
 ];
 

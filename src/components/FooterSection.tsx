@@ -64,7 +64,7 @@ const FooterSection = () => (
         ))}
       </div>
       <div className="pt-6 border-t border-blue-500/20 text-center">
-        <p className="text-xs text-slate-400">© {new Date().getFullYear()} MD. Shinha Sarder. All Rights Reserved. Built with Next.js architecture &amp; Blue UI/UX.</p>
+        <p className="text-xs text-slate-400">© {new Date().getFullYear()} MD. Shinha Sarder. All Rights Reserved.</p>
       </div>
     </div>
   </footer>

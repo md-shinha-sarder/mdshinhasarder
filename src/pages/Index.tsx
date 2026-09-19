@@ -11,7 +11,7 @@ const Index = () => {
   return (
     <div className="relative min-h-screen bg-black text-slate-100 selection:bg-blue-500/30 selection:text-blue-200">
       <Helmet>
-        <title>MD. Shinha Sarder — Entrepreneur</title>
+        <title>MD. Shinha Sarder</title>
         <meta
           name="description"
           content="MD. Shinha Sarder is known as the Founder &amp; CEO of IT Tech BD and Biostar TV World. Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator."
