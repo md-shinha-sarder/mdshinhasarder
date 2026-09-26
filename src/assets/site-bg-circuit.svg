@@ -1,0 +1,228 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0c0a06"/>
+      <stop offset="60%" stop-color="#050505"/>
+      <stop offset="100%" stop-color="#020202"/>
+    </radialGradient>
+
+    <!-- Glowing Gold Filter -->
+    <filter id="goldGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur1"/>
+      <feGaussianBlur stdDeviation="16" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Intense Gold Flare Filter -->
+    <filter id="intenseGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="blur1"/>
+      <feGaussianBlur stdDeviation="28" result="blur2"/>
+      <feGaussianBlur stdDeviation="60" result="blur3"/>
+      <feMerge>
+        <feMergeNode in="blur3"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Diagonal Beam Gradient -->
+    <linearGradient id="beamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082" stop-opacity="0.95"/>
+      <stop offset="35%" stop-color="#FFB300" stop-opacity="0.9"/>
+      <stop offset="70%" stop-color="#FFA000" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#FF6F00" stop-opacity="0.8"/>
+    </linearGradient>
+
+    <!-- Beam Edge Gradient -->
+    <linearGradient id="beamEdgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="40%" stop-color="#FFE57F"/>
+      <stop offset="100%" stop-color="#FFB300"/>
+    </linearGradient>
+
+    <!-- Horizontal Neon Bar Gradient -->
+    <linearGradient id="neonBarGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFD54F" stop-opacity="0.95"/>
+      <stop offset="40%" stop-color="#FFC107" stop-opacity="1"/>
+      <stop offset="80%" stop-color="#FFA000" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#FF8F00" stop-opacity="0.7"/>
+    </linearGradient>
+
+    <!-- Circuit Trace Stroke Gradient -->
+    <linearGradient id="traceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD54F"/>
+      <stop offset="50%" stop-color="#FFB300"/>
+      <stop offset="100%" stop-color="#FF8F00"/>
+    </linearGradient>
+
+    <!-- Sparkle Symbol -->
+    <g id="sparkle">
+      <path d="M 0,-16 Q 0,0 16,0 Q 0,0 0,16 Q 0,0 -16,0 Q 0,0 0,-16 Z" fill="#FFFDE7" filter="url(#goldGlow)"/>
+      <circle cx="0" cy="0" r="3.5" fill="#FFFFFF"/>
+    </g>
+  </defs>
+
+  <!-- Dark Canvas Base -->
+  <rect width="1920" height="1080" fill="url(#bgGrad)"/>
+
+  <!-- Subtle Warm Ambient Glows Behind Circuits -->
+  <ellipse cx="1400" cy="300" rx="600" ry="400" fill="#FF8F00" opacity="0.08" filter="url(#intenseGlow)"/>
+  <ellipse cx="600" cy="700" rx="550" ry="350" fill="#FFA000" opacity="0.06" filter="url(#intenseGlow)"/>
+  <ellipse cx="250" cy="350" rx="300" ry="300" fill="#FFB300" opacity="0.05" filter="url(#intenseGlow)"/>
+
+  <!-- ========================================== -->
+  <!-- 1. MAIN DIAGONAL GOLDEN BEAM               -->
+  <!-- ========================================== -->
+  <!-- Ambient Soft Beam Aura -->
+  <polygon points="1350,-50 1960,-50 1150,1130 540,1130" fill="url(#beamGrad)" opacity="0.22" filter="url(#intenseGlow)"/>
+
+  <!-- Main Solid Glowing Beam -->
+  <polygon points="1440,-20 1880,-20 1020,1100 580,1100" fill="url(#beamGrad)" filter="url(#goldGlow)"/>
+
+  <!-- Core Brilliant Edge Line along Top/Left of Beam -->
+  <line x1="1440" y1="-20" x2="580" y2="1100" stroke="url(#beamEdgeGrad)" stroke-width="6" stroke-linecap="round" filter="url(#goldGlow)"/>
+  <line x1="1880" y1="-20" x2="1020" y2="1100" stroke="#FFD54F" stroke-width="2.5" opacity="0.6"/>
+
+  <!-- Parallel Fine Laser Beam Lines -->
+  <line x1="1390" y1="-20" x2="530" y2="1100" stroke="#FFC107" stroke-width="3" opacity="0.75" filter="url(#goldGlow)"/>
+  <line x1="1350" y1="-20" x2="490" y2="1100" stroke="#FFB300" stroke-width="1.8" opacity="0.5"/>
+
+  <!-- ========================================== -->
+  <!-- 2. UPPER LEFT CIRCUIT TRACES & NODES      -->
+  <!-- ========================================== -->
+  <g stroke="url(#traceGrad)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer Border Track -->
+    <path d="M 28 85 L 28 320 L 195 487 L 540 832" stroke-width="4.5" filter="url(#goldGlow)"/>
+    <path d="M 28 85 L 360 85 L 420 145" stroke-width="3.5"/>
+    <circle cx="420" cy="145" r="7" stroke="url(#traceGrad)" stroke-width="3" fill="#0c0a06"/>
+
+    <!-- Horizontal branch with node -->
+    <path d="M 28 200 L 260 200 L 320 260 L 415 260" stroke-width="3"/>
+    <circle cx="415" cy="260" r="6" stroke="url(#traceGrad)" stroke-width="2.5" fill="#0c0a06"/>
+
+    <!-- High-angled inner circuit track -->
+    <path d="M 75 40 L 480 445 L 685 445 L 730 490" stroke-width="3.5" filter="url(#goldGlow)"/>
+    <circle cx="730" cy="490" r="8" stroke="url(#traceGrad)" stroke-width="3" fill="#0c0a06"/>
+
+    <!-- Diagonal node line -->
+    <line x1="85" y1="920" x2="310" y2="695" stroke-width="3.5"/>
+    <circle cx="85" cy="920" r="7" stroke="url(#traceGrad)" stroke-width="3" fill="#0c0a06"/>
+    <circle cx="310" cy="695" r="7" stroke="url(#traceGrad)" stroke-width="3" fill="#0c0a06"/>
+
+    <!-- Angular feeder line -->
+    <path d="M 125 1060 L 290 895 L 430 895" stroke-width="3"/>
+    <circle cx="125" cy="1060" r="6" stroke="url(#traceGrad)" stroke-width="2.5" fill="#0c0a06"/>
+
+    <path d="M 685 70 L 815 70 L 980 235 L 980 320" stroke-width="3"/>
+    <circle cx="815" cy="70" r="6" stroke="url(#traceGrad)" stroke-width="2.5" fill="#0c0a06"/>
+    <circle cx="980" cy="320" r="7" stroke="url(#traceGrad)" stroke-width="3" fill="#0c0a06"/>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- 3. LOWER-LEFT NESTED MOTHERBOARD BUS       -->
+  <!-- ========================================== -->
+  <!-- Intricate nested chevron & horizontal bus bars -->
+  <g stroke="url(#traceGrad)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Trace 1 (Outer) -->
+    <path d="M 190 420 L 290 420 L 480 610 L 480 770 L 1920 770" stroke-width="4.5" filter="url(#goldGlow)"/>
+    <circle cx="190" cy="420" r="6.5" stroke="url(#traceGrad)" stroke-width="2.5" fill="#0c0a06"/>
+
+    <!-- Trace 2 -->
+    <path d="M 215 440 L 305 440 L 460 595 L 460 790 L 1920 790" stroke-width="3.5"/>
+    <circle cx="215" cy="440" r="5.5" stroke="url(#traceGrad)" stroke-width="2.5" fill="#0c0a06"/>
+
+    <!-- Trace 3 -->
+    <path d="M 240 460 L 320 460 L 440 580 L 440 810 L 1920 810" stroke-width="3"/>
+    <circle cx="240" cy="460" r="5.5" stroke="url(#traceGrad)" stroke-width="2" fill="#0c0a06"/>
+
+    <!-- Trace 4 -->
+    <path d="M 265 480 L 335 480 L 420 565 L 420 830 L 1920 830" stroke-width="2.5"/>
+    <circle cx="265" cy="480" r="5" stroke="url(#traceGrad)" stroke-width="2" fill="#0c0a06"/>
+
+    <!-- Inner tight right-angled ribs inside chevron -->
+    <path d="M 225 500 L 310 500 L 380 570 L 380 730" stroke-width="2.5"/>
+    <path d="M 245 520 L 300 520 L 350 570 L 350 710" stroke-width="2"/>
+    <path d="M 265 540 L 290 540 L 320 570 L 320 690" stroke-width="1.8"/>
+
+    <!-- Vertical tap lines with nodes -->
+    <line x1="330" y1="440" x2="330" y2="480" stroke-width="2"/>
+    <line x1="450" y1="640" x2="450" y2="700" stroke-width="2"/>
+    <circle cx="450" cy="700" r="4.5" stroke="url(#traceGrad)" stroke-width="2" fill="#0c0a06"/>
+    <line x1="510" y1="770" x2="510" y2="730" stroke-width="2.5"/>
+    <circle cx="510" cy="730" r="5" stroke="url(#traceGrad)" stroke-width="2" fill="#0c0a06"/>
+    <line x1="880" y1="770" x2="880" y2="730" stroke-width="2.5"/>
+    <circle cx="880" cy="730" r="5" stroke="url(#traceGrad)" stroke-width="2" fill="#0c0a06"/>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- 4. BOTTOM NEON GLOWING BUS BAR             -->
+  <!-- ========================================== -->
+  <!-- Main Glowing Horizontal Bar -->
+  <rect x="430" y="855" width="1490" height="10" rx="5" fill="url(#neonBarGrad)" filter="url(#goldGlow)"/>
+  <rect x="430" y="857" width="1490" height="6" rx="3" fill="#FFFDE7" filter="url(#intenseGlow)" opacity="0.6"/>
+
+  <!-- Lower Circuit Track Below Bar -->
+  <g stroke="url(#traceGrad)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 380 920 L 780 920 L 850 990 L 1920 990" stroke-width="3.5" opacity="0.7"/>
+    <line x1="380" y1="920" x2="380" y2="865" stroke-width="3"/>
+    <circle cx="380" cy="865" r="5" stroke="url(#traceGrad)" stroke-width="2" fill="#FFC107"/>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- 5. UPPER RIGHT CIRCUIT COMB & CONNECTORS   -->
+  <!-- ========================================== -->
+  <g stroke="url(#traceGrad)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Diagonal Leader Line from Right Edge -->
+    <path d="M 1380 500 L 1700 820 L 1920 820" stroke-width="4.5" filter="url(#goldGlow)"/>
+    <line x1="1380" y1="500" x2="1470" y2="410" stroke-width="3.5"/>
+    <circle cx="1470" cy="410" r="8" stroke="url(#traceGrad)" stroke-width="3" fill="#0c0a06"/>
+
+    <!-- Angled branch with node -->
+    <path d="M 1580 700 L 1465 585 L 1400 585" stroke-width="3"/>
+    <circle cx="1400" cy="585" r="7" stroke="url(#traceGrad)" stroke-width="2.5" fill="#0c0a06"/>
+
+    <!-- Vertical IC Comb along Upper-Right -->
+    <path d="M 1670 120 L 1670 340 L 1690 360" stroke-width="3"/>
+    <circle cx="1690" cy="360" r="5.5" stroke="url(#traceGrad)" stroke-width="2.5" fill="#0c0a06"/>
+
+    <path d="M 1705 90 L 1705 400 L 1730 425" stroke-width="3"/>
+    <circle cx="1730" cy="425" r="5.5" stroke="url(#traceGrad)" stroke-width="2.5" fill="#0c0a06"/>
+
+    <path d="M 1740 60 L 1740 450 L 1770 480" stroke-width="3"/>
+    <circle cx="1770" cy="480" r="6" stroke="url(#traceGrad)" stroke-width="2.5" fill="#0c0a06"/>
+
+    <path d="M 1775 40 L 1775 490 L 1805 520" stroke-width="3.5" filter="url(#goldGlow)"/>
+    <circle cx="1805" cy="520" r="6" stroke="url(#traceGrad)" stroke-width="3" fill="#0c0a06"/>
+
+    <path d="M 1810 20 L 1810 520 L 1840 550" stroke-width="3"/>
+    <circle cx="1840" cy="550" r="5.5" stroke="url(#traceGrad)" stroke-width="2.5" fill="#0c0a06"/>
+
+    <path d="M 1845 20 L 1845 540 L 1870 565" stroke-width="2.5"/>
+    <circle cx="1870" cy="565" r="5" stroke="url(#traceGrad)" stroke-width="2" fill="#0c0a06"/>
+
+    <path d="M 1880 20 L 1880 560 L 1900 580" stroke-width="2.5"/>
+    <circle cx="1900" cy="580" r="5" stroke="url(#traceGrad)" stroke-width="2" fill="#0c0a06"/>
+
+    <!-- Comb Bridge Line -->
+    <line x1="1670" y1="120" x2="1920" y2="120" stroke-width="4" filter="url(#goldGlow)"/>
+    <line x1="1705" y1="220" x2="1920" y2="220" stroke-width="2.5"/>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- 6. SPARKLE FLARES AT KEY INTERSECTIONS     -->
+  <!-- ========================================== -->
+  <use href="#sparkle" x="105" y="395" transform="scale(1.3)"/>
+  <use href="#sparkle" x="550" y="58"/>
+  <use href="#sparkle" x="1575" y="700" transform="scale(1.2)"/>
+  <use href="#sparkle" x="1465" y="585" transform="scale(0.9)"/>
+  <use href="#sparkle" x="320" y="260" transform="scale(0.8)"/>
+
+  <!-- Vignette Soft Shadows on Edges for Screen Reading Comfort -->
+  <rect width="1920" height="1080" fill="none" stroke="#000000" stroke-width="12" opacity="0.6"/>
+</svg>

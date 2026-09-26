@@ -7,6 +7,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import https from "node:https";
+import { generateImageSitemap } from "./generate_image_sitemap.js";
 
 const SITE_URL = "https://mdshinhasarder.com";
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "https://hpnndbmyibbgrlskskyt.supabase.co";
@@ -161,22 +162,21 @@ async function main() {
   newsLines.push("</urlset>");
   const newsXml = newsLines.join("\n");
 
-  // 3. Image Sitemap
-  const imageLines = [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
-    `  <url>\n    <loc>${SITE_URL}/</loc>\n    <image:image>\n      <image:loc>${SITE_URL}/profile.webp</image:loc>\n      <image:title>MD. Shinha Sarder — Entrepreneur</image:title>\n      <image:caption>MD. Shinha Sarder portrait photograph</image:caption>\n    </image:image>\n  </url>`,
-  ];
-  for (const p of posts) {
-    if (!p.slug || !p.cover_url) continue;
-    const cleanImg = p.cover_url.replace(/&/g, "&amp;");
-    const cleanTitle = (p.title || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    imageLines.push(
-      `  <url>\n    <loc>${SITE_URL}/post/${p.slug}</loc>\n    <image:image>\n      <image:loc>${cleanImg}</image:loc>\n      <image:title>${cleanTitle}</image:title>\n    </image:image>\n  </url>`
-    );
+  // 3. Image Sitemap (Dynamic Crawler & Comprehensive Indexing)
+  let imageXml = "";
+  try {
+    const res = await generateImageSitemap();
+    imageXml = res.xml;
+  } catch (imgErr) {
+    console.warn("[SEO Script] generateImageSitemap fallback:", imgErr.message);
+    const imageLines = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
+      `  <url>\n    <loc>${SITE_URL}/</loc>\n    <image:image>\n      <image:loc>${SITE_URL}/profile.webp</image:loc>\n      <image:title>MD. Shinha Sarder — Official Portrait Photograph</image:title>\n      <image:caption>MD. Shinha Sarder, Founder &amp; CEO of IT Tech BD and Biostar TV World</image:caption>\n    </image:image>\n  </url>`,
+      '</urlset>',
+    ];
+    imageXml = imageLines.join("\n");
   }
-  imageLines.push("</urlset>");
-  const imageXml = imageLines.join("\n");
 
   // 4. Video Sitemap
   const videoLines = [

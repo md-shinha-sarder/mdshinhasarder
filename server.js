@@ -2,11 +2,16 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { generateImageSitemap } from "./scripts/generate_image_sitemap.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DIST_DIR = path.resolve(__dirname, "dist");
+const PUBLIC_DIR = path.resolve(__dirname, "public");
 const PORT = process.env.PORT || 3000;
+
+let lastImageSitemapGen = 0;
+const SITEMAP_REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes cache
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -32,6 +37,63 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ status: "ok", uptime: process.uptime() }));
     return;
+  }
+
+  // Dynamic Image Sitemap Generation & Trigger API
+  if (req.url === "/api/generate-image-sitemap" || req.url === "/api/image-sitemap/regenerate") {
+    generateImageSitemap()
+      .then(({ stats }) => {
+        lastImageSitemapGen = Date.now();
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ success: true, message: "Dynamic Image Sitemap successfully generated", stats }));
+      })
+      .catch((err) => {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ success: false, error: err.message }));
+      });
+    return;
+  }
+
+  // Dynamic Image Sitemap Serving (with auto-refresh)
+  if (req.url?.startsWith("/image-sitemap.xml")) {
+    const shouldRefresh = req.url.includes("refresh=1") || (Date.now() - lastImageSitemapGen > SITEMAP_REFRESH_INTERVAL);
+    const sitemapPath = path.join(DIST_DIR, "image-sitemap.xml");
+    const fallbackPath = path.join(PUBLIC_DIR, "image-sitemap.xml");
+
+    const serveXml = (content) => {
+      res.writeHead(200, {
+        "Content-Type": "application/xml; charset=utf-8",
+        "Cache-Control": "public, max-age=600, must-revalidate",
+        "X-Sitemap-Type": "Google Image Sitemap 1.1 Dynamic Service",
+        "X-Robots-Tag": "noindex, follow",
+      });
+      res.end(content);
+    };
+
+    if (shouldRefresh || (!fs.existsSync(sitemapPath) && !fs.existsSync(fallbackPath))) {
+      generateImageSitemap()
+        .then(({ xml }) => {
+          lastImageSitemapGen = Date.now();
+          serveXml(xml);
+        })
+        .catch(() => {
+          // Serve existing if generation errors
+          const target = fs.existsSync(sitemapPath) ? sitemapPath : fallbackPath;
+          if (fs.existsSync(target)) {
+            serveXml(fs.readFileSync(target, "utf-8"));
+          } else {
+            res.writeHead(500, { "Content-Type": "text/plain" });
+            res.end("Failed to generate image sitemap");
+          }
+        });
+      return;
+    }
+
+    const target = fs.existsSync(sitemapPath) ? sitemapPath : fallbackPath;
+    if (fs.existsSync(target)) {
+      serveXml(fs.readFileSync(target, "utf-8"));
+      return;
+    }
   }
 
   const cleanUrl = (req.url || "/").split("?")[0];
