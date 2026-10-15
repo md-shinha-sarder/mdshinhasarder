@@ -1,6 +1,5 @@
 import { FaFacebook, FaXTwitter, FaYoutube, FaInstagram, FaLinkedin, FaGithub, FaWhatsapp } from "react-icons/fa6";
 import { Mail, MapPin, Rss, FileText, BookOpen, Map, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
 
 const socials = [
   { Icon: FaFacebook, href: "https://www.facebook.com/md.shinha.sarder", label: "Facebook", color: "#1877F2" },
@@ -36,14 +35,14 @@ const FooterSection = () => (
         <div>
           <h4 className="font-serif font-semibold mb-4 text-white">Quick Links</h4>
           <ul className="space-y-2.5 text-sm text-slate-300">
-            <li><Link to="/p/biography.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Full Biography</Link></li>
-            <li><Link to="/p/skills.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Technical Skills</Link></li>
-            <li><Link to="/p/projects.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Projects &amp; Ventures</Link></li>
-            <li><Link to="/p/publication.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Publications</Link></li>
-            <li><Link to="/p/books.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Published Books</Link></li>
-            <li><Link to="/p/songs.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-400" /> Music &amp; Player</Link></li>
-            <li><Link to="/p/gallery.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-400" /> Photo Gallery</Link></li>
-            <li><Link to="/posts" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> All Posts</Link></li>
+            <li><a href="/p/biography.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Full Biography</a></li>
+            <li><a href="/p/skills.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Technical Skills</a></li>
+            <li><a href="/p/projects.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Projects &amp; Ventures</a></li>
+            <li><a href="/p/publication.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Publications</a></li>
+            <li><a href="/p/books.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Published Books</a></li>
+            <li><a href="/p/songs.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-400" /> Music &amp; Player</a></li>
+            <li><a href="/p/gallery.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-400" /> Photo Gallery</a></li>
+            <li><a href="/posts" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> All Posts</a></li>
           </ul>
         </div>
         <div>

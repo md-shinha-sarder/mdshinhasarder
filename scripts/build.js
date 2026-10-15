@@ -2,7 +2,8 @@
 /**
  * Universal Production Build Pipeline for Vercel, Cloudflare Pages, and Local Environments
  * Guarantees NODE_ENV=production for Next.js Turbopack, runs Vite build for static dist,
- * and generates all Sitemaps and RSS Feeds.
+ * pre-generates Blogger-style /p/*.html physical static pages, generates 404.html for Cloudflare Pages,
+ * and builds all Sitemaps and RSS Feeds.
  */
 import { execSync } from "node:child_process";
 import path from "node:path";
@@ -25,27 +26,67 @@ try {
   // 1. Build Vite SPA distribution into dist/
   run("npx vite build", "Building Vite SPA bundle");
 
-  // 2. Build Next.js Pages/SSG distribution into .next/
-  run("npx next build", "Building Next.js distribution");
+  // 2. Pre-generate physical static /p/*.html files and 404.html for Cloudflare Pages
+  const distDir = path.resolve("dist");
+  const publicDir = path.resolve("public");
+  const indexPath = path.join(distDir, "index.html");
 
-  // 3. Generate SEO Sitemaps and Feeds (into both public/ and dist/)
+  if (fs.existsSync(indexPath)) {
+    const indexContent = fs.readFileSync(indexPath, "utf8");
+
+    // A. Generate dist/404.html so Cloudflare Pages serves our SPA bundle with 404 HTTP status
+    fs.writeFileSync(path.join(distDir, "404.html"), indexContent);
+    fs.writeFileSync(path.join(publicDir, "404.html"), indexContent);
+    console.log("✔ Created dist/404.html & public/404.html for Cloudflare Pages");
+
+    // B. Generate physical static files for /p/*.html
+    const bloggerPages = [
+      "gallery.html",
+      "biography.html",
+      "about.html",
+      "skills.html",
+      "projects.html",
+      "publication.html",
+      "publications.html",
+      "books.html",
+      "songs.html",
+      "music.html",
+      "posts.html",
+      "blog.html",
+    ];
+
+    const distPDir = path.join(distDir, "p");
+    const publicPDir = path.join(publicDir, "p");
+    fs.mkdirSync(distPDir, { recursive: true });
+    fs.mkdirSync(publicPDir, { recursive: true });
+
+    for (const pageName of bloggerPages) {
+      fs.writeFileSync(path.join(distPDir, pageName), indexContent);
+      fs.writeFileSync(path.join(publicPDir, pageName), indexContent);
+    }
+    console.log(`✔ Pre-rendered ${bloggerPages.length} physical /p/*.html static files into dist/p/ & public/p/ for Cloudflare Pages`);
+  }
+
+  // 3. Build Next.js Pages/SSG distribution into .next/ with NODE_ENV=production
+  run("NODE_ENV=production npx next build", "Building Next.js distribution");
+
+  // 4. Generate SEO Sitemaps and Feeds (into both public/ and dist/)
   run("node scripts/build_sitemap_rss.js dist", "Generating SEO Sitemaps and RSS/Atom feeds");
 
-  // 4. Ensure Cloudflare Pages & static host redirect rules exist in dist/
-  const distDir = path.resolve("dist");
-  const pubRedirects = path.resolve("public", "_redirects");
+  // 5. Ensure Cloudflare Pages & static host redirect rules exist in dist/
+  const pubRedirects = path.join(publicDir, "_redirects");
   const distRedirects = path.join(distDir, "_redirects");
-  if (fs.existsSync(pubRedirects) && !fs.existsSync(distRedirects)) {
+  if (fs.existsSync(pubRedirects)) {
     fs.copyFileSync(pubRedirects, distRedirects);
   }
 
-  const pubHeaders = path.resolve("public", "_headers");
+  const pubHeaders = path.join(publicDir, "_headers");
   const distHeaders = path.join(distDir, "_headers");
-  if (fs.existsSync(pubHeaders) && !fs.existsSync(distHeaders)) {
+  if (fs.existsSync(pubHeaders)) {
     fs.copyFileSync(pubHeaders, distHeaders);
   }
 
-  console.log("\n✔ [Build Pipeline] Full build completed successfully for Cloudflare + Vercel + Next.js!\n");
+  console.log("\n✔ [Build Pipeline] Full build completed successfully for Cloudflare Pages + Vercel + Next.js!\n");
 } catch (err) {
   console.error("\n✖ [Build Pipeline] Build failed:", err.message);
   process.exit(1);

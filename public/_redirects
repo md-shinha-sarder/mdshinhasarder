@@ -1,9 +1,19 @@
-https://mdshinhasarder.lovable.app/* https://mdshinhasarder.com/:splat 301!
-https://www.mdshinhasarder.com/* https://mdshinhasarder.com/:splat 301!
-
 # Media storage proxy to active Supabase bucket
 /media/* https://hpnndbmyibbgrlskskyt.supabase.co/storage/v1/object/public/media/:splat 200
 
-# Cloudflare Pages / SPA fallback routing
-/*  /index.html  200
+# Direct Blogger /p/*.html routes guaranteed on Cloudflare Pages
+/p/gallery.html /p/gallery.html 200
+/p/biography.html /p/biography.html 200
+/p/about.html /p/about.html 200
+/p/skills.html /p/skills.html 200
+/p/projects.html /p/projects.html 200
+/p/publication.html /p/publication.html 200
+/p/publications.html /p/publications.html 200
+/p/books.html /p/books.html 200
+/p/songs.html /p/songs.html 200
+/p/music.html /p/music.html 200
+/p/posts.html /p/posts.html 200
+/p/blog.html /p/blog.html 200
 
+# Universal SPA fallback for dynamic posts and client routes
+/* /index.html 200
