@@ -217,6 +217,7 @@ export const GalleryPage = () => {
           content="Complete visual gallery automatically aggregating all photos from all posts, all pages, book covers, songs, and official verified portraits of MD. Shinha Sarder."
         />
         <meta property="og:image" content="https://mdshinhasarder.com/profile.webp" />
+        <link rel="canonical" href="https://www.mdshinhasarder.com/p/gallery.html" />
       </Helmet>
 
       <SiteBackground />

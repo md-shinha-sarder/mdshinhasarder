@@ -25,13 +25,13 @@ interface NavItem {
 
 const navLinks: NavItem[] = [
   { label: "Home", to: "/", icon: Home },
-  { label: "Biography", to: "/biography", icon: User },
-  { label: "Skills", to: "/skills", icon: Wrench },
-  { label: "Projects", to: "/projects", icon: FolderKanban },
-  { label: "Publications", to: "/publications", icon: Award },
-  { label: "Books", to: "/books", icon: BookOpen },
-  { label: "Music", to: "/songs", icon: Music },
-  { label: "Gallery", to: "/gallery", icon: Images },
+  { label: "Biography", to: "/p/biography.html", icon: User },
+  { label: "Skills", to: "/p/skills.html", icon: Wrench },
+  { label: "Projects", to: "/p/projects.html", icon: FolderKanban },
+  { label: "Publications", to: "/p/publication.html", icon: Award },
+  { label: "Books", to: "/p/books.html", icon: BookOpen },
+  { label: "Music", to: "/p/songs.html", icon: Music },
+  { label: "Gallery", to: "/p/gallery.html", icon: Images },
   { label: "Blog", to: "/posts", icon: Newspaper },
 ];
 
@@ -42,6 +42,18 @@ const Navbar = () => {
   const [q, setQ] = useState("");
   const { pathname } = useLocation();
   const nav = useNavigate();
+
+  const isMatch = (targetTo: string) => {
+    if (targetTo === "/") return pathname === "/";
+    if (pathname === targetTo) return true;
+    if (targetTo.startsWith("/p/")) {
+      const clean = targetTo.replace("/p/", "/").replace(/\.html?$/, "");
+      if (pathname === clean || pathname === targetTo) return true;
+      if (clean === "/publication" && (pathname === "/publications" || pathname === "/p/publications.html")) return true;
+      if (clean === "/publications" && (pathname === "/publication" || pathname === "/p/publication.html")) return true;
+    }
+    return false;
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -149,7 +161,7 @@ const Navbar = () => {
             <ul className="flex items-center gap-0.5 xl:gap-1">
               {navLinks.map((l) => {
                 const Icon = l.icon;
-                const isCurrent = pathname === l.to;
+                const isCurrent = isMatch(l.to);
 
                 return (
                   <li key={l.to}>
@@ -229,7 +241,7 @@ const Navbar = () => {
           <div className="space-y-1 px-3">
             {navLinks.map((l) => {
               const Icon = l.icon;
-              const isCurrent = pathname === l.to;
+              const isCurrent = isMatch(l.to);
 
               return (
                 <Link

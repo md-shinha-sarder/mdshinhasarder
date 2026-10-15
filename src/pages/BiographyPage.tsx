@@ -60,6 +60,7 @@ export const BiographyPage = () => {
           content="Complete verified biography of MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World. Early life, education, entrepreneurial career, authorship, and musical artistry."
         />
         <meta property="og:image" content="/profile.webp" />
+        <link rel="canonical" href="https://www.mdshinhasarder.com/p/biography.html" />
       </Helmet>
 
       <SiteBackground />
@@ -120,7 +121,7 @@ export const BiographyPage = () => {
           {/* Direct Portals */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6 border-t border-blue-500/20">
             <Link
-              to="/songs"
+              to="/p/songs.html"
               className="p-4 rounded-xl border border-blue-500/30 bg-blue-950/40 hover:bg-blue-900/60 transition-colors flex items-center justify-between group"
             >
               <div className="flex items-center gap-2.5">
@@ -131,7 +132,7 @@ export const BiographyPage = () => {
             </Link>
 
             <Link
-              to="/books"
+              to="/p/books.html"
               className="p-4 rounded-xl border border-blue-500/30 bg-blue-950/40 hover:bg-blue-900/60 transition-colors flex items-center justify-between group"
             >
               <div className="flex items-center gap-2.5">
@@ -142,7 +143,7 @@ export const BiographyPage = () => {
             </Link>
 
             <Link
-              to="/publications"
+              to="/p/publication.html"
               className="p-4 rounded-xl border border-blue-500/30 bg-blue-950/40 hover:bg-blue-900/60 transition-colors flex items-center justify-between group"
             >
               <div className="flex items-center gap-2.5">

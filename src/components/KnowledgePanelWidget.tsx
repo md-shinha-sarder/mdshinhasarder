@@ -335,7 +335,7 @@ export const KnowledgePanelWidget = () => {
             <div className="py-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base font-bold text-white">Engineering &amp; Core Skill Proficiencies</h2>
-                <Link to="/skills" className="text-xs text-sky-400 hover:underline flex items-center gap-1">
+                <Link to="/p/skills.html" className="text-xs text-sky-400 hover:underline flex items-center gap-1">
                   <span>Full Skills</span>
                   <ChevronRight size={13} />
                 </Link>
@@ -447,7 +447,7 @@ export const KnowledgePanelWidget = () => {
             </div>
 
             <div className="flex justify-end">
-              <Link to="/songs" className="text-xs text-sky-400 hover:underline flex items-center gap-1 font-medium">
+              <Link to="/p/songs.html" className="text-xs text-sky-400 hover:underline flex items-center gap-1 font-medium">
                 <span>View Full Music &amp; Audio Synthesizer Page</span>
                 <ChevronRight size={14} />
               </Link>
@@ -463,7 +463,7 @@ export const KnowledgePanelWidget = () => {
                 <h3 className="font-bold text-white text-lg">Published Books ({books.length})</h3>
                 <p className="text-xs text-slate-400">Official author publications on Google Books and Chaptra.</p>
               </div>
-              <Link to="/books" className="text-xs text-sky-400 hover:underline flex items-center gap-1 font-medium">
+              <Link to="/p/books.html" className="text-xs text-sky-400 hover:underline flex items-center gap-1 font-medium">
                 <span>All Books</span>
                 <ChevronRight size={14} />
               </Link>

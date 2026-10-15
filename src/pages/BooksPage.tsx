@@ -69,6 +69,7 @@ export default function BooksPage() {
           name="description"
           content="Author catalog and published books by MD. Shinha Sarder available on Google Books and Chaptra."
         />
+        <link rel="canonical" href="https://www.mdshinhasarder.com/p/books.html" />
       </Helmet>
 
       <SiteBackground />

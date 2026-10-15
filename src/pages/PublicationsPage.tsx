@@ -79,6 +79,7 @@ export const PublicationsPage = () => {
           content="Academic papers, journal articles, and research monographs authored by MD. Shinha Sarder, detected directly from Google Scholar profile."
         />
         <meta property="og:image" content="https://mdshinhasarder.com/profile.webp" />
+        <link rel="canonical" href="https://www.mdshinhasarder.com/p/publication.html" />
       </Helmet>
 
       <SiteBackground />

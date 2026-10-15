@@ -22,6 +22,7 @@ import GalleryPage from "./pages/GalleryPage.tsx";
 import PublicationsPage from "./pages/PublicationsPage.tsx";
 import SkillsPage from "./pages/SkillsPage.tsx";
 import ProjectsPage from "./pages/ProjectsPage.tsx";
+import PageDispatcher from "./pages/PageDispatcher.tsx";
 import AdminLayout from "./components/admin/AdminLayout.tsx";
 import Dashboard from "./pages/admin/Dashboard.tsx";
 import PagesAdmin from "./pages/admin/PagesAdmin.tsx";
@@ -60,6 +61,7 @@ const AppRoutes = () => {
     <>
       <ScrollToTop />
       <Routes>
+        {/* Clean Standard Routes */}
         <Route path="/" element={<Index />} />
         <Route path="/biography" element={<BiographyPage />} />
         <Route path="/about" element={<BiographyPage />} />
@@ -70,10 +72,28 @@ const AppRoutes = () => {
         <Route path="/books" element={<BooksPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/publications" element={<PublicationsPage />} />
+        <Route path="/publication" element={<PublicationsPage />} />
         <Route path="/posts" element={<AllPosts />} />
+        <Route path="/blog" element={<AllPosts />} />
+
+        {/* Blogger-Style /p/*.html Direct Page Routes */}
+        <Route path="/p/biography.html" element={<BiographyPage />} />
+        <Route path="/p/about.html" element={<BiographyPage />} />
+        <Route path="/p/skills.html" element={<SkillsPage />} />
+        <Route path="/p/projects.html" element={<ProjectsPage />} />
+        <Route path="/p/songs.html" element={<SongsPage />} />
+        <Route path="/p/music.html" element={<SongsPage />} />
+        <Route path="/p/books.html" element={<BooksPage />} />
+        <Route path="/p/gallery.html" element={<GalleryPage />} />
+        <Route path="/p/publications.html" element={<PublicationsPage />} />
+        <Route path="/p/publication.html" element={<PublicationsPage />} />
+        <Route path="/p/posts.html" element={<AllPosts />} />
+        <Route path="/p/blog.html" element={<AllPosts />} />
+
+        {/* Dynamic Dispatcher for any /p/:slug with or without .html extension */}
+        <Route path="/p/:slug" element={<PageDispatcher />} />
         <Route path="/post/:slug" element={<PostDetail />} />
         <Route path="/article/:slug" element={<PostDetail />} />
-        <Route path="/p/:slug" element={<PostDetail />} />
         <Route path="/:year/:month/:slug" element={<PostDetail />} />
         <Route path="/:year/:month/:day/:slug" element={<PostDetail />} />
         <Route path="/auth" element={<Auth />} />

@@ -149,7 +149,7 @@ const SkillsPage = () => {
           name="description"
           content="Complete technical stack, programming proficiencies, CSE engineering fundamentals, and software architecture mastered by MD. Shinha Sarder."
         />
-        <link rel="canonical" href="https://mdshinhasarder.com/skills" />
+        <link rel="canonical" href="https://www.mdshinhasarder.com/p/skills.html" />
       </Helmet>
 
       <Navbar />

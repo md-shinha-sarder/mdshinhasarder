@@ -56,7 +56,7 @@ const NotFound = () => {
             facts={[
               { label: "Attempted Path", value: <span className="font-mono text-amber-300">{location.pathname}</span> },
               { label: "Entity Profile", value: <span className="text-white font-bold">MD. Shinha Sarder (Founder &amp; CEO, IT Tech BD and Biostar TV World)</span> },
-              { label: "Recommended Routes", value: <span className="text-sky-300">Home (/), Biography (/biography), Books (/books), Songs (/songs), Publications (/publications), Gallery (/gallery)</span> },
+              { label: "Recommended Routes", value: <span className="text-sky-300">Home (/), Biography (/p/biography.html), Books (/p/books.html), Songs (/p/songs.html), Publications (/p/publication.html), Gallery (/p/gallery.html)</span> },
               { label: "Official Support", value: <span className="text-slate-100">Contact admin or visit the official homepage for complete archives.</span> },
             ]}
             actions={[
@@ -68,12 +68,12 @@ const NotFound = () => {
               },
               {
                 label: "Browse Books",
-                href: "/books",
+                href: "/p/books.html",
                 icon: BookOpen,
               },
               {
                 label: "Listen to Songs",
-                href: "/songs",
+                href: "/p/songs.html",
                 icon: Music,
               },
               {

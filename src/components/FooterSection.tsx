@@ -36,12 +36,13 @@ const FooterSection = () => (
         <div>
           <h4 className="font-serif font-semibold mb-4 text-white">Quick Links</h4>
           <ul className="space-y-2.5 text-sm text-slate-300">
-            <li><Link to="/biography" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Full Biography</Link></li>
-            <li><Link to="/skills" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Technical Skills</Link></li>
-            <li><Link to="/projects" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Projects &amp; Ventures</Link></li>
-            <li><Link to="/publications" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Publications</Link></li>
-            <li><Link to="/books" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Published Books</Link></li>
-            <li><Link to="/songs" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-400" /> Music &amp; Player</Link></li>
+            <li><Link to="/p/biography.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Full Biography</Link></li>
+            <li><Link to="/p/skills.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Technical Skills</Link></li>
+            <li><Link to="/p/projects.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Projects &amp; Ventures</Link></li>
+            <li><Link to="/p/publication.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Publications</Link></li>
+            <li><Link to="/p/books.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Published Books</Link></li>
+            <li><Link to="/p/songs.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-400" /> Music &amp; Player</Link></li>
+            <li><Link to="/p/gallery.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-400" /> Photo Gallery</Link></li>
             <li><Link to="/posts" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> All Posts</Link></li>
           </ul>
         </div>

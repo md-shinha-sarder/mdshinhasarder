@@ -214,7 +214,7 @@ const ProjectsPage = () => {
           name="description"
           content="Explore the enterprises, software systems, web applications, and innovations engineered by MD. Shinha Sarder, Founder &amp; CEO of IT Tech BD and Biostar TV World."
         />
-        <link rel="canonical" href="https://mdshinhasarder.com/projects" />
+        <link rel="canonical" href="https://www.mdshinhasarder.com/p/projects.html" />
       </Helmet>
 
       <Navbar />

@@ -155,6 +155,7 @@ export default function SongsPage() {
           name="description"
           content="Official discography, music videos, and ambient instrumental releases by MD. Shinha Sarder on YouTube, Deezer, and Spotify."
         />
+        <link rel="canonical" href="https://www.mdshinhasarder.com/p/songs.html" />
       </Helmet>
 
       <SiteBackground />

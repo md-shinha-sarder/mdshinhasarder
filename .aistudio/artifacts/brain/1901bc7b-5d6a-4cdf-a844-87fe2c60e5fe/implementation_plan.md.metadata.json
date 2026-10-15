@@ -1,0 +1,6 @@
+{
+  "summary": "Implementation plan for standardizing page links to /p/*.html format, supporting both /p/*.html and standard routes seamlessly, updating navbar/footer menus, and rendering the verified blue UI/UX Design Board 404 infobox across all missing post/page routes.",
+  "updatedAt": "2026-10-15T18:18:54.022696904Z",
+  "requestFeedback": true,
+  "userFacing": true
+}
