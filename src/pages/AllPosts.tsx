@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import PageInfobox from "@/components/PageInfobox";
 import { usePosts } from "@/hooks/usePosts";
 import { postPath } from "@/lib/postUrl";
 import { buildAlt } from "@/lib/imageSeo";
@@ -79,10 +80,43 @@ const AllPostsContent = () => {
             >
               <ArrowLeft size={16} /> Home
             </Link>
-            <h1 className="text-4xl sm:text-5xl font-serif font-bold mb-3 text-white">
-              All <span className="text-gradient-blue">Posts</span>
-            </h1>
-            <p className="text-slate-400 mb-8">{posts.length} articles published</p>
+            {/* Blue UI/UX Design Board Articles & Editorial Infobox */}
+            <PageInfobox
+              title="MD. Shinha Sarder — Published Articles &amp; Editorial Archive"
+              subtitle="Official Editorial Archive · Technology, Entrepreneurship, AI &amp; Memoirs"
+              badge="Official Editorial Archive"
+              badgeIcon={Calendar}
+              avatarUrl="/profile.webp"
+              avatarAlt="MD. Shinha Sarder"
+              verified={true}
+              description="Chronological repository of articles, technical research analysis, digital business chronicles, and life memoirs authored by MD. Shinha Sarder."
+              stats={[
+                { label: "Articles Published", value: `${posts.length}`, color: "text-white font-bold", subtext: "Live Synced" },
+                { label: "Active Tags", value: `${allTags.length}`, color: "text-sky-300 font-bold", subtext: "Topic Categories" },
+                { label: "RSS Feed", value: "Active", color: "text-amber-400 font-bold", subtext: "XML 2.0 Syndication" },
+                { label: "Google News", value: "Indexed", color: "text-emerald-400 font-bold", subtext: "news-sitemap.xml" },
+              ]}
+              facts={[
+                { label: "Editor-in-Chief & Author", value: <span className="text-white font-bold">MD. Shinha Sarder</span> },
+                { label: "Topics Covered", value: <span className="text-sky-300 font-semibold">Artificial Intelligence, Full-Stack Architecture, Cloud Deployment, Startup Leadership, Khulna to Cloud</span> },
+                { label: "Syndication Feeds", value: <span className="text-slate-100">RSS 2.0 Feed (mdshinhasarder.com/rss.xml) · Google News XML Sitemap (mdshinhasarder.com/news-sitemap.xml)</span> },
+                { label: "Publishing Base", value: <span className="text-slate-100">Khulna, Bangladesh — Official digital portal</span> },
+              ]}
+              actions={[
+                {
+                  label: "RSS Feed (XML)",
+                  href: "/rss.xml",
+                  icon: Calendar,
+                  primary: true,
+                  external: true,
+                },
+                {
+                  label: "Browse Books (20)",
+                  href: "/books",
+                  icon: ArrowLeft,
+                },
+              ]}
+            />
 
             <div className="flex flex-col md:flex-row gap-4 mb-8">
               <div className="relative flex-1">

@@ -173,17 +173,26 @@ const SeoAdmin = () => {
             </div>
             <div>
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                Dynamic Image Sitemap Service
+                Unified Master Sitemap (Main + Images Mixed)
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  Google Image Rank #1
+                  Google Rank #1 Mixed
                 </span>
               </h2>
               <p className="text-xs text-muted-foreground">
-                Automatic image crawler indexing verified portraits, book covers, track artwork, and post photos.
+                Main sitemap and image sitemap are mixed together into one comprehensive XML index.
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <a
+              href="/sitemap.xml"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-500/30 text-blue-300 hover:bg-blue-500/10 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Main Sitemap (/sitemap.xml)
+            </a>
             <a
               href="/image-sitemap.xml"
               target="_blank"
@@ -191,14 +200,14 @@ const SeoAdmin = () => {
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border hover:bg-accent transition-colors"
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              View XML
+              Image Sitemap
             </a>
             <Button
               size="sm"
               variant="outline"
               disabled={sitemapLoading}
               onClick={handleRegenerateImageSitemap}
-              className="gap-1.5 text-xs border-blue-500/30 hover:border-blue-500/60"
+              className="gap-1.5 text-xs border-amber-500/30 hover:border-amber-500/60 text-amber-300"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${sitemapLoading ? "animate-spin" : ""}`} />
               {sitemapLoading ? "Crawling..." : "Re-crawl & Sync"}

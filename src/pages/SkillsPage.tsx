@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import SkillCircleGraph from "@/components/SkillCircleGraph";
+import PageInfobox from "@/components/PageInfobox";
 import {
   Cpu,
   Zap,
@@ -155,25 +156,50 @@ const SkillsPage = () => {
 
       {/* Main Content */}
       <main className="pt-28 pb-20 container mx-auto px-4 sm:px-6 max-w-6xl">
-        {/* Page Header */}
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-blue-500/30 bg-blue-950/60 text-blue-300 text-xs font-semibold uppercase tracking-widest mb-4">
-            <Cpu size={14} className="text-blue-400" /> Full Technical Capabilities
-          </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white mb-4 tracking-tight">
-            Programming &amp; <span className="text-gradient-blue">Technical Stack</span>
-          </h1>
-          <p className="text-slate-300 max-w-3xl mx-auto text-sm sm:text-base leading-relaxed text-center">
-            A high-performance technical ecosystem driven by <strong className="text-white font-semibold">Next.js + React + Python + Java + Node.js</strong>, backed by PostgreSQL/Supabase and optimized for ultra-fast response times, computational efficiency, and robust scalability.
-          </p>
-
-          {/* Quick Breadcrumbs */}
-          <div className="flex items-center justify-center gap-2 mt-4 text-xs text-slate-400">
-            <Link to="/" className="hover:text-blue-400">Home</Link>
-            <span>/</span>
-            <span className="text-blue-300">Technical Skills</span>
-          </div>
+        {/* Quick Breadcrumbs */}
+        <div className="flex items-center gap-2 mb-6 text-xs text-blue-200/80">
+          <Link to="/" className="hover:text-white transition-colors">Home</Link>
+          <span>/</span>
+          <span className="text-white font-medium">Technical Skills &amp; Stack</span>
         </div>
+
+        {/* Blue UI/UX Design Board Skills Infobox */}
+        <PageInfobox
+          title="MD. Shinha Sarder — Technical Competencies &amp; CSE Engineering"
+          subtitle="CSE Graduate &amp; Researcher · Full-Stack Systems Architect (B.Sc. in CSE, NUBTK)"
+          badge="Computer Science &amp; Engineering"
+          badgeIcon={Cpu}
+          avatarUrl="/profile.webp"
+          avatarAlt="MD. Shinha Sarder"
+          verified={true}
+          description="High-performance technical ecosystem driven by Next.js, React, Python, Java, and Node.js microservices, evaluated against rigorous computational and enterprise benchmarks."
+          stats={[
+            { label: "Next.js (v16)", value: "98%", color: "text-white font-bold", subtext: "Meta-Framework" },
+            { label: "Python", value: "96%", color: "text-sky-300 font-bold", subtext: "AI & Automation" },
+            { label: "React", value: "96%", color: "text-blue-300 font-bold", subtext: "UI Architecture" },
+            { label: "Java / CSE", value: "92%", color: "text-emerald-400 font-bold", subtext: "Data Structures & DSA" },
+          ]}
+          facts={[
+            { label: "Engineering Entity", value: <span className="text-white font-bold">MD. Shinha Sarder</span> },
+            { label: "Academic CSE Degree", value: <span className="text-sky-300 font-semibold">B.Sc. in Computer Science and Engineering (CSE), Northern University of Business and Technology Khulna (NUBTK)</span> },
+            { label: "Core Frameworks & Tools", value: <span className="text-slate-100">Next.js 16 App Router, Turbopack, React, Tailwind CSS, TypeScript, Vite, Node.js Microservices</span> },
+            { label: "Programming Languages", value: <span className="text-slate-100">Python (Production Scrapers &amp; AI Scripting), Java (Algorithms &amp; OOP), C++, PHP, JavaScript / ES2024, SQL</span> },
+            { label: "Databases & Cloud Architecture", value: <span className="text-slate-100">PostgreSQL, Supabase CMS, RESTful Microservices, Linux Ubuntu Server Hosting, Git / GitHub CI/CD</span> },
+          ]}
+          actions={[
+            {
+              label: "Explore Projects",
+              href: "/projects",
+              icon: Terminal,
+              primary: true,
+            },
+            {
+              label: "Scholar Papers",
+              href: "/publications",
+              icon: GraduationCap,
+            },
+          ]}
+        />
 
         {/* Circular Graph Interactive Visualizer */}
         <div className="mb-14 bg-gradient-to-br from-[#0c183a]/90 via-[#0a1532]/90 to-[#070e24]/95 border border-blue-500/30 rounded-3xl p-6 sm:p-10 shadow-2xl shadow-blue-950/80">

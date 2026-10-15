@@ -123,28 +123,36 @@ async function main() {
   const posts = await getPosts();
   const nowIso = new Date().toISOString().split("T")[0];
 
-  // 1. Sitemap
-  const sitemapLines = [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ];
-
-  for (const r of STATIC_ROUTES) {
-    sitemapLines.push(
-      `  <url>\n    <loc>${SITE_URL}${r.loc}</loc>\n    <lastmod>${nowIso}</lastmod>\n    <changefreq>${r.changefreq}</changefreq>\n    <priority>${r.priority}</priority>\n  </url>`
-    );
+  // 1. Unified Master Sitemap (Main Sitemap & Image Sitemap Mixed Together)
+  let sitemapXml = "";
+  let imageXml = "";
+  try {
+    const res = await generateImageSitemap();
+    sitemapXml = res.unifiedXml || res.xml;
+    imageXml = res.xml;
+  } catch (imgErr) {
+    console.warn("[SEO Script] generateImageSitemap fallback:", imgErr.message);
+    const sitemapLines = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
+    ];
+    for (const r of STATIC_ROUTES) {
+      sitemapLines.push(
+        `  <url>\n    <loc>${SITE_URL}${r.loc}</loc>\n    <lastmod>${nowIso}</lastmod>\n    <changefreq>${r.changefreq}</changefreq>\n    <priority>${r.priority}</priority>\n  </url>`
+      );
+    }
+    for (const p of posts) {
+      if (!p.slug) continue;
+      const lastmod = (p.updated_at || p.published_at || nowIso).split("T")[0];
+      sitemapLines.push(
+        `  <url>\n    <loc>${SITE_URL}/post/${p.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`
+      );
+    }
+    sitemapLines.push("</urlset>");
+    sitemapXml = sitemapLines.join("\n");
+    imageXml = sitemapXml;
   }
-
-  for (const p of posts) {
-    if (!p.slug) continue;
-    const lastmod = (p.updated_at || p.published_at || nowIso).split("T")[0];
-    sitemapLines.push(
-      `  <url>\n    <loc>${SITE_URL}/post/${p.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`
-    );
-  }
-  sitemapLines.push("</urlset>");
-  const sitemapXml = sitemapLines.join("\n");
 
   // 2. News Sitemap (Google News)
   const newsLines = [
@@ -162,21 +170,8 @@ async function main() {
   newsLines.push("</urlset>");
   const newsXml = newsLines.join("\n");
 
-  // 3. Image Sitemap (Dynamic Crawler & Comprehensive Indexing)
-  let imageXml = "";
-  try {
-    const res = await generateImageSitemap();
-    imageXml = res.xml;
-  } catch (imgErr) {
-    console.warn("[SEO Script] generateImageSitemap fallback:", imgErr.message);
-    const imageLines = [
-      '<?xml version="1.0" encoding="UTF-8"?>',
-      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
-      `  <url>\n    <loc>${SITE_URL}/</loc>\n    <image:image>\n      <image:loc>${SITE_URL}/profile.webp</image:loc>\n      <image:title>MD. Shinha Sarder — Official Portrait Photograph</image:title>\n      <image:caption>MD. Shinha Sarder, Founder &amp; CEO of IT Tech BD and Biostar TV World</image:caption>\n    </image:image>\n  </url>`,
-      '</urlset>',
-    ];
-    imageXml = imageLines.join("\n");
-  }
+  // 3. Image Sitemap (Mirrors the Unified Master Image Sitemap)
+  // imageXml is generated together with sitemapXml above for complete synchronization.
 
   // 4. Video Sitemap
   const videoLines = [

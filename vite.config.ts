@@ -9,16 +9,16 @@ function dynamicImageSitemapPlugin() {
     configureServer(server: any) {
       server.middlewares.use(async (req: any, res: any, next: any) => {
         const url = req.url?.split("?")[0];
-        if (url === "/image-sitemap.xml") {
+        if (url === "/sitemap.xml" || url === "/image-sitemap.xml") {
           try {
             const { generateImageSitemap } = await import("./scripts/generate_image_sitemap.js");
-            const { xml } = await generateImageSitemap();
+            const { unifiedXml, xml } = await generateImageSitemap();
             res.setHeader("Content-Type", "application/xml; charset=utf-8");
-            res.setHeader("X-Sitemap-Type", "Google Image Sitemap 1.1 Dynamic Service");
-            res.end(xml);
+            res.setHeader("X-Sitemap-Type", "Google Unified Master Sitemap (URLs + Images Mixed)");
+            res.end(unifiedXml || xml);
             return;
           } catch (e: any) {
-            console.error("[Dynamic Image Sitemap Dev Middleware Error]:", e);
+            console.error("[Dynamic Unified Sitemap Dev Middleware Error]:", e);
             next();
           }
           return;

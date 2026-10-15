@@ -367,6 +367,23 @@ const LOCAL_ASSET_METADATA = [
   },
 ];
 
+// 4. Core Static Site Routes (with Priorities and Update Frequencies)
+const CORE_ROUTES = [
+  { path: "/", priority: "1.0", changefreq: "daily" },
+  { path: "/posts", priority: "0.9", changefreq: "daily" },
+  { path: "/books", priority: "0.9", changefreq: "weekly" },
+  { path: "/songs", priority: "0.9", changefreq: "weekly" },
+  { path: "/gallery", priority: "0.9", changefreq: "daily" },
+  { path: "/biography", priority: "0.9", changefreq: "monthly" },
+  { path: "/projects", priority: "0.8", changefreq: "monthly" },
+  { path: "/publications", priority: "0.8", changefreq: "monthly" },
+  { path: "/skills", priority: "0.7", changefreq: "monthly" },
+  { path: "/#about", priority: "0.8", changefreq: "monthly" },
+  { path: "/#videos", priority: "0.8", changefreq: "weekly" },
+  { path: "/#reels", priority: "0.8", changefreq: "weekly" },
+  { path: "/#contact", priority: "0.6", changefreq: "yearly" },
+];
+
 /**
  * Crawl posts from public/posts-sync.json
  * Extracts featured covers AND all embedded <img src="..."> in the post content HTML.
@@ -487,22 +504,45 @@ function crawlLocalAssets() {
 
 /**
  * Main Crawler & Generator Engine
+ * Merges the Main Sitemap and Image Sitemap together into a Unified Google Search Sitemap
  */
 export async function generateImageSitemap(options = {}) {
   const nowIso = new Date().toISOString().split("T")[0];
-  const urlMap = new Map(); // loc -> { images: [], lastmod: string }
+  const urlMap = new Map(); // loc -> { loc, images: [], lastmod, priority, changefreq, seenImgs }
 
-  const ensureUrlEntry = (pageLoc, lastmod = nowIso) => {
+  const ensureUrlEntry = (pageLoc, lastmod = nowIso, priority = "0.8", changefreq = "weekly") => {
     if (!urlMap.has(pageLoc)) {
+      // Check if matches known core route
+      let p = priority;
+      let c = changefreq;
+      for (const cr of CORE_ROUTES) {
+        if (`${SITE_URL}${cr.path}` === pageLoc) {
+          p = cr.priority;
+          c = cr.changefreq;
+          break;
+        }
+      }
+
       urlMap.set(pageLoc, {
         loc: pageLoc,
         images: [],
         lastmod,
+        priority: p,
+        changefreq: c,
         seenImgs: new Set(),
       });
     }
-    return urlMap.get(pageLoc);
+    const entry = urlMap.get(pageLoc);
+    if (lastmod && (!entry.lastmod || lastmod > entry.lastmod)) {
+      entry.lastmod = lastmod;
+    }
+    return entry;
   };
+
+  // Pre-seed all core routes so the main sitemap pages are fully represented
+  for (const r of CORE_ROUTES) {
+    ensureUrlEntry(`${SITE_URL}${r.path}`, nowIso, r.priority, r.changefreq);
+  }
 
   const addImageToUrl = (pageLoc, imgObj, lastmod = nowIso) => {
     if (!imgObj || !imgObj.loc) return;
@@ -604,6 +644,7 @@ export async function generateImageSitemap(options = {}) {
   // 5. Crawl & Index All Post Covers + In-Content Embedded Images
   const postItems = crawlPosts();
   for (const post of postItems) {
+    ensureUrlEntry(post.loc, post.lastmod, "0.8", "weekly");
     for (const img of post.images) {
       addImageToUrl(post.loc, img, post.lastmod);
       // Also aggregate in gallery
@@ -611,7 +652,7 @@ export async function generateImageSitemap(options = {}) {
     }
   }
 
-  // Build XML String adhering to Google Image Sitemap 1.1 Specification
+  // Build Unified Master XML (Main Sitemap + Image Sitemap Mixed Together)
   const lines = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>',
@@ -621,11 +662,16 @@ export async function generateImageSitemap(options = {}) {
 
   let totalImagesCount = 0;
   for (const [, entry] of urlMap.entries()) {
-    if (entry.images.length === 0) continue;
     totalImagesCount += entry.images.length;
     lines.push("  <url>");
     lines.push(`    <loc>${xmlEscape(entry.loc)}</loc>`);
     lines.push(`    <lastmod>${xmlEscape(entry.lastmod)}</lastmod>`);
+    if (entry.changefreq) {
+      lines.push(`    <changefreq>${xmlEscape(entry.changefreq)}</changefreq>`);
+    }
+    if (entry.priority) {
+      lines.push(`    <priority>${xmlEscape(entry.priority)}</priority>`);
+    }
 
     for (const img of entry.images) {
       lines.push("    <image:image>");
@@ -650,9 +696,11 @@ export async function generateImageSitemap(options = {}) {
   lines.push("</urlset>");
   const xmlContent = lines.join("\n");
 
-  // Output targets: public/image-sitemap.xml and dist/image-sitemap.xml
+  // Output targets: write unified mixed sitemap to BOTH sitemap.xml and image-sitemap.xml
   const writeTargets = [
+    path.join(ROOT_DIR, "public", "sitemap.xml"),
     path.join(ROOT_DIR, "public", "image-sitemap.xml"),
+    path.join(ROOT_DIR, "dist", "sitemap.xml"),
     path.join(ROOT_DIR, "dist", "image-sitemap.xml"),
   ];
 
@@ -679,8 +727,8 @@ export async function generateImageSitemap(options = {}) {
     },
   };
 
-  console.log(`[Image Sitemap Service] Successfully generated dynamic image-sitemap.xml: ${totalImagesCount} image assets across ${urlMap.size} URLs.`);
-  return { xml: xmlContent, stats };
+  console.log(`[Image Sitemap Service] Successfully generated unified master sitemap (main + image mixed): ${totalImagesCount} image assets across ${urlMap.size} URLs.`);
+  return { xml: xmlContent, unifiedXml: xmlContent, stats };
 }
 
 // Direct CLI Execution: node scripts/generate_image_sitemap.js

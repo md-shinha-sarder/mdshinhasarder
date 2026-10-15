@@ -60,7 +60,15 @@
             </xsl:if>
             <xsl:if test="s:urlset">
               <table>
-                <thead><tr><th>URL</th><th style="width:160px">Images</th><th style="width:220px">Last Modified</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>URL</th>
+                    <th style="width:120px">Images</th>
+                    <th style="width:110px">Changefreq</th>
+                    <th style="width:90px">Priority</th>
+                    <th style="width:170px">Last Modified</th>
+                  </tr>
+                </thead>
                 <tbody>
                   <xsl:for-each select="s:urlset/s:url">
                     <tr>
@@ -69,7 +77,16 @@
                         <xsl:if test="news:news"><span class="pill">news</span></xsl:if>
                         <xsl:if test="video:video"><span class="pill">video</span></xsl:if>
                       </td>
-                      <td class="muted"><xsl:value-of select="count(image:image)"/></td>
+                      <td class="muted">
+                        <xsl:choose>
+                          <xsl:when test="count(image:image) &gt; 0">
+                            <span class="pill" style="background:#e0f2fe;color:#0369a1;font-weight:600;"><xsl:value-of select="count(image:image)"/> photos</span>
+                          </xsl:when>
+                          <xsl:otherwise>—</xsl:otherwise>
+                        </xsl:choose>
+                      </td>
+                      <td class="muted"><xsl:value-of select="s:changefreq"/></td>
+                      <td class="muted"><xsl:value-of select="s:priority"/></td>
                       <td class="muted"><xsl:value-of select="s:lastmod"/></td>
                     </tr>
                   </xsl:for-each>

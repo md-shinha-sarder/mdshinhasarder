@@ -101,13 +101,13 @@ export const KnowledgePanelWidget = () => {
   ];
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 py-2 sm:py-4">
+    <div className="w-full max-w-5xl mx-auto p-4 sm:p-7 md:p-9 rounded-2xl sm:rounded-3xl blue-uix-board text-slate-100">
       {/* Profile Header */}
-      <div className="pb-8 border-b border-slate-800/60">
+      <div className="pb-8 border-b border-blue-500/20">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
           {/* Avatar with clean verified ring */}
           <div className="relative flex-shrink-0">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl p-1 bg-gradient-to-tr from-blue-600 via-sky-500 to-indigo-600 shadow-lg">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl p-1 bg-gradient-to-tr from-blue-600 via-sky-500 to-indigo-600 shadow-lg shadow-blue-500/20">
               <img
                 src={avatarUrl}
                 alt={profile.name}
@@ -133,17 +133,17 @@ export const KnowledgePanelWidget = () => {
                 <BadgeCheck className="w-6 h-6 text-blue-400 fill-blue-500/20" />
               </h1>
 
-              <div className="mt-1 flex items-center justify-center md:justify-start gap-2">
-                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium text-sky-400 bg-sky-950/60 border border-sky-800/40">
+              <div className="mt-1 flex items-center justify-center md:justify-start gap-2 flex-wrap">
+                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold text-sky-300 bg-blue-950/80 border border-blue-500/40">
                   {profile.tagline || "Entrepreneur"}
                 </span>
-                <span className="text-xs text-slate-400">·</span>
-                <span className="text-xs text-slate-400">Founder &amp; CEO, IT Tech BD</span>
+                <span className="text-xs text-blue-300/60">·</span>
+                <span className="text-xs text-blue-100/90 font-medium">Founder &amp; CEO, IT Tech BD &amp; Biostar TV World</span>
               </div>
             </div>
 
             {/* Social Channels Bar */}
-            <div className="mt-4 pt-3 border-t border-slate-800/40 flex items-center justify-center md:justify-start gap-3 flex-wrap">
+            <div className="mt-4 pt-3 border-t border-blue-500/20 flex items-center justify-center md:justify-start gap-3 flex-wrap">
               {socials.map((s) => {
                 const Icon = s.icon;
                 return (
@@ -153,7 +153,7 @@ export const KnowledgePanelWidget = () => {
                     target="_blank"
                     rel="noreferrer"
                     title={s.name}
-                    className={`p-1.5 rounded-md text-slate-400 ${s.color} hover:bg-slate-800/60 transition-colors`}
+                    className={`p-2 rounded-lg bg-blue-950/40 border border-blue-500/20 text-blue-200 ${s.color} hover:bg-blue-900/60 hover:border-blue-400/50 transition-colors`}
                   >
                     <Icon size={16} />
                   </a>
@@ -164,14 +164,14 @@ export const KnowledgePanelWidget = () => {
         </div>
       </div>
 
-      {/* Clean Laravel-Style Pill Navigation Tabs */}
-      <div className="py-3 border-b border-slate-800/60 flex items-center gap-1.5 overflow-x-auto text-xs sm:text-sm font-medium">
+      {/* Clean Blue UI/UX Navigation Tabs */}
+      <div className="py-4 border-b border-blue-500/20 flex items-center gap-2 overflow-x-auto text-xs sm:text-sm font-medium scrollbar-none">
           <button
             onClick={() => setActiveTab("overview")}
-            className={`px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
               activeTab === "overview"
-                ? "bg-slate-800 text-white font-semibold shadow-sm"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
+                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/35 border border-blue-400/50"
+                : "text-blue-100/80 hover:text-white hover:bg-blue-950/50 border border-blue-500/10 hover:border-blue-500/30"
             }`}
           >
             Overview
@@ -179,37 +179,37 @@ export const KnowledgePanelWidget = () => {
 
           <button
             onClick={() => setActiveTab("songs")}
-            className={`px-3.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === "songs"
-                ? "bg-slate-800 text-white font-semibold shadow-sm"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
+                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/35 border border-blue-400/50"
+                : "text-blue-100/80 hover:text-white hover:bg-blue-950/50 border border-blue-500/10 hover:border-blue-500/30"
             }`}
           >
-            <Music2 size={13} className="text-red-400" />
+            <Music2 size={14} className="text-red-400" />
             <span>Songs &amp; YouTube Videos ({songs.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab("books")}
-            className={`px-3.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === "books"
-                ? "bg-slate-800 text-white font-semibold shadow-sm"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
+                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/35 border border-blue-400/50"
+                : "text-blue-100/80 hover:text-white hover:bg-blue-950/50 border border-blue-500/10 hover:border-blue-500/30"
             }`}
           >
-            <BookOpen size={13} className="text-sky-400" />
+            <BookOpen size={14} className="text-sky-300" />
             <span>Books ({books.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab("publications")}
-            className={`px-3.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === "publications"
-                ? "bg-slate-800 text-white font-semibold shadow-sm"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
+                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/35 border border-blue-400/50"
+                : "text-blue-100/80 hover:text-white hover:bg-blue-950/50 border border-blue-500/10 hover:border-blue-500/30"
             }`}
           >
-            <GraduationCap size={13} className="text-indigo-400" />
+            <GraduationCap size={14} className="text-indigo-300" />
             <span>Scholar Citations ({defaultScholarPublications.length})</span>
           </button>
         </div>
@@ -245,81 +245,84 @@ export const KnowledgePanelWidget = () => {
             </div>
 
             {/* Quick Summary Grid */}
-            <div className="py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-              <div className="flex items-center gap-2.5 text-slate-300">
-                <Calendar className="w-4 h-4 text-sky-400 flex-shrink-0" />
+            <div className="py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs">
+              <div className="blue-uix-card p-3.5 rounded-xl flex items-center gap-3 text-slate-100">
+                <Calendar className="w-5 h-5 text-sky-400 flex-shrink-0" />
                 <div>
-                  <span className="text-[10px] text-slate-500 uppercase block">Born</span>
-                  <strong className="text-white">{profile.birthDate}</strong>
+                  <span className="text-[10px] text-blue-300 uppercase font-semibold tracking-wider block">Born</span>
+                  <strong className="text-white font-bold text-sm">{profile.birthDate}</strong>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 text-slate-300">
-                <Building2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <div className="blue-uix-card p-3.5 rounded-xl flex items-center gap-3 text-slate-100">
+                <Building2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                 <div>
-                  <span className="text-[10px] text-slate-500 uppercase block">Founded</span>
-                  <strong className="text-white">IT Tech BD &amp; Biostar TV</strong>
+                  <span className="text-[10px] text-blue-300 uppercase font-semibold tracking-wider block">Founded Ventures</span>
+                  <strong className="text-white font-bold text-sm">IT Tech BD &amp; Biostar TV</strong>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 text-slate-300">
-                <GraduationCap className="w-4 h-4 text-indigo-400 flex-shrink-0" />
+              <div className="blue-uix-card p-3.5 rounded-xl flex items-center gap-3 text-slate-100">
+                <GraduationCap className="w-5 h-5 text-indigo-400 flex-shrink-0" />
                 <div>
-                  <span className="text-[10px] text-slate-500 uppercase block">Education</span>
-                  <strong className="text-white">NUBTK · CSE</strong>
+                  <span className="text-[10px] text-blue-300 uppercase font-semibold tracking-wider block">Education</span>
+                  <strong className="text-white font-bold text-sm">NUBTK · CSE</strong>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 text-slate-300">
-                <Mail className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <div className="blue-uix-card p-3.5 rounded-xl flex items-center gap-3 text-slate-100">
+                <Mail className="w-5 h-5 text-amber-400 flex-shrink-0" />
                 <div>
-                  <span className="text-[10px] text-slate-500 uppercase block">Inquiries</span>
-                  <a href="mailto:shinhasarder2343@gmail.com" className="text-sky-400 hover:underline">
+                  <span className="text-[10px] text-blue-300 uppercase font-semibold tracking-wider block">Official Inquiries</span>
+                  <a href="mailto:shinhasarder2343@gmail.com" className="text-sky-300 font-semibold hover:underline truncate block">
                     shinhasarder2343@gmail.com
                   </a>
                 </div>
               </div>
             </div>
 
-            {/* Clean Biography - Clean Typography without clunky nested boxes */}
-            <div className="py-6">
-              <h2 className="text-lg font-bold text-white mb-3">Biography</h2>
-              <p className="text-slate-300 text-sm leading-relaxed text-justify">
+            {/* Clean Biography - High contrast readable typography */}
+            <div className="py-6 border-t border-blue-500/20">
+              <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                <span>Biography</span>
+                <span className="text-xs font-normal text-blue-300 bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-500/30">Verified</span>
+              </h2>
+              <p className="text-slate-100 text-sm sm:text-base leading-relaxed text-justify font-normal">
                 {profile.bioText}
               </p>
             </div>
 
             {/* Key Entity Attributes Table */}
-            <div className="py-6">
-              <h2 className="text-base font-bold text-white mb-3">Entity Attributes</h2>
-              <div className="border border-slate-800/60 rounded-xl overflow-hidden">
-                <table className="w-full text-xs sm:text-sm text-left divide-y divide-slate-800/40">
-                  <tbody className="divide-y divide-slate-800/40">
+            <div className="py-6 border-t border-blue-500/20">
+              <h2 className="text-base font-bold text-white mb-3">Entity Attributes &amp; Background</h2>
+              <div className="border border-blue-500/30 rounded-xl overflow-hidden shadow-lg bg-[#061230]/70">
+                <table className="w-full text-xs sm:text-sm text-left divide-y divide-blue-500/20">
+                  <tbody className="divide-y divide-blue-500/20">
                     <tr>
-                      <th className="py-2.5 px-4 bg-slate-900/40 text-slate-400 font-medium w-40">Born</th>
-                      <td className="py-2.5 px-4 text-slate-200">
+                      <th className="py-3 px-4 bg-blue-950/80 text-blue-200 font-semibold w-40">Born</th>
+                      <td className="py-3 px-4 text-white font-medium">
                         {profile.birthDate}, {profile.birthPlace}
                       </td>
                     </tr>
                     <tr>
-                      <th className="py-2.5 px-4 bg-slate-900/40 text-slate-400 font-medium">Occupation</th>
-                      <td className="py-2.5 px-4 text-sky-400 font-semibold">{profile.tagline || "Entrepreneur"}</td>
+                      <th className="py-3 px-4 bg-blue-950/80 text-blue-200 font-semibold">Occupation</th>
+                      <td className="py-3 px-4 text-sky-300 font-bold">{profile.tagline || "Entrepreneur"}</td>
                     </tr>
                     <tr>
-                      <th className="py-2.5 px-4 bg-slate-900/40 text-slate-400 font-medium">Organizations</th>
-                      <td className="py-2.5 px-4 text-slate-200">
+                      <th className="py-3 px-4 bg-blue-950/80 text-blue-200 font-semibold">Organizations</th>
+                      <td className="py-3 px-4 text-slate-100">
                         <strong className="text-white">IT Tech BD</strong> (Founder &amp; CEO) · <strong className="text-white">Biostar TV World</strong> (Founder &amp; CEO)
                       </td>
                     </tr>
                     <tr>
-                      <th className="py-2.5 px-4 bg-slate-900/40 text-slate-400 font-medium">Education</th>
-                      <td className="py-2.5 px-4 text-slate-200">
+                      <th className="py-3 px-4 bg-blue-950/80 text-blue-200 font-semibold">Education</th>
+                      <td className="py-3 px-4 text-slate-100">
                         {profile.education} · {profile.school}
                       </td>
                     </tr>
                     <tr>
-                      <th className="py-2.5 px-4 bg-slate-900/40 text-slate-400 font-medium">Parents</th>
-                      <td className="py-2.5 px-4 text-slate-200">
+                      <th className="py-3 px-4 bg-blue-950/80 text-blue-200 font-semibold">Parents</th>
+                      <td className="py-3 px-4 text-slate-100">
                         {profile.father} · {profile.mother}
                       </td>
                     </tr>

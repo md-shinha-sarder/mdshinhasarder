@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
+import PageInfobox from "@/components/PageInfobox";
 import {
   Images,
   X,
@@ -16,8 +17,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { usePosts, usePages } from "@/hooks/usePosts";
-import { chaptraBooksData } from "@/pages/BooksPage";
-import { songsData } from "@/pages/SongsPage";
+import { DEFAULT_BOOKS as chaptraBooksData } from "@/hooks/useBooksData";
+import { DEFAULT_SONGS as songsData } from "@/hooks/useSongsData";
 
 interface GalleryItem {
   id: string;
@@ -231,30 +232,43 @@ export const GalleryPage = () => {
             <span className="text-blue-400 font-semibold">Gallery</span>
           </div>
 
-          {/* Hero Banner */}
-          <div className="rounded-3xl p-6 sm:p-10 bg-[#070c1e]/95 border border-blue-900/50 shadow-2xl mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-950/80 text-blue-300 text-xs font-semibold border border-blue-800/60 mb-3">
-                <Sparkles size={14} className="text-blue-400" />
-                <span>Auto-Synced Media Archive · {allGalleryItems.length} Photos</span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-serif font-bold text-white tracking-tight flex items-center gap-3">
-                <span>Photo &amp; Media Gallery</span>
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-2xl leading-relaxed">
-                Automatically aggregate and display all photography and visual assets across all posts, all pages, 20 books, 15 songs, and official portrait collections.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={copyShare}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold border border-blue-900/60 transition-colors"
-            >
-              {copied ? <Check size={14} className="text-emerald-400" /> : <Share2 size={14} />}
-              <span>{copied ? "Link Copied!" : "Share Gallery"}</span>
-            </button>
-          </div>
+          {/* Blue UI/UX Design Board Media Archive Infobox */}
+          <PageInfobox
+            title="MD. Shinha Sarder — Visual Media &amp; Photo Gallery"
+            subtitle="Auto-Synced Media Archive · 310+ Synchronized Visual Assets"
+            badge="Auto-Synced Media Archive"
+            badgeIcon={Images}
+            avatarUrl="/profile.webp"
+            avatarAlt="MD. Shinha Sarder"
+            verified={true}
+            description="Official visual archive automatically aggregating verified studio portraits, editorial photography, 20 book covers, 15 music artworks, and all post/page images. Optimized for Google Image Search Rank #1 indexing."
+            stats={[
+              { label: "Indexed Assets", value: `${allGalleryItems.length}+`, color: "text-white font-bold", subtext: "Live Synchronized" },
+              { label: "Studio Portraits", value: "3 HQ Sets", color: "text-sky-300 font-bold", subtext: "Verified High-Res" },
+              { label: "Book Covers", value: "20 Books", color: "text-amber-400 font-bold", subtext: "Chaptra & Google" },
+              { label: "Music Artworks", value: "15 Tracks", color: "text-emerald-400 font-bold", subtext: "Deezer HD Art" },
+            ]}
+            facts={[
+              { label: "Entity Subject", value: <span className="text-white font-bold">MD. Shinha Sarder (Verified Public Figure)</span> },
+              { label: "Google Image SEO", value: <span className="text-sky-300 font-semibold">Schema.org ImageObject 1.1 + Dynamic image-sitemap.xml (Rank #1 Optimized)</span> },
+              { label: "Geographic Coordinate", value: <span className="text-slate-100">Khulna, Bangladesh</span> },
+              { label: "Indexed Categories", value: <span className="text-slate-100">Official Portraits, Blog Post Photos, Published Pages, Book Covers (Chaptra / Google Books), Music Artworks (Deezer)</span> },
+              { label: "Image Licensing", value: <span className="text-slate-100">All photos attribute to MD. Shinha Sarder under verified digital publishing copyright</span> },
+            ]}
+            actions={[
+              {
+                label: copied ? "Link Copied!" : "Share Gallery",
+                onClick: copyShare,
+                icon: copied ? Check : Share2,
+                primary: true,
+              },
+              {
+                label: "Browse Books",
+                href: "/books",
+                icon: ExternalLink,
+              },
+            ]}
+          />
 
           {/* Category Filter Pills */}
           <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none">

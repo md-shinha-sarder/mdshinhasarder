@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
+import PageInfobox from "@/components/PageInfobox";
 import {
   FolderKanban,
   ExternalLink,
@@ -219,25 +220,50 @@ const ProjectsPage = () => {
       <Navbar />
 
       <main className="pt-28 pb-20 container mx-auto px-4 sm:px-6 max-w-6xl">
-        {/* Header */}
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-blue-500/30 bg-blue-950/60 text-blue-300 text-xs font-semibold uppercase tracking-widest mb-4">
-            <FolderKanban size={14} className="text-blue-400" /> Ventures &amp; Engineering Portfolio
-          </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white mb-4 tracking-tight">
-            Featured <span className="text-gradient-blue">Projects &amp; Ventures</span>
-          </h1>
-          <p className="text-slate-300 max-w-3xl mx-auto text-sm sm:text-base leading-relaxed text-center">
-            From founding leading tech and media startups (<strong className="text-white">IT Tech BD</strong> &amp; <strong className="text-white">Biostar TV World</strong>) to engineering cloud applications, intelligent Python automation, and algorithmic research systems.
-          </p>
-
-          {/* Quick Breadcrumbs */}
-          <div className="flex items-center justify-center gap-2 mt-4 text-xs text-slate-400">
-            <Link to="/" className="hover:text-blue-400">Home</Link>
-            <span>/</span>
-            <span className="text-blue-300">Projects</span>
-          </div>
+        {/* Quick Breadcrumbs */}
+        <div className="flex items-center gap-2 mb-6 text-xs text-blue-200/80">
+          <Link to="/" className="hover:text-white transition-colors">Home</Link>
+          <span>/</span>
+          <span className="text-white font-medium">Projects &amp; Ventures</span>
         </div>
+
+        {/* Blue UI/UX Design Board Projects Infobox */}
+        <PageInfobox
+          title="MD. Shinha Sarder — Technology Ventures &amp; Engineering Systems"
+          subtitle="Founder &amp; CEO, IT Tech BD &amp; Biostar TV World · Systems Architect"
+          badge="Founder &amp; Chief Executive Officer"
+          badgeIcon={Building2}
+          avatarUrl="/profile.webp"
+          avatarAlt="MD. Shinha Sarder"
+          verified={true}
+          description="Commercial technology firms, software applications, media broadcasting networks, and computational research architectures spearheaded and engineered by MD. Shinha Sarder."
+          stats={[
+            { label: "Ventures Founded", value: "2 Flagships", color: "text-white font-bold", subtext: "IT Tech BD & Biostar TV" },
+            { label: "Systems Built", value: `${allProjects.length}`, color: "text-sky-300 font-bold", subtext: "Production Software" },
+            { label: "Core Architecture", value: "Next.js 16", color: "text-indigo-300 font-bold", subtext: "Node.js & Python" },
+            { label: "Operations", value: "Global", color: "text-emerald-400 font-bold", subtext: "Khulna, Bangladesh" },
+          ]}
+          facts={[
+            { label: "Leadership Entity", value: <span className="text-white font-bold">MD. Shinha Sarder (Founder &amp; CEO)</span> },
+            { label: "Active Enterprises", value: <span className="text-sky-300 font-semibold">IT Tech BD (Software Solutions, Cloud &amp; Web Systems) · Biostar TV World (Digital Media &amp; Broadcast Network)</span> },
+            { label: "Technical Stacks", value: <span className="text-slate-100">Next.js 16 App Router, React, Node.js, Python, PostgreSQL, REST APIs, Microservices, Cloud Security &amp; SEO Architecture</span> },
+            { label: "Research Prototypes", value: <span className="text-slate-100">Algorithm Visualizer (BFS/DFS, Dijkstra), Computer Vision Facial Biometrics, Microservices API Suite</span> },
+            { label: "Headquarters & Service", value: <span className="text-slate-100">Khulna, Bangladesh — Delivering full-stack technology and media solutions locally and globally</span> },
+          ]}
+          actions={[
+            {
+              label: "Explore Skills",
+              href: "/skills",
+              icon: Terminal,
+              primary: true,
+            },
+            {
+              label: "View Publications",
+              href: "/publications",
+              icon: ExternalLink,
+            },
+          ]}
+        />
 
         {/* Filter Tabs */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-10">

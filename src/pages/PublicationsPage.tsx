@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
+import PageInfobox from "@/components/PageInfobox";
 import {
   Award,
   BookOpen,
@@ -54,6 +55,21 @@ export const PublicationsPage = () => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const scholarStats = [
+    { label: "Total Citations", value: `${totalCitations}`, color: "text-white font-bold", subtext: "Verified Citations" },
+    { label: "h-index", value: `${hIndex}`, color: "text-sky-300 font-bold", subtext: "Productivity & Impact" },
+    { label: "i10-index", value: `${i10Index}`, color: "text-indigo-300 font-bold", subtext: "High-Impact Works" },
+    { label: "Research Papers", value: `${publications.length}`, color: "text-emerald-400 font-bold", subtext: "Indexed Articles" },
+  ];
+
+  const scholarFacts = [
+    { label: "Researcher Entity", value: <span className="text-white font-bold">MD. Shinha Sarder</span> },
+    { label: "Google Scholar Profile", value: <a href={SCHOLAR_PROFILE_URL} target="_blank" rel="noreferrer" className="text-sky-300 font-semibold hover:underline">scholar.google.com/citations?user=ixspgUAAAAAJ</a> },
+    { label: "Academic Affiliation", value: <span className="text-slate-100">Department of Computer Science and Engineering, Northern University of Business and Technology Khulna (NUBTK)</span> },
+    { label: "Research Disciplines", value: <span className="text-slate-100">Computational Graph Theory, Materials Science &amp; Engineering, Veterinary Epidemiology &amp; Disease Modelling, Algorithmic Analysis</span> },
+    { label: "Scientific Repositories", value: <span className="text-slate-100">Google Scholar, ResearchGate, Semantic Scholar, CrossRef, DOI Registry</span> },
+  ];
+
   return (
     <div className="min-h-screen bg-black text-slate-100 selection:bg-blue-500/30 selection:text-blue-200">
       <Helmet>
@@ -72,72 +88,50 @@ export const PublicationsPage = () => {
 
         <main className="flex-1 max-w-6xl mx-auto px-4 py-8 sm:py-12 w-full">
           {/* Breadcrumb Header */}
-          <div className="mb-6 flex items-center gap-2 text-xs font-medium text-slate-400">
-            <Link to="/" className="hover:text-blue-400 transition-colors">Home</Link>
+          <div className="mb-6 flex items-center gap-2 text-xs font-semibold text-blue-200/80">
+            <Link to="/" className="hover:text-sky-300 transition-colors">Home</Link>
             <span>/</span>
-            <span className="text-blue-400 font-semibold">Publications &amp; Scholar</span>
+            <span className="text-white">Publications &amp; Scholar</span>
           </div>
 
-          {/* Hero Banner with Scholar Profile Link and Citation Stats */}
-          <div className="rounded-3xl p-6 sm:p-10 bg-[#070c1e]/95 border border-blue-900/50 shadow-2xl mb-8">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-950/80 text-blue-300 text-xs font-semibold border border-blue-800/60 mb-3">
-                  <GraduationCap size={14} className="text-blue-400" />
-                  <span>Google Scholar Verified Profile</span>
-                </div>
-                <h1 className="text-3xl sm:text-4xl font-serif font-bold text-white tracking-tight">
-                  Research &amp; Publications
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-2xl leading-relaxed">
-                  Automatically detected and synchronized from Google Scholar (scholar.google.com/citations?user=ixspgUAAAAAJ).
-                  Covering materials engineering, veterinary epidemiology, graph theory, data structures, and computer science.
-                </p>
-              </div>
+          {/* Blue UI/UX Design Board Researcher Infobox */}
+          <PageInfobox
+            title="MD. Shinha Sarder — Academic &amp; Research Publications"
+            subtitle="Google Scholar Verified Profile · Citations &amp; Scientific Research Repository"
+            badge="Google Scholar Verified Researcher"
+            badgeIcon={GraduationCap}
+            avatarUrl="/profile.webp"
+            avatarAlt="MD. Shinha Sarder"
+            verified={true}
+            description="Academic research papers, monographs, and scientific citations authored by MD. Shinha Sarder, synchronized directly with Google Scholar citations registry."
+            stats={scholarStats}
+            facts={scholarFacts}
+            actions={[
+              {
+                label: "Open Google Scholar",
+                href: SCHOLAR_PROFILE_URL,
+                icon: GraduationCap,
+                primary: true,
+                external: true,
+              },
+              {
+                label: "Browse Books (20)",
+                href: "/books",
+                icon: BookOpen,
+              },
+            ]}
+          />
 
-              {/* Scholar Stats Chips & Profile Button */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <div className="flex items-center gap-2 bg-black/60 border border-blue-900/40 px-4 py-2.5 rounded-2xl">
-                  <div className="text-center px-2">
-                    <span className="block text-base font-bold text-white">{totalCitations}</span>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider">Citations</span>
-                  </div>
-                  <div className="h-6 w-px bg-blue-900/50" />
-                  <div className="text-center px-2">
-                    <span className="block text-base font-bold text-blue-400">{hIndex}</span>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider">h-index</span>
-                  </div>
-                  <div className="h-6 w-px bg-blue-900/50" />
-                  <div className="text-center px-2">
-                    <span className="block text-base font-bold text-indigo-400">{i10Index}</span>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider">i10-index</span>
-                  </div>
-                </div>
-
-                <a
-                  href={SCHOLAR_PROFILE_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/30 transition-transform hover:scale-105"
-                >
-                  <GraduationCap size={14} />
-                  <span>Open Google Scholar</span>
-                  <ExternalLink size={12} />
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Filter & Search Bar */}
-          <div className="p-4 rounded-2xl bg-[#05091a]/80 border border-blue-900/40 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Filter & Search Bar in Blue UI/UX Container */}
+          <div className="p-4 sm:p-5 rounded-2xl blue-uix-card mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-sky-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by title, author, or keyword..."
-                className="w-full pl-10 pr-4 py-2 rounded-xl bg-black/60 border border-blue-900/50 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-400"
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-blue-950/70 border border-blue-500/30 text-xs text-white placeholder-blue-300/60 focus:outline-none focus:border-sky-400"
               />
             </div>
 
@@ -147,10 +141,10 @@ export const PublicationsPage = () => {
                 <button
                   key={type}
                   onClick={() => setSelectedType(type)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                     selectedType === type
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "bg-black/50 text-slate-400 hover:text-white border border-blue-950"
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-600/30 border border-blue-400/40"
+                      : "bg-blue-950/40 text-blue-200 hover:text-white border border-blue-500/20 hover:border-blue-400/40"
                   }`}
                 >
                   {type === "all" ? `All (${publications.length})` : type}
@@ -159,15 +153,15 @@ export const PublicationsPage = () => {
             </div>
           </div>
 
-          {/* Publications List */}
+          {/* Publications List with High-Contrast Blue UI/UX Cards */}
           <div className="space-y-4 mb-12">
-            {filteredPublications.map((pub, idx) => (
+            {filteredPublications.map((pub) => (
               <div
                 key={pub.id}
-                className="rounded-2xl p-5 sm:p-6 bg-[#070c1e]/90 border border-blue-900/40 hover:border-blue-500/50 transition-all duration-300 shadow-md group flex flex-col md:flex-row gap-5"
+                className="rounded-2xl p-5 sm:p-6 blue-uix-card transition-all duration-300 shadow-xl group flex flex-col md:flex-row gap-5"
               >
                 {/* Visual Thumbnail */}
-                <div className="w-16 h-20 sm:w-20 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-slate-900 border border-blue-900/40 flex items-center justify-center relative">
+                <div className="w-16 h-20 sm:w-20 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-blue-950 border border-blue-400/30 flex items-center justify-center relative shadow-md">
                   <img
                     src={pub.coverImage}
                     alt={pub.title}
@@ -177,7 +171,7 @@ export const PublicationsPage = () => {
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end justify-center p-1">
-                    <span className="text-[9px] font-mono text-blue-300 font-bold">
+                    <span className="text-[10px] font-mono text-sky-300 font-bold">
                       {pub.year}
                     </span>
                   </div>
@@ -187,62 +181,64 @@ export const PublicationsPage = () => {
                 <div className="flex-1 min-w-0 flex flex-col justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-950 text-blue-300 border border-blue-900/50">
+                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-950 text-sky-200 border border-blue-500/40">
                         {pub.type}
                       </span>
-                      <span className="text-xs text-slate-400 font-mono">
+                      <span className="text-xs text-blue-300 font-mono font-medium">
                         {pub.year}
                       </span>
                       {pub.citations > 0 && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-600/40">
                           <Quote size={11} />
                           {pub.citations} {pub.citations === 1 ? "Citation" : "Citations"}
                         </span>
                       )}
                     </div>
 
-                    <h2 className="text-base sm:text-lg font-serif font-bold text-white group-hover:text-blue-300 transition-colors leading-snug mb-1">
+                    <h2 className="text-base sm:text-lg font-bold text-white group-hover:text-sky-300 transition-colors leading-snug mb-1">
                       {pub.title}
                     </h2>
 
-                    <p className="text-xs text-blue-400 font-medium mb-2">
-                      Authors: <span className="text-slate-300">{pub.authors}</span>
+                    <p className="text-xs text-sky-300 font-semibold mb-2">
+                      Authors: <span className="text-slate-200 font-normal">{pub.authors}</span>
                     </p>
 
-                    <p className="text-xs text-slate-400 font-mono mb-2">
+                    <p className="text-xs text-blue-200/90 font-mono mb-2">
                       Source: {pub.publisher}
                     </p>
 
-                    <p className="text-xs text-slate-300 leading-relaxed text-justify line-clamp-3">
+                    <p className="text-xs text-slate-100 leading-relaxed text-justify line-clamp-3">
                       {pub.abstract}
                     </p>
                   </div>
 
                   {/* Links & Share */}
-                  <div className="flex items-center gap-3 pt-3 mt-3 border-t border-blue-950">
+                  <div className="flex items-center justify-between gap-3 pt-3 mt-3 border-t border-blue-500/20">
                     <a
                       href={pub.scholarUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-300 hover:text-white transition-colors"
                     >
-                      <GraduationCap size={13} />
+                      <GraduationCap size={14} />
                       <span>View Citation on Google Scholar</span>
-                      <ExternalLink size={12} />
+                      <ExternalLink size={11} />
                     </a>
 
-                    <div className="flex-1" />
-
                     <button
-                      type="button"
                       onClick={() => handleShare(pub)}
-                      title="Copy citation link"
-                      className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                      className="inline-flex items-center gap-1 text-xs text-blue-200 hover:text-white px-2.5 py-1 rounded-lg bg-blue-950/60 border border-blue-500/30 transition-colors"
                     >
                       {copiedId === pub.id ? (
-                        <Check size={13} className="text-emerald-400" />
+                        <>
+                          <Check size={12} className="text-emerald-400" />
+                          <span className="text-emerald-300 font-bold">Copied!</span>
+                        </>
                       ) : (
-                        <Share2 size={13} />
+                        <>
+                          <Share2 size={12} />
+                          <span>Share</span>
+                        </>
                       )}
                     </button>
                   </div>
@@ -250,12 +246,6 @@ export const PublicationsPage = () => {
               </div>
             ))}
           </div>
-
-          {filteredPublications.length === 0 && (
-            <div className="p-12 text-center rounded-2xl bg-[#05091a]/80 border border-blue-900/40 text-slate-400">
-              No publications matched your search criteria.
-            </div>
-          )}
         </main>
 
         <FooterSection />

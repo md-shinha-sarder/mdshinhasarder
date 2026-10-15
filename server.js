@@ -54,17 +54,19 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Dynamic Image Sitemap Serving (with auto-refresh)
-  if (req.url?.startsWith("/image-sitemap.xml")) {
+  // Dynamic Master & Image Sitemap Serving (Unified: Main Sitemap & Image Sitemap mixed together)
+  if (req.url?.startsWith("/sitemap.xml") || req.url?.startsWith("/image-sitemap.xml")) {
+    const isMainSitemap = req.url.startsWith("/sitemap.xml");
+    const filename = isMainSitemap ? "sitemap.xml" : "image-sitemap.xml";
     const shouldRefresh = req.url.includes("refresh=1") || (Date.now() - lastImageSitemapGen > SITEMAP_REFRESH_INTERVAL);
-    const sitemapPath = path.join(DIST_DIR, "image-sitemap.xml");
-    const fallbackPath = path.join(PUBLIC_DIR, "image-sitemap.xml");
+    const sitemapPath = path.join(DIST_DIR, filename);
+    const fallbackPath = path.join(PUBLIC_DIR, filename);
 
     const serveXml = (content) => {
       res.writeHead(200, {
         "Content-Type": "application/xml; charset=utf-8",
         "Cache-Control": "public, max-age=600, must-revalidate",
-        "X-Sitemap-Type": "Google Image Sitemap 1.1 Dynamic Service",
+        "X-Sitemap-Type": "Google Unified Master Sitemap (URLs + Images Mixed)",
         "X-Robots-Tag": "noindex, follow",
       });
       res.end(content);
@@ -72,18 +74,17 @@ const server = http.createServer((req, res) => {
 
     if (shouldRefresh || (!fs.existsSync(sitemapPath) && !fs.existsSync(fallbackPath))) {
       generateImageSitemap()
-        .then(({ xml }) => {
+        .then(({ unifiedXml, xml }) => {
           lastImageSitemapGen = Date.now();
-          serveXml(xml);
+          serveXml(unifiedXml || xml);
         })
         .catch(() => {
-          // Serve existing if generation errors
           const target = fs.existsSync(sitemapPath) ? sitemapPath : fallbackPath;
           if (fs.existsSync(target)) {
             serveXml(fs.readFileSync(target, "utf-8"));
           } else {
             res.writeHead(500, { "Content-Type": "text/plain" });
-            res.end("Failed to generate image sitemap");
+            res.end("Failed to generate sitemap");
           }
         });
       return;

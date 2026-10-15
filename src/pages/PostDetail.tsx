@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import PageInfobox from "@/components/PageInfobox";
 import { usePosts } from "@/hooks/usePosts";
 import { postPath } from "@/lib/postUrl";
 import { buildSeo } from "@/lib/seo";
@@ -357,6 +358,46 @@ const PostDetailContent = () => {
                       <LinkIcon size={16} />
                     </button>
                   </div>
+                </div>
+
+                {/* Author Infobox Board with Blue UI/UX Styling */}
+                <div className="mt-12">
+                  <PageInfobox
+                    title="About the Author — MD. Shinha Sarder"
+                    subtitle="Founder &amp; CEO, IT Tech BD and Biostar TV World · Published Author &amp; Researcher"
+                    badge="Verified Entity &amp; Author"
+                    avatarUrl="/profile.webp"
+                    avatarAlt="MD. Shinha Sarder"
+                    verified={true}
+                    description="MD. Shinha Sarder is a Bangladeshi tech entrepreneur, author of 20 published books, musical artist, and CSE researcher from Khulna, Bangladesh. He writes extensively on computer science, AI, and digital venture scaling."
+                    stats={[
+                      { label: "Published Books", value: "20 Volumes", color: "text-sky-300 font-bold", subtext: "Chaptra & Google" },
+                      { label: "Music Tracks", value: "15 Tracks", color: "text-amber-400 font-bold", subtext: "Deezer & YouTube" },
+                      { label: "Enterprises", value: "2 Ventures", color: "text-emerald-400 font-bold", subtext: "IT Tech BD / Biostar" },
+                      { label: "Scholar Citations", value: "37+", color: "text-indigo-400 font-bold", subtext: "Google Scholar" },
+                    ]}
+                    facts={[
+                      { label: "Full Name", value: <span className="text-white font-bold">MD. Shinha Sarder</span> },
+                      { label: "Executive Leadership", value: <span className="text-sky-300 font-semibold">Founder &amp; CEO at IT Tech BD and Biostar TV World</span> },
+                      { label: "Education & Degree", value: <span className="text-slate-100">B.Sc. in Computer Science and Engineering, Northern University of Business &amp; Technology Khulna (NUBTK)</span> },
+                      { label: "Author Catalog", value: <span className="text-slate-100">20 Volumes on Google Books, Chaptra, and Amazon</span> },
+                    ]}
+                    actions={[
+                      {
+                        label: "Read Full Biography",
+                        href: "/biography",
+                        primary: true,
+                      },
+                      {
+                        label: "Browse All Books",
+                        href: "/books",
+                      },
+                      {
+                        label: "Music & Songs",
+                        href: "/songs",
+                      },
+                    ]}
+                  />
                 </div>
 
                 {related.length > 0 && (
