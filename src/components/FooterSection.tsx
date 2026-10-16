@@ -11,46 +11,43 @@ const socials = [
 ];
 
 const FooterSection = () => (
-  <footer className="relative border-t border-blue-500/25 pt-16 pb-8 bg-gradient-to-b from-[#091432] via-[#070e24] to-[#040816] overflow-hidden">
-    {/* Ambient blue top glow */}
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-36 bg-blue-600/15 blur-3xl pointer-events-none" />
-
+  <footer className="relative border-t border-slate-200 dark:border-neutral-800 pt-16 pb-8 bg-white dark:bg-black text-slate-800 dark:text-slate-100 overflow-hidden transition-colors duration-300">
     <div className="container mx-auto px-6 relative z-10">
       <div className="grid md:grid-cols-4 gap-10 mb-12">
         <div className="md:col-span-2">
-          <h3 className="text-2xl font-serif font-bold text-white mb-3 flex items-center gap-2">
-            <Sparkles size={18} className="text-blue-400" /> MD. Shinha Sarder
+          <h3 className="text-2xl font-serif font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+            <Sparkles size={18} className="text-blue-600 dark:text-blue-400" /> MD. Shinha Sarder
           </h3>
-          <p className="text-sm text-slate-300 text-justify leading-relaxed mb-4 max-w-md">
+          <p className="text-sm text-slate-600 dark:text-slate-300 text-justify leading-relaxed mb-4 max-w-md">
             Founder &amp; CEO of IT Tech BD and Biostar TV World. Entrepreneur, Musical Artist, Author, Researcher, YouTuber and Content Creator. Studying CSE at Northern University of Businesses and Technology, Khulna.
           </p>
           <div className="flex flex-wrap gap-2">
             {["IT Tech BD", "Biostar TV World", "Founder & CEO", "Author", "Musical Artist", "Researcher", "CSE Student"].map((t) => (
-              <span key={t} className="text-[11px] font-medium text-blue-300 bg-blue-500/10 border border-blue-400/20 px-2.5 py-0.5 rounded-full">
+              <span key={t} className="text-[11px] font-medium text-blue-700 bg-blue-50 border border-blue-200 dark:text-blue-300 dark:bg-blue-500/10 dark:border-blue-400/20 px-2.5 py-0.5 rounded-full">
                 {t}
               </span>
             ))}
           </div>
         </div>
         <div>
-          <h4 className="font-serif font-semibold mb-4 text-white">Quick Links</h4>
-          <ul className="space-y-2.5 text-sm text-slate-300">
-            <li><a href="/p/biography.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Full Biography</a></li>
-            <li><a href="/p/skills.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Technical Skills</a></li>
-            <li><a href="/p/projects.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> Projects &amp; Ventures</a></li>
-            <li><a href="/p/publication.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Publications</a></li>
-            <li><a href="/p/books.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-400" /> Published Books</a></li>
-            <li><a href="/p/songs.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-400" /> Music &amp; Player</a></li>
-            <li><a href="/p/gallery.html" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-400" /> Photo Gallery</a></li>
-            <li><a href="/posts" className="hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-400" /> All Posts</a></li>
+          <h4 className="font-serif font-semibold mb-4 text-slate-900 dark:text-white">Quick Links</h4>
+          <ul className="space-y-2.5 text-sm text-slate-700 dark:text-slate-300">
+            <li><a href="/p/biography.html" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-600 dark:text-blue-400" /> Full Biography</a></li>
+            <li><a href="/p/skills.html" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-600 dark:text-blue-400" /> Technical Skills</a></li>
+            <li><a href="/p/projects.html" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-600 dark:text-blue-400" /> Projects &amp; Ventures</a></li>
+            <li><a href="/p/publication.html" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-600 dark:text-blue-400" /> Publications</a></li>
+            <li><a href="/p/books.html" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-2"><BookOpen size={13} className="text-blue-600 dark:text-blue-400" /> Published Books</a></li>
+            <li><a href="/p/songs.html" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-600 dark:text-blue-400" /> Music &amp; Player</a></li>
+            <li><a href="/p/gallery.html" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-2"><Sparkles size={13} className="text-blue-600 dark:text-blue-400" /> Photo Gallery</a></li>
+            <li><a href="/posts" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-2"><FileText size={13} className="text-blue-600 dark:text-blue-400" /> All Posts</a></li>
           </ul>
         </div>
         <div>
-          <h4 className="font-serif font-semibold mb-4 text-white">Contact &amp; Location</h4>
-          <ul className="space-y-2.5 text-sm text-slate-300">
-            <li className="flex items-center gap-2"><FaWhatsapp size={15} style={{ color: "#25D366" }} /> <a href="https://wa.me/8801576716992" className="hover:text-blue-400 font-medium">+880 1576-716992</a></li>
-            <li className="flex items-center gap-2"><Mail size={15} className="text-blue-400" /> <a href="mailto:Shinhasarder2343@gmail.com" className="hover:text-blue-400 break-all">Shinhasarder2343@gmail.com</a></li>
-            <li className="flex items-center gap-2"><MapPin size={15} className="text-blue-400" /> Khulna, Bangladesh</li>
+          <h4 className="font-serif font-semibold mb-4 text-slate-900 dark:text-white">Contact &amp; Location</h4>
+          <ul className="space-y-2.5 text-sm text-slate-700 dark:text-slate-300">
+            <li className="flex items-center gap-2"><FaWhatsapp size={15} style={{ color: "#25D366" }} /> <a href="https://wa.me/8801576716992" className="hover:text-blue-600 dark:hover:text-blue-400 font-medium">+880 1576-716992</a></li>
+            <li className="flex items-center gap-2"><Mail size={15} className="text-blue-600 dark:text-blue-400" /> <a href="mailto:Shinhasarder2343@gmail.com" className="hover:text-blue-600 dark:hover:text-blue-400 break-all">Shinhasarder2343@gmail.com</a></li>
+            <li className="flex items-center gap-2"><MapPin size={15} className="text-blue-600 dark:text-blue-400" /> Khulna, Bangladesh</li>
           </ul>
         </div>
       </div>
@@ -58,12 +55,12 @@ const FooterSection = () => (
       <div className="flex justify-center gap-3.5 mb-8 flex-wrap">
         {socials.map((s) => (
           <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
-            className="w-10 h-10 rounded-full border border-blue-500/25 flex items-center justify-center bg-[#0c183b] hover:scale-110 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-500/30 transition-all">
+            className="w-10 h-10 rounded-full border border-slate-200 dark:border-blue-500/25 flex items-center justify-center bg-white dark:bg-[#0c183b] hover:scale-110 hover:border-blue-500 hover:shadow-lg transition-all shadow-sm">
             <s.Icon size={18} style={{ color: s.color }} />
           </a>
         ))}
       </div>
-      <div className="pt-6 border-t border-blue-500/20 text-center text-xs text-slate-400">
+      <div className="pt-6 border-t border-slate-200 dark:border-blue-500/20 text-center text-xs text-slate-500 dark:text-slate-400">
         <p>© {new Date().getFullYear()} MD. Shinha Sarder. All Rights Reserved.</p>
       </div>
     </div>

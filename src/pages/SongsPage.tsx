@@ -3,7 +3,6 @@ import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
-import PageInfobox from "@/components/PageInfobox";
 import {
   Play,
   Pause,
@@ -15,7 +14,6 @@ import {
   Music,
   Share2,
   Check,
-  Sparkles,
 } from "lucide-react";
 import { useSongsData, DEEZER_ARTIST_COVER, OFFICIAL_YOUTUBE_CHANNEL } from "@/hooks/useSongsData";
 
@@ -132,29 +130,15 @@ export default function SongsPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const musicStats = [
-    { label: "Studio Releases", value: `${songs.length} Tracks`, color: "text-red-400", subtext: "Official Catalog" },
-    { label: "Artist Verified", value: "Verified", color: "text-emerald-400", subtext: "Deezer & YouTube" },
-    { label: "Primary Genre", value: "Ambient", color: "text-amber-400", subtext: "Melodic & Classical" },
-    { label: "Distribution", value: "Global", color: "text-sky-300", subtext: "Multi-Platform HD" },
-  ];
-
-  const musicFacts = [
-    { label: "Artist Entity", value: <span className="text-white font-bold">MD. Shinha Sarder (Verified Musical Artist)</span> },
-    { label: "Streaming Platforms", value: <span className="text-sky-300 font-semibold">Deezer Artist Page (#338551431) · YouTube Official Channel · Spotify</span> },
-    { label: "Discography Highlights", value: <span className="text-slate-100">Emotional Sad Theme · Memory of Village · Rainy Day Instrumental · Study Relax Beat · Koyra River Melody · Khulna City Breeze</span> },
-    { label: "Audio Production", value: <span className="text-slate-100">Harmonic multi-voice sound synthesis, cinematic ambient arrangements, and algorithmic audio design</span> },
-    { label: "Rights & Attribution", value: <span className="text-slate-100">Official Releases © MD. Shinha Sarder. Broadcast worldwide under digital copyright registry.</span> },
-  ];
-
   return (
-    <div className="relative min-h-screen bg-black text-slate-100 selection:bg-blue-500/30 selection:text-blue-200">
+    <div className="relative min-h-screen bg-white text-slate-900 dark:bg-black dark:text-slate-100 selection:bg-blue-500/30 selection:text-blue-200 transition-colors duration-300">
       <Helmet>
-        <title>MD. Shinha Sarder — Music &amp; Official Releases</title>
+        <title>Songs - MD. Shinha Sarder</title>
         <meta
           name="description"
-          content="Official discography, music videos, and ambient instrumental releases by MD. Shinha Sarder on YouTube, Deezer, and Spotify."
+          content="Official discography, music videos, and ambient instrumental releases by MD. Shinha Sarder."
         />
+        <meta property="og:title" content="Songs - MD. Shinha Sarder" />
         <link rel="canonical" href="https://www.mdshinhasarder.com/p/songs.html" />
       </Helmet>
 
@@ -164,50 +148,58 @@ export default function SongsPage() {
         <Navbar />
 
         <main className="flex-1 container mx-auto px-4 sm:px-6 pt-24 pb-16 max-w-5xl">
-          {/* Blue UI/UX Design Board Musical Artist Infobox */}
-          <PageInfobox
-            title="MD. Shinha Sarder — Musical Artist &amp; Discography"
-            subtitle="Verified Musical Artist · Deezer (Artist #338551431), YouTube &amp; Streaming Catalog"
-            badge="Verified Musical Artist"
-            badgeIcon={Music}
-            avatarUrl="/profile.webp"
-            avatarAlt="MD. Shinha Sarder"
-            verified={true}
-            description="Original ambient melodies, instrumental tracks, and official YouTube music releases composed and produced by MD. Shinha Sarder."
-            stats={musicStats}
-            facts={musicFacts}
-            actions={[
-              {
-                label: "YouTube Music Channel",
-                href: OFFICIAL_YOUTUBE_CHANNEL,
-                icon: Youtube,
-                primary: true,
-                external: true,
-              },
-              {
-                label: "Deezer Artist Page",
-                href: "https://www.deezer.com/en/artist/338551431",
-                icon: Radio,
-                external: true,
-              },
-              {
-                label: copied ? "Copied" : "Share Music",
-                onClick: handleShare,
-                icon: copied ? Check : Share2,
-              },
-            ]}
-          />
+          {/* Page Header */}
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-neutral-800 pb-5">
+            <div>
+              <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-neutral-400">
+                <Link to="/" className="hover:text-blue-600 dark:hover:text-white transition-colors">Home</Link>
+                <span>/</span>
+                <span className="text-slate-900 dark:text-white font-medium">Songs</span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+                Songs
+              </h1>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <a
+                href={OFFICIAL_YOUTUBE_CHANNEL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-xs font-medium text-slate-700 dark:text-neutral-200 transition-colors"
+              >
+                <Youtube size={14} className="text-red-500" />
+                <span>YouTube Channel</span>
+              </a>
+              <a
+                href="https://www.deezer.com/en/artist/338551431"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-xs font-medium text-slate-700 dark:text-neutral-200 transition-colors"
+              >
+                <Radio size={14} className="text-blue-600 dark:text-sky-400" />
+                <span>Deezer</span>
+              </a>
+              <button
+                onClick={handleShare}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-xs font-medium text-slate-700 dark:text-neutral-200 transition-colors"
+              >
+                {copied ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
+                <span>{copied ? "Copied" : "Share"}</span>
+              </button>
+            </div>
+          </div>
 
           {/* Featured Video Player Container with Blue UI/UX Board */}
-          <div id="video-stream-player" className="my-8 scroll-mt-24 blue-uix-board p-5 sm:p-7 rounded-2xl sm:rounded-3xl">
+          <div id="video-stream-player" className="my-8 scroll-mt-24 blue-uix-board p-5 sm:p-7 rounded-2xl sm:rounded-3xl shadow-sm dark:shadow-2xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
               <div className="flex items-center gap-2">
                 <div className="p-1.5 rounded-lg bg-red-600 text-white shadow-md shadow-red-600/30">
                   <Youtube className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-red-400 tracking-wider block">Live Stream Player</span>
-                  <span className="text-sm font-bold text-white">Now Streaming: {activeSong?.title}</span>
+                  <span className="text-[10px] uppercase font-bold text-red-600 dark:text-red-400 tracking-wider block">Live Stream Player</span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">Now Streaming: {activeSong?.title}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -224,7 +216,7 @@ export default function SongsPage() {
               </div>
             </div>
 
-            <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-blue-500/30 shadow-2xl relative">
+            <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-blue-500/30 shadow-md dark:shadow-2xl relative">
               <iframe
                 src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=1&rel=0&playsinline=1`}
                 title={activeSong?.title || "MD. Shinha Sarder Music Video"}
@@ -235,7 +227,7 @@ export default function SongsPage() {
               />
             </div>
 
-            <div className="mt-3 p-3.5 rounded-xl blue-uix-card flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-blue-200">
+            <div className="mt-3 p-3.5 rounded-xl blue-uix-card flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-700 dark:text-blue-200 shadow-sm">
               <span className="text-center sm:text-left">
                 If YouTube restricts embed playback on your browser, stream the official video directly on YouTube.
               </span>
@@ -244,7 +236,7 @@ export default function SongsPage() {
                   href={activeSong?.youtubeUrl || `https://www.youtube.com/watch?v=${activeVideoId}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-3 py-1 rounded-lg bg-red-600/30 text-red-300 hover:bg-red-600 hover:text-white border border-red-500/40 transition-colors font-semibold flex items-center gap-1"
+                  className="px-3 py-1 rounded-lg bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 dark:bg-red-600/30 dark:text-red-300 dark:hover:bg-red-600 dark:hover:text-white dark:border-red-500/40 transition-colors font-semibold flex items-center gap-1"
                 >
                   <span>Open Video in YouTube</span>
                   <ExternalLink size={11} />
@@ -253,7 +245,7 @@ export default function SongsPage() {
                   href="https://www.deezer.com/artist/338551431"
                   target="_blank"
                   rel="noreferrer"
-                  className="px-3 py-1 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500 hover:text-white border border-amber-500/30 transition-colors font-semibold flex items-center gap-1"
+                  className="px-3 py-1 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-500 hover:text-white border border-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:hover:bg-amber-500 dark:hover:text-white dark:border-amber-500/30 transition-colors font-semibold flex items-center gap-1"
                 >
                   <Radio size={11} />
                   <span>Deezer Audio</span>
@@ -262,8 +254,8 @@ export default function SongsPage() {
             </div>
           </div>
 
-          {/* Deezer Official Stream Player in Blue Container */}
-          <div className="mb-8 rounded-2xl overflow-hidden border border-blue-500/30 bg-black shadow-xl">
+          {/* Deezer Official Stream Player in Container */}
+          <div className="mb-8 rounded-2xl overflow-hidden border border-slate-200 dark:border-blue-500/30 bg-black shadow-md dark:shadow-xl">
             <iframe
               title="Deezer Artist Stream"
               src="https://widget.deezer.com/widget/dark/artist/338551431"
@@ -276,25 +268,25 @@ export default function SongsPage() {
           </div>
 
           {/* Interactive Synth Audio Controls Bar in Blue UI/UX Card */}
-          <div className="p-4 sm:p-5 rounded-2xl blue-uix-card mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+          <div className="p-4 sm:p-5 rounded-2xl blue-uix-card mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs shadow-sm">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => toggleSynth(currentSongIndex)}
-                className="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-600/35 transition-all hover:scale-105"
+                className="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-md shadow-blue-600/35 transition-all hover:scale-105"
                 title={isPlayingSynth ? "Pause Audio Synth" : "Play Harmonic Audio Synth"}
               >
                 {isPlayingSynth ? <Pause size={15} /> : <Play size={15} className="ml-0.5" />}
               </button>
               <div>
-                <span className="text-sky-300 text-[10px] uppercase font-bold tracking-wider block">Interactive Audio Synth</span>
-                <strong className="text-white text-sm">{activeSong?.title} ({activeSong?.freq} Hz)</strong>
+                <span className="text-blue-600 dark:text-sky-300 text-[10px] uppercase font-bold tracking-wider block">Interactive Audio Synth</span>
+                <strong className="text-slate-900 dark:text-white text-sm">{activeSong?.title} ({activeSong?.freq} Hz)</strong>
               </div>
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <button
                 onClick={() => setIsMuted(!isMuted)}
-                className="text-blue-300 hover:text-white p-1 rounded-lg hover:bg-blue-900/40 transition-colors"
+                className="text-slate-600 hover:text-slate-900 dark:text-blue-300 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-blue-900/40 transition-colors"
                 title={isMuted ? "Unmute" : "Mute"}
               >
                 {isMuted ? <VolumeX size={17} /> : <Volume2 size={17} />}
@@ -309,14 +301,14 @@ export default function SongsPage() {
                   setVolume(parseFloat(e.target.value));
                   setIsMuted(false);
                 }}
-                className="w-28 accent-sky-400 h-1.5 bg-blue-950 rounded-lg cursor-pointer"
+                className="w-28 accent-blue-600 dark:accent-sky-400 h-1.5 bg-slate-200 dark:bg-blue-950 rounded-lg cursor-pointer"
               />
-              <span className="font-mono text-sky-300 text-xs font-semibold">{activeSong?.duration}</span>
+              <span className="font-mono text-blue-600 dark:text-sky-300 text-xs font-semibold">{activeSong?.duration}</span>
             </div>
           </div>
 
           {/* Song Catalog List with High-Contrast Blue UI/UX Rows */}
-          <div className="border border-blue-500/30 rounded-2xl divide-y divide-blue-500/20 overflow-hidden bg-[#061230]/80 shadow-xl">
+          <div className="border border-slate-200 dark:border-blue-500/30 rounded-2xl divide-y divide-slate-200 dark:divide-blue-500/20 overflow-hidden bg-white dark:bg-[#061230]/80 shadow-sm dark:shadow-xl">
             {songs.map((song: Song, idx: number) => {
               const isCurrent = currentSongIndex === idx;
               const hasVideo = Boolean(song.youtubeId);
@@ -324,15 +316,15 @@ export default function SongsPage() {
                 <div
                   key={song.id}
                   className={`p-3.5 sm:p-4 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                    isCurrent ? "bg-blue-900/40 border-l-4 border-l-sky-400" : "hover:bg-blue-900/20"
+                    isCurrent ? "bg-blue-50 border-l-4 border-l-blue-600 dark:bg-blue-900/40 dark:border-l-sky-400" : "hover:bg-slate-50 dark:hover:bg-blue-900/20"
                   }`}
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
-                    <span className="w-6 h-6 rounded-full bg-blue-950 border border-blue-500/30 text-sky-300 text-xs font-mono font-bold flex items-center justify-center shrink-0">
+                    <span className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 text-slate-700 dark:bg-blue-950 dark:border-blue-500/30 dark:text-sky-300 text-xs font-mono font-bold flex items-center justify-center shrink-0">
                       {idx + 1}
                     </span>
 
-                    <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-blue-400/30 bg-black shadow-md">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-slate-200 dark:border-blue-400/30 bg-black shadow-sm">
                       <img
                         src={song.youtubeId ? `https://i.ytimg.com/vi/${song.youtubeId}/hqdefault.jpg` : song.cover}
                         alt={song.title}
@@ -344,8 +336,8 @@ export default function SongsPage() {
                     </div>
 
                     <div className="min-w-0">
-                      <h3 className="font-bold text-white text-sm truncate">{song.title}</h3>
-                      <div className="flex items-center gap-2 text-xs text-blue-200/90 mt-0.5">
+                      <h3 className="font-bold text-slate-900 dark:text-white text-sm truncate">{song.title}</h3>
+                      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-blue-200/90 mt-0.5">
                         <span>{song.genre}</span>
                         <span>·</span>
                         <span>{song.year}</span>
@@ -362,7 +354,7 @@ export default function SongsPage() {
                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                         activeVideoId === song.youtubeId
                           ? "bg-red-600 text-white font-semibold shadow-sm"
-                          : "bg-red-950/40 hover:bg-red-600 text-red-300 hover:text-white border border-red-800/40"
+                          : "bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 dark:bg-red-950/40 dark:hover:bg-red-600 dark:text-red-300 dark:hover:text-white dark:border-red-800/40"
                       }`}
                     >
                       <Play size={12} className="fill-current" />
@@ -374,8 +366,8 @@ export default function SongsPage() {
                       onClick={() => toggleSynth(idx)}
                       className={`p-2 rounded-lg transition-colors ${
                         isCurrent && isPlayingSynth
-                          ? "bg-sky-600 text-white"
-                          : "bg-slate-800 hover:bg-slate-700 text-slate-300"
+                          ? "bg-blue-600 text-white shadow-sm"
+                          : "bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-transparent"
                       }`}
                       title="Play synth audio"
                     >
@@ -387,7 +379,7 @@ export default function SongsPage() {
                       href={song.deezerUrl || "https://www.deezer.com/artist/338551431"}
                       target="_blank"
                       rel="noreferrer"
-                      className="p-2 rounded-lg bg-slate-800 hover:bg-amber-500/20 text-slate-400 hover:text-amber-300 transition-colors"
+                      className="p-2 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-600 dark:bg-slate-800 dark:hover:bg-amber-500/20 dark:text-slate-400 dark:hover:text-amber-300 border border-slate-200 dark:border-transparent transition-colors"
                       title="Stream on Deezer"
                     >
                       <Radio size={14} />
@@ -398,7 +390,7 @@ export default function SongsPage() {
                       href={song.youtubeUrl || OFFICIAL_YOUTUBE_CHANNEL}
                       target="_blank"
                       rel="noreferrer"
-                      className="p-2 rounded-lg bg-slate-800 hover:bg-red-600/30 text-slate-400 hover:text-red-400 transition-colors"
+                      className="p-2 rounded-lg bg-slate-100 hover:bg-red-100 text-slate-600 hover:text-red-600 dark:bg-slate-800 dark:hover:bg-red-600/30 dark:text-slate-400 dark:hover:text-red-400 border border-slate-200 dark:border-transparent transition-colors"
                       title="Open on YouTube"
                     >
                       <ExternalLink size={14} />

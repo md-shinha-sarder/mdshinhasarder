@@ -9,7 +9,7 @@ const Index = () => {
   useSiteSettings();
 
   return (
-    <div className="relative min-h-screen bg-black text-slate-100 selection:bg-blue-500/30 selection:text-blue-200">
+    <div className="relative min-h-screen bg-white text-slate-900 dark:bg-black dark:text-slate-100 selection:bg-blue-500/30 selection:text-blue-200 transition-colors duration-300">
       <Helmet>
         <title>MD. Shinha Sarder</title>
         <meta

@@ -35,36 +35,45 @@ try {
     const indexContent = fs.readFileSync(indexPath, "utf8");
 
     // A. Generate dist/404.html so Cloudflare Pages serves our SPA bundle with 404 HTTP status
-    fs.writeFileSync(path.join(distDir, "404.html"), indexContent);
-    fs.writeFileSync(path.join(publicDir, "404.html"), indexContent);
+    const notFoundHtml = indexContent
+      .replace(/<title>.*?<\/title>/, "<title>404 — Page Not Found | MD. Shinha Sarder</title>")
+      .replace(/<meta property="og:title" content=".*?" \/>/, '<meta property="og:title" content="404 — Page Not Found | MD. Shinha Sarder" />');
+
+    fs.writeFileSync(path.join(distDir, "404.html"), notFoundHtml);
+    fs.writeFileSync(path.join(publicDir, "404.html"), notFoundHtml);
     console.log("✔ Created dist/404.html & public/404.html for Cloudflare Pages");
 
-    // B. Generate physical static files for /p/*.html
-    const bloggerPages = [
-      "gallery.html",
-      "biography.html",
-      "about.html",
-      "skills.html",
-      "projects.html",
-      "publication.html",
-      "publications.html",
-      "books.html",
-      "songs.html",
-      "music.html",
-      "posts.html",
-      "blog.html",
-    ];
+    // B. Generate physical static files for /p/*.html with exact SEO Titles
+    const pageTitles = {
+      "gallery.html": "Gallery",
+      "biography.html": "Biography",
+      "about.html": "Biography",
+      "skills.html": "Skills",
+      "projects.html": "Projects",
+      "publication.html": "Publications",
+      "publications.html": "Publications",
+      "books.html": "Books",
+      "songs.html": "Songs",
+      "music.html": "Songs",
+      "posts.html": "Blog",
+      "blog.html": "Blog",
+    };
 
     const distPDir = path.join(distDir, "p");
     const publicPDir = path.join(publicDir, "p");
     fs.mkdirSync(distPDir, { recursive: true });
     fs.mkdirSync(publicPDir, { recursive: true });
 
-    for (const pageName of bloggerPages) {
-      fs.writeFileSync(path.join(distPDir, pageName), indexContent);
-      fs.writeFileSync(path.join(publicPDir, pageName), indexContent);
+    for (const [pageName, titleName] of Object.entries(pageTitles)) {
+      const pageTitle = `${titleName} - MD. Shinha Sarder`;
+      const customizedHtml = indexContent
+        .replace(/<title>.*?<\/title>/, `<title>${pageTitle}</title>`)
+        .replace(/<meta property="og:title" content=".*?" \/>/, `<meta property="og:title" content="${pageTitle}" />`);
+
+      fs.writeFileSync(path.join(distPDir, pageName), customizedHtml);
+      fs.writeFileSync(path.join(publicPDir, pageName), customizedHtml);
     }
-    console.log(`✔ Pre-rendered ${bloggerPages.length} physical /p/*.html static files into dist/p/ & public/p/ for Cloudflare Pages`);
+    console.log(`✔ Pre-rendered ${Object.keys(pageTitles).length} physical /p/*.html static files with custom SEO titles into dist/p/ & public/p/`);
   }
 
   // 3. Build Next.js Pages/SSG distribution into .next/ with NODE_ENV=production

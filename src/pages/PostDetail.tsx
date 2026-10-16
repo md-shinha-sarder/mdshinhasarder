@@ -6,7 +6,6 @@ import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import PageInfobox from "@/components/PageInfobox";
 import { usePosts } from "@/hooks/usePosts";
 import { postPath } from "@/lib/postUrl";
 import { buildSeo } from "@/lib/seo";
@@ -132,9 +131,10 @@ const PostDetailContent = () => {
 
   if (!loading && !post) {
     return (
-      <div className="relative min-h-screen bg-black text-slate-100 selection:bg-blue-500/30 selection:text-blue-200">
+      <div className="relative min-h-screen bg-white text-slate-900 dark:bg-[#070e24] dark:text-slate-100 selection:bg-blue-500/30 selection:text-blue-200 transition-colors duration-300 flex flex-col">
         <Helmet>
           <title>404 — Post Not Found | MD. Shinha Sarder</title>
+          <meta name="description" content="Oops! This post is lost in space. Return home or explore MD. Shinha Sarder portfolio." />
           <meta name="robots" content="noindex, follow" />
         </Helmet>
 
@@ -143,63 +143,101 @@ const PostDetailContent = () => {
         <div className="relative z-10 flex flex-col min-h-screen">
           <Navbar />
 
-          <main className="flex-1 max-w-4xl mx-auto px-4 py-16 sm:py-24 w-full">
-            {/* Breadcrumb Header */}
-            <div className="mb-6 flex items-center gap-2 text-xs font-semibold text-blue-200/80">
-              <Link to="/" className="hover:text-sky-300 transition-colors flex items-center gap-1">
-                <ArrowLeft size={12} />
-                <span>Home</span>
-              </Link>
-              <span>/</span>
-              <span className="text-white">Post Not Found (404)</span>
+          <main className="flex-1 flex flex-col items-center justify-center px-4 py-16 sm:py-24 text-center max-w-3xl mx-auto w-full">
+            {/* Astronaut in Space Illustration matching uploaded photo */}
+            <div className="w-full max-w-[340px] sm:max-w-[420px] mx-auto mb-6 transition-transform hover:scale-105 duration-500">
+              <img
+                src="/lost-in-space-404.svg"
+                alt="404 — Astronaut and dog lost in space"
+                className="w-full h-auto drop-shadow-md select-none pointer-events-none"
+              />
             </div>
 
-            {/* Blue UI/UX Design Board Infobox */}
-            <PageInfobox
-              title="404 — Post Not Found"
-              subtitle="The requested post or page could not be located in this domain"
-              badge="HTTP Status 404"
-              badgeIcon={Compass}
-              avatarUrl="/profile.webp"
-              avatarAlt="MD. Shinha Sarder"
-              verified={true}
-              description={`We could not locate the post at "${location.pathname}". The link might have moved, been deleted, or entered with a typo. You can explore the verified sections below.`}
-              stats={[
-                { label: "Status", value: "404", color: "text-amber-400 font-bold", subtext: "Not Found" },
-                { label: "Published Books", value: "20 Books", color: "text-sky-300 font-bold", subtext: "Official Catalog" },
-                { label: "Music Releases", value: "15 Songs", color: "text-emerald-400 font-bold", subtext: "Deezer & YouTube" },
-                { label: "Entity Status", value: "Verified", color: "text-blue-300 font-bold", subtext: "MD. Shinha Sarder" },
-              ]}
-              facts={[
-                { label: "Attempted Path", value: <span className="font-mono text-amber-300">{location.pathname}</span> },
-                { label: "Entity Profile", value: <span className="text-white font-bold">MD. Shinha Sarder (Founder &amp; CEO, IT Tech BD and Biostar TV World)</span> },
-                { label: "Recommended Routes", value: <span className="text-sky-300">Home (/), Biography (/p/biography.html), Books (/p/books.html), Songs (/p/songs.html), Publications (/p/publication.html), Gallery (/p/gallery.html)</span> },
-                { label: "Official Support", value: <span className="text-slate-100">Contact admin or visit the official homepage for complete archives.</span> },
-              ]}
-              actions={[
-                {
-                  label: "Return to Home",
-                  href: "/",
-                  icon: Home,
-                  primary: true,
-                },
-                {
-                  label: "Browse Books",
-                  href: "/p/books.html",
-                  icon: BookOpen,
-                },
-                {
-                  label: "Listen to Songs",
-                  href: "/p/songs.html",
-                  icon: Music,
-                },
-                {
-                  label: "Read Posts",
-                  href: "/posts",
-                  icon: FileText,
-                },
-              ]}
-            />
+            {/* Large Bold 404 Heading */}
+            <h1 className="text-6xl sm:text-7xl md:text-8xl font-extrabold text-black dark:text-white tracking-tight font-sans leading-none mb-3">
+              404
+            </h1>
+
+            {/* Subtitle matching uploaded image */}
+            <p className="text-xl sm:text-2xl font-medium text-slate-800 dark:text-slate-200 mb-4 tracking-normal">
+              Oops! this page is lost in space
+            </p>
+
+            {/* Clean Return Home link matching image */}
+            <Link
+              to="/"
+              className="text-base sm:text-lg font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-sky-300 underline underline-offset-4 transition-colors inline-flex items-center gap-1.5 mb-10"
+            >
+              <Home size={18} />
+              <span>Return home</span>
+            </Link>
+
+            {/* Quick Verified Portal Directory */}
+            <div className="w-full bg-slate-50 border border-slate-200 dark:bg-[#0a1533]/80 dark:border-blue-500/30 rounded-2xl p-5 sm:p-6 shadow-sm max-w-xl mx-auto text-left transition-colors">
+              <div className="flex items-center justify-between mb-3 border-b border-slate-200 dark:border-blue-500/20 pb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-blue-300 flex items-center gap-1.5">
+                  <Compass size={14} className="text-blue-600 dark:text-blue-400" />
+                  Verified Sections
+                </span>
+                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 truncate max-w-[180px]">
+                  {location.pathname}
+                </span>
+              </div>
+              
+              <p className="text-xs text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
+                The post you requested could not be located on this domain. You can browse active articles or verified sections below:
+              </p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                <Link
+                  to="/posts"
+                  className="flex items-center gap-1.5 p-2 rounded-xl bg-white border border-slate-200 hover:border-blue-400 dark:bg-[#0f1f47] dark:border-blue-900/40 dark:hover:border-blue-500 text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-white transition-all font-medium"
+                >
+                  <FileText size={14} className="text-blue-600 dark:text-blue-400" />
+                  <span>All Posts</span>
+                </Link>
+
+                <Link
+                  to="/p/gallery.html"
+                  className="flex items-center gap-1.5 p-2 rounded-xl bg-white border border-slate-200 hover:border-blue-400 dark:bg-[#0f1f47] dark:border-blue-900/40 dark:hover:border-blue-500 text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-white transition-all font-medium"
+                >
+                  <Home size={14} className="text-blue-600 dark:text-blue-400" />
+                  <span>Gallery</span>
+                </Link>
+
+                <Link
+                  to="/p/books.html"
+                  className="flex items-center gap-1.5 p-2 rounded-xl bg-white border border-slate-200 hover:border-blue-400 dark:bg-[#0f1f47] dark:border-blue-900/40 dark:hover:border-blue-500 text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-white transition-all font-medium"
+                >
+                  <BookOpen size={14} className="text-blue-600 dark:text-blue-400" />
+                  <span>Books</span>
+                </Link>
+
+                <Link
+                  to="/p/songs.html"
+                  className="flex items-center gap-1.5 p-2 rounded-xl bg-white border border-slate-200 hover:border-blue-400 dark:bg-[#0f1f47] dark:border-blue-900/40 dark:hover:border-blue-500 text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-white transition-all font-medium"
+                >
+                  <Music size={14} className="text-blue-600 dark:text-blue-400" />
+                  <span>Music</span>
+                </Link>
+
+                <Link
+                  to="/p/biography.html"
+                  className="flex items-center gap-1.5 p-2 rounded-xl bg-white border border-slate-200 hover:border-blue-400 dark:bg-[#0f1f47] dark:border-blue-900/40 dark:hover:border-blue-500 text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-white transition-all font-medium"
+                >
+                  <Sparkles size={14} className="text-blue-600 dark:text-blue-400" />
+                  <span>Biography</span>
+                </Link>
+
+                <Link
+                  to="/p/publication.html"
+                  className="flex items-center gap-1.5 p-2 rounded-xl bg-white border border-slate-200 hover:border-blue-400 dark:bg-[#0f1f47] dark:border-blue-900/40 dark:hover:border-blue-500 text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-white transition-all font-medium"
+                >
+                  <FileText size={14} className="text-blue-600 dark:text-blue-400" />
+                  <span>Publications</span>
+                </Link>
+              </div>
+            </div>
           </main>
 
           <FooterSection />
@@ -209,16 +247,16 @@ const PostDetailContent = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#070e24] text-foreground selection:bg-blue-500/30 selection:text-blue-100">
+    <div className="relative min-h-screen bg-white text-slate-900 dark:bg-black dark:text-slate-100 selection:bg-blue-500/30 selection:text-blue-100 transition-colors duration-300">
       <SiteBackground />
       <div className="relative z-10">
         <Navbar />
         {post && seo && (
           <Helmet>
-            <title>{seo.metaTitle}</title>
+            <title>{`${post.title} - MD. Shinha Sarder`}</title>
             <meta name="description" content={cleanDesc} />
             <link rel="canonical" href={canonical} />
-            <meta property="og:title" content={seo.ogTitle} />
+            <meta property="og:title" content={`${post.title} - MD. Shinha Sarder`} />
             <meta property="og:description" content={cleanDesc} />
             <meta property="og:type" content="article" />
             <meta property="og:url" content={canonical} />
@@ -352,27 +390,27 @@ const PostDetailContent = () => {
                     {postTags.map((t) => (
                       <span
                         key={t}
-                        className="text-[10px] uppercase tracking-wider text-blue-300 bg-blue-500/15 border border-blue-400/20 px-2.5 py-0.5 rounded-full font-medium"
+                        className="text-[10px] uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 dark:text-blue-300 dark:bg-blue-500/15 dark:border-blue-400/20 px-2.5 py-0.5 rounded-full font-medium"
                       >
                         {t}
                       </span>
                     ))}
                   </div>
                 )}
-                <h1 className="text-3xl sm:text-5xl font-serif font-bold text-white mb-4 leading-tight">
+                <h1 className="text-3xl sm:text-5xl font-serif font-bold text-slate-900 dark:text-white mb-4 leading-tight">
                   {post.title}
                 </h1>
-                <div className="flex items-center gap-3 text-sm text-slate-400 mb-8">
-                  <Calendar size={14} className="text-blue-400" /> {fmt(post.published)}
+                <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400 mb-8">
+                  <Calendar size={14} className="text-blue-500 dark:text-blue-400" /> {fmt(post.published)}
                   {post.source === "admin" && (
-                    <span className="text-xs text-amber-300/90 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                    <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 dark:text-amber-300/90 dark:bg-amber-500/10 dark:border-amber-500/20 px-2 py-0.5 rounded-full">
                       Live Synced
                     </span>
                   )}
                 </div>
 
                 {post.image && (
-                  <div className="w-full mb-8 rounded-xl overflow-hidden border border-blue-500/25 shadow-2xl bg-[#070e24]/70 flex items-center justify-center p-1 sm:p-2">
+                  <div className="w-full mb-8 rounded-xl overflow-hidden border border-slate-200 dark:border-blue-500/25 shadow-xl bg-slate-50 dark:bg-[#070e24]/70 flex items-center justify-center p-1 sm:p-2">
                     <img
                       src={post.image}
                       alt={buildAlt(post.title, postTags)}
@@ -385,18 +423,18 @@ const PostDetailContent = () => {
                 )}
 
                 <div
-                  className="prose prose-invert max-w-none prose-headings:font-serif prose-a:text-blue-400 prose-img:rounded-xl prose-img:max-w-full prose-img:h-auto prose-img:object-contain prose-img:mx-auto text-justify [&_p]:text-justify [&_li]:text-justify text-slate-200 leading-relaxed"
+                  className="prose dark:prose-invert max-w-none prose-headings:font-serif prose-headings:text-slate-900 dark:prose-headings:text-white prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-img:rounded-xl prose-img:max-w-full prose-img:h-auto prose-img:object-contain prose-img:mx-auto text-justify [&_p]:text-justify [&_li]:text-justify text-slate-800 dark:text-slate-200 leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: enhanceContentImages(post.content || "", post.title) }}
                 />
 
-                <div className="mt-12 pt-8 border-t border-blue-500/20">
-                  <p className="text-sm text-slate-400 mb-3">Share this post</p>
+                <div className="mt-12 pt-8 border-t border-slate-200 dark:border-blue-500/20">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">Share this post</p>
                   <div className="flex flex-wrap gap-3">
                     <a
                       href={share.facebook}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-full border border-blue-500/30 bg-[#0c183a]/80 flex items-center justify-center text-slate-300 hover:text-white hover:border-blue-400 transition-colors"
+                      className="w-10 h-10 rounded-full border border-slate-200 bg-slate-50 dark:border-blue-500/30 dark:bg-[#0c183a]/80 flex items-center justify-center text-slate-700 hover:text-blue-600 hover:border-blue-400 dark:text-slate-300 dark:hover:text-white dark:hover:border-blue-400 transition-colors shadow-sm dark:shadow-none"
                       title="Share on Facebook"
                     >
                       <Facebook size={16} />
@@ -405,7 +443,7 @@ const PostDetailContent = () => {
                       href={share.twitter}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-full border border-blue-500/30 bg-[#0c183a]/80 flex items-center justify-center text-slate-300 hover:text-white hover:border-blue-400 transition-colors"
+                      className="w-10 h-10 rounded-full border border-slate-200 bg-slate-50 dark:border-blue-500/30 dark:bg-[#0c183a]/80 flex items-center justify-center text-slate-700 hover:text-sky-500 hover:border-blue-400 dark:text-slate-300 dark:hover:text-white dark:hover:border-blue-400 transition-colors shadow-sm dark:shadow-none"
                       title="Share on Twitter"
                     >
                       <Twitter size={16} />
@@ -414,7 +452,7 @@ const PostDetailContent = () => {
                       href={share.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-full border border-blue-500/30 bg-[#0c183a]/80 flex items-center justify-center text-slate-300 hover:text-white hover:border-blue-400 transition-colors"
+                      className="w-10 h-10 rounded-full border border-slate-200 bg-slate-50 dark:border-blue-500/30 dark:bg-[#0c183a]/80 flex items-center justify-center text-slate-700 hover:text-blue-700 hover:border-blue-400 dark:text-slate-300 dark:hover:text-white dark:hover:border-blue-400 transition-colors shadow-sm dark:shadow-none"
                       title="Share on LinkedIn"
                     >
                       <Linkedin size={16} />
@@ -423,14 +461,14 @@ const PostDetailContent = () => {
                       href={share.whatsapp}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-full border border-blue-500/30 bg-[#0c183a]/80 flex items-center justify-center text-slate-300 hover:text-white hover:border-blue-400 transition-colors"
+                      className="w-10 h-10 rounded-full border border-slate-200 bg-slate-50 dark:border-blue-500/30 dark:bg-[#0c183a]/80 flex items-center justify-center text-slate-700 hover:text-emerald-600 hover:border-blue-400 dark:text-slate-300 dark:hover:text-white dark:hover:border-blue-400 transition-colors shadow-sm dark:shadow-none"
                       title="Share on WhatsApp"
                     >
                       <MessageCircle size={16} />
                     </a>
                     <button
                       onClick={copy}
-                      className="w-10 h-10 rounded-full border border-blue-500/30 bg-[#0c183a]/80 flex items-center justify-center text-slate-300 hover:text-white hover:border-blue-400 transition-colors"
+                      className="w-10 h-10 rounded-full border border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900 flex items-center justify-center text-slate-700 hover:text-blue-600 hover:border-slate-400 dark:text-neutral-300 dark:hover:text-white dark:hover:border-neutral-700 transition-colors shadow-sm dark:shadow-none"
                       title="Copy link"
                     >
                       <LinkIcon size={16} />
@@ -438,49 +476,9 @@ const PostDetailContent = () => {
                   </div>
                 </div>
 
-                {/* Author Infobox Board with Blue UI/UX Styling */}
-                <div className="mt-12">
-                  <PageInfobox
-                    title="About the Author — MD. Shinha Sarder"
-                    subtitle="Founder &amp; CEO, IT Tech BD and Biostar TV World · Published Author &amp; Researcher"
-                    badge="Verified Entity &amp; Author"
-                    avatarUrl="/profile.webp"
-                    avatarAlt="MD. Shinha Sarder"
-                    verified={true}
-                    description="MD. Shinha Sarder is a Bangladeshi tech entrepreneur, author of 20 published books, musical artist, and CSE researcher from Khulna, Bangladesh. He writes extensively on computer science, AI, and digital venture scaling."
-                    stats={[
-                      { label: "Published Books", value: "20 Volumes", color: "text-sky-300 font-bold", subtext: "Chaptra & Google" },
-                      { label: "Music Tracks", value: "15 Tracks", color: "text-amber-400 font-bold", subtext: "Deezer & YouTube" },
-                      { label: "Enterprises", value: "2 Ventures", color: "text-emerald-400 font-bold", subtext: "IT Tech BD / Biostar" },
-                      { label: "Scholar Citations", value: "37+", color: "text-indigo-400 font-bold", subtext: "Google Scholar" },
-                    ]}
-                    facts={[
-                      { label: "Full Name", value: <span className="text-white font-bold">MD. Shinha Sarder</span> },
-                      { label: "Executive Leadership", value: <span className="text-sky-300 font-semibold">Founder &amp; CEO at IT Tech BD and Biostar TV World</span> },
-                      { label: "Education & Degree", value: <span className="text-slate-100">B.Sc. in Computer Science and Engineering, Northern University of Business &amp; Technology Khulna (NUBTK)</span> },
-                      { label: "Author Catalog", value: <span className="text-slate-100">20 Volumes on Google Books, Chaptra, and Amazon</span> },
-                    ]}
-                    actions={[
-                      {
-                        label: "Read Full Biography",
-                        href: "/biography",
-                        primary: true,
-                      },
-                      {
-                        label: "Browse All Books",
-                        href: "/books",
-                      },
-                      {
-                        label: "Music & Songs",
-                        href: "/songs",
-                      },
-                    ]}
-                  />
-                </div>
-
                 {related.length > 0 && (
                   <div className="mt-16">
-                    <h3 className="font-serif text-2xl text-white mb-6">Related Posts</h3>
+                    <h3 className="font-serif text-2xl text-slate-900 dark:text-white mb-6">Related Posts</h3>
                     <div className="grid sm:grid-cols-3 gap-4">
                       {related.map((r) => {
                         const rTags = Array.isArray(r.tags) ? r.tags : [];
@@ -488,10 +486,10 @@ const PostDetailContent = () => {
                           <Link
                             key={r.id}
                             to={postPath(r)}
-                            className="group bg-[#0c183a]/90 rounded-xl overflow-hidden border border-blue-500/20 hover:border-blue-400/50 transition-all"
+                            className="group bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-slate-400 dark:bg-neutral-950 dark:border-neutral-800 dark:hover:border-neutral-700 transition-all shadow-sm"
                           >
                             {r.image && (
-                              <div className="w-full aspect-video bg-[#070e24] flex items-center justify-center p-1 overflow-hidden">
+                              <div className="w-full aspect-video bg-slate-100 dark:bg-black flex items-center justify-center p-1 overflow-hidden">
                                 <img
                                   src={r.image}
                                   alt={buildAlt(r.title, rTags)}
@@ -502,7 +500,7 @@ const PostDetailContent = () => {
                               </div>
                             )}
                             <div className="p-3">
-                              <h4 className="text-sm font-serif font-semibold text-slate-200 line-clamp-2 group-hover:text-blue-300 transition-colors">
+                              <h4 className="text-sm font-serif font-semibold text-slate-900 dark:text-neutral-200 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                 {r.title}
                               </h4>
                             </div>

@@ -3,15 +3,12 @@ import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
-import PageInfobox from "@/components/PageInfobox";
 import {
   BookOpen,
   ExternalLink,
   Search,
   Share2,
   Check,
-  Sparkles,
-  GraduationCap,
 } from "lucide-react";
 import { useBooksData, CHAPTRA_AUTHOR_URL } from "@/hooks/useBooksData";
 
@@ -46,29 +43,15 @@ export default function BooksPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const authorStats = [
-    { label: "Published Volumes", value: `${books.length}`, color: "text-sky-300", subtext: "Cataloged Editions" },
-    { label: "Author Status", value: "Verified", color: "text-emerald-400", subtext: "Chaptra & Google Books" },
-    { label: "Genres", value: "6 Fields", color: "text-amber-400", subtext: "AI, CSE, Memoirs, Poetry" },
-    { label: "Citations", value: "37+", color: "text-indigo-400", subtext: "Academic Research" },
-  ];
-
-  const authorFacts = [
-    { label: "Author Entity", value: <span className="text-white font-bold">MD. Shinha Sarder</span> },
-    { label: "Catalog Platforms", value: <span className="text-sky-300 font-semibold">Chaptra Author Catalog · Google Books Global Repository · Amazon</span> },
-    { label: "Subject Categories", value: <span className="text-slate-100">Artificial Intelligence, Computer Science &amp; Programming, Memoirs, Educational Technology, Leadership &amp; Poetry</span> },
-    { label: "Flagship Titles", value: <span className="text-slate-100">Artificial Intelligence: Shaping the Future · Days of a Dreaming Boy · From Khulna to the Cloud · Life in Lines</span> },
-    { label: "Author Location", value: <span className="text-slate-100">Khulna, Bangladesh</span> },
-  ];
-
   return (
-    <div className="relative min-h-screen bg-black text-slate-100 selection:bg-blue-500/30 selection:text-blue-200">
+    <div className="relative min-h-screen bg-white text-slate-900 dark:bg-black dark:text-slate-100 selection:bg-blue-500/30 selection:text-blue-200 transition-colors duration-300">
       <Helmet>
-        <title>MD. Shinha Sarder — Books &amp; Publications</title>
+        <title>Books - MD. Shinha Sarder</title>
         <meta
           name="description"
           content="Author catalog and published books by MD. Shinha Sarder available on Google Books and Chaptra."
         />
+        <meta property="og:title" content="Books - MD. Shinha Sarder" />
         <link rel="canonical" href="https://www.mdshinhasarder.com/p/books.html" />
       </Helmet>
 
@@ -78,44 +61,49 @@ export default function BooksPage() {
         <Navbar />
 
         <main className="flex-1 container mx-auto px-4 sm:px-6 pt-24 pb-16 max-w-5xl">
-          {/* Blue UI/UX Design Board Author Infobox */}
-          <PageInfobox
-            title="MD. Shinha Sarder — Author &amp; Book Catalog"
-            subtitle="Verified Author Profile · Google Books &amp; Chaptra Multi-Platform Registry"
-            badge="Verified Published Author"
-            badgeIcon={BookOpen}
-            avatarUrl="/profile.webp"
-            avatarAlt="MD. Shinha Sarder"
-            verified={true}
-            description="Comprehensive collection of published works authored by MD. Shinha Sarder, spanning Computer Science, Artificial Intelligence algorithms, personal memoirs, and reflective anthologies."
-            stats={authorStats}
-            facts={authorFacts}
-            actions={[
-              {
-                label: "Chaptra Author Profile",
-                href: CHAPTRA_AUTHOR_URL,
-                icon: BookOpen,
-                primary: true,
-                external: true,
-              },
-              {
-                label: copied ? "Copied Link" : "Share Catalog",
-                onClick: handleShare,
-                icon: copied ? Check : Share2,
-              },
-            ]}
-          />
+          {/* Page Header */}
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-neutral-800 pb-5">
+            <div>
+              <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-neutral-400">
+                <Link to="/" className="hover:text-blue-600 dark:hover:text-white transition-colors">Home</Link>
+                <span>/</span>
+                <span className="text-slate-900 dark:text-white font-medium">Books</span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+                Books
+              </h1>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <a
+                href={CHAPTRA_AUTHOR_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-xs font-medium text-slate-700 dark:text-neutral-200 transition-colors"
+              >
+                <BookOpen size={14} className="text-blue-600 dark:text-sky-400" />
+                <span>Chaptra Author</span>
+              </a>
+              <button
+                onClick={handleShare}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-xs font-medium text-slate-700 dark:text-neutral-200 transition-colors"
+              >
+                {copied ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
+                <span>{copied ? "Copied" : "Share"}</span>
+              </button>
+            </div>
+          </div>
 
           {/* Search & Category Filter Bar in Blue UI/UX Container */}
-          <div className="my-6 p-4 rounded-2xl blue-uix-card flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="my-6 p-4 rounded-2xl blue-uix-card flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
             <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 text-sky-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-blue-500 dark:text-sky-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search by title, keyword, or topic..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-blue-950/70 border border-blue-500/30 rounded-xl text-xs text-white placeholder-blue-300/60 focus:outline-none focus:border-sky-400"
+                className="w-full pl-9 pr-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 dark:bg-blue-950/70 dark:border-blue-500/30 dark:text-white dark:placeholder-blue-300/60"
               />
             </div>
 
@@ -127,8 +115,8 @@ export default function BooksPage() {
                     onClick={() => setCategory(cat)}
                     className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition-colors font-semibold ${
                       category === cat
-                        ? "bg-blue-600 text-white shadow-md shadow-blue-600/30 border border-blue-400/50"
-                        : "text-blue-200/80 hover:text-white bg-blue-950/40 border border-blue-500/20 hover:border-blue-400/40"
+                        ? "bg-blue-600 text-white shadow-sm border border-blue-500"
+                        : "text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 dark:text-blue-200/80 dark:hover:text-white dark:bg-blue-950/40 dark:border-blue-500/20"
                     }`}
                   >
                     {cat === "all" ? `All Categories (${books.length})` : cat}
@@ -143,10 +131,10 @@ export default function BooksPage() {
             {filteredBooks.map((book) => (
               <div
                 key={book.id}
-                className="p-5 rounded-2xl blue-uix-card flex flex-col justify-between"
+                className="p-5 rounded-2xl blue-uix-card flex flex-col justify-between shadow-sm dark:shadow-md"
               >
                 <div className="flex gap-4">
-                  <div className="w-20 h-28 rounded-xl overflow-hidden shrink-0 bg-blue-950 border border-blue-400/30 shadow-md">
+                  <div className="w-20 h-28 rounded-xl overflow-hidden shrink-0 bg-slate-100 dark:bg-blue-950 border border-slate-200 dark:border-blue-400/30 shadow-sm">
                     <img
                       src={book.cover}
                       alt={book.title}
@@ -156,27 +144,27 @@ export default function BooksPage() {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-white text-sm leading-snug line-clamp-2">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm leading-snug line-clamp-2">
                       {book.title}
                     </h3>
-                    <div className="flex items-center gap-2 text-xs text-sky-300 font-medium mt-1">
+                    <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-sky-300 font-medium mt-1">
                       <span>{book.category}</span>
-                      <span className="text-blue-400/60">·</span>
-                      <span className="text-slate-300">{book.publishedDate}</span>
+                      <span className="text-slate-400 dark:text-blue-400/60">·</span>
+                      <span className="text-slate-600 dark:text-slate-300">{book.publishedDate}</span>
                     </div>
-                    <p className="text-xs text-slate-200 line-clamp-3 mt-2 leading-relaxed">
+                    <p className="text-xs text-slate-700 dark:text-slate-200 line-clamp-3 mt-2 leading-relaxed">
                       {book.description}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-blue-500/20 flex items-center justify-between text-xs">
-                  <span className="text-blue-300 text-[11px] font-medium">Author: MD. Shinha Sarder</span>
+                <div className="mt-4 pt-3 border-t border-slate-200 dark:border-blue-500/20 flex items-center justify-between text-xs">
+                  <span className="text-slate-600 dark:text-blue-300 text-[11px] font-medium">Author: MD. Shinha Sarder</span>
                   <a
                     href={book.chaptraUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-sky-300 hover:text-white font-bold bg-blue-950/60 px-3 py-1 rounded-lg border border-blue-500/30 hover:bg-blue-900/60 transition-colors"
+                    className="inline-flex items-center gap-1 text-slate-800 hover:text-blue-600 font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded-lg border border-slate-200 dark:text-sky-300 dark:hover:text-white dark:bg-blue-950/60 dark:border-blue-500/30 dark:hover:bg-blue-900/60 transition-colors"
                   >
                     <span>Read on Chaptra</span>
                     <ExternalLink size={12} />

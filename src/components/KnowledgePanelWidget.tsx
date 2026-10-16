@@ -101,17 +101,17 @@ export const KnowledgePanelWidget = () => {
   ];
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-4 sm:p-7 md:p-9 rounded-2xl sm:rounded-3xl blue-uix-board text-slate-100">
+    <div className="w-full max-w-5xl mx-auto p-4 sm:p-7 md:p-9 rounded-2xl sm:rounded-3xl blue-uix-board text-slate-900 dark:text-slate-100">
       {/* Profile Header */}
-      <div className="pb-8 border-b border-blue-500/20">
+      <div className="pb-8 border-b border-slate-200 dark:border-blue-500/20">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
           {/* Avatar with clean verified ring */}
           <div className="relative flex-shrink-0">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl p-1 bg-gradient-to-tr from-blue-600 via-sky-500 to-indigo-600 shadow-lg shadow-blue-500/20">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl p-1 bg-gradient-to-tr from-blue-600 via-sky-500 to-indigo-600 shadow-md">
               <img
                 src={avatarUrl}
                 alt={profile.name}
-                className="w-full h-full rounded-xl object-cover object-top border-2 border-slate-950"
+                className="w-full h-full rounded-xl object-cover object-top border-2 border-slate-200 dark:border-slate-950 bg-slate-100 dark:bg-slate-900"
                 onError={(e) => {
                   e.currentTarget.src = "/profile.webp";
                 }}
@@ -119,7 +119,7 @@ export const KnowledgePanelWidget = () => {
             </div>
             <span
               title="Verified Entity"
-              className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white ring-2 ring-slate-950 shadow-md"
+              className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white ring-2 ring-white dark:ring-slate-950 shadow-md"
             >
               <BadgeCheck className="w-4 h-4 fill-blue-600 text-white" />
             </span>
@@ -128,22 +128,22 @@ export const KnowledgePanelWidget = () => {
           {/* Profile Identity */}
           <div className="flex-1 text-center md:text-left">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center justify-center md:justify-start gap-2">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center justify-center md:justify-start gap-2">
                 <span>{profile.name}</span>
-                <BadgeCheck className="w-6 h-6 text-blue-400 fill-blue-500/20" />
+                <BadgeCheck className="w-6 h-6 text-blue-600 dark:text-blue-400 fill-blue-500/20" />
               </h1>
 
               <div className="mt-1 flex items-center justify-center md:justify-start gap-2 flex-wrap">
-                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold text-sky-300 bg-blue-950/80 border border-blue-500/40">
+                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 dark:text-sky-300 dark:bg-blue-950/80 dark:border-blue-500/40">
                   {profile.tagline || "Entrepreneur"}
                 </span>
-                <span className="text-xs text-blue-300/60">·</span>
-                <span className="text-xs text-blue-100/90 font-medium">Founder &amp; CEO, IT Tech BD &amp; Biostar TV World</span>
+                <span className="text-xs text-slate-400 dark:text-blue-300/60">·</span>
+                <span className="text-xs text-slate-600 dark:text-blue-100/90 font-medium">Founder &amp; CEO, IT Tech BD &amp; Biostar TV World</span>
               </div>
             </div>
 
             {/* Social Channels Bar */}
-            <div className="mt-4 pt-3 border-t border-blue-500/20 flex items-center justify-center md:justify-start gap-3 flex-wrap">
+            <div className="mt-4 pt-3 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-center md:justify-start gap-3 flex-wrap">
               {socials.map((s) => {
                 const Icon = s.icon;
                 return (
@@ -153,7 +153,7 @@ export const KnowledgePanelWidget = () => {
                     target="_blank"
                     rel="noreferrer"
                     title={s.name}
-                    className={`p-2 rounded-lg bg-blue-950/40 border border-blue-500/20 text-blue-200 ${s.color} hover:bg-blue-900/60 hover:border-blue-400/50 transition-colors`}
+                    className={`p-2 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-300 ${s.color} hover:bg-slate-200 dark:hover:bg-neutral-800 hover:border-slate-300 dark:hover:border-neutral-700 transition-colors shadow-sm`}
                   >
                     <Icon size={16} />
                   </a>
@@ -164,14 +164,14 @@ export const KnowledgePanelWidget = () => {
         </div>
       </div>
 
-      {/* Clean Blue UI/UX Navigation Tabs */}
-      <div className="py-4 border-b border-blue-500/20 flex items-center gap-2 overflow-x-auto text-xs sm:text-sm font-medium scrollbar-none">
+      {/* Navigation Tabs */}
+      <div className="py-4 border-b border-slate-200 dark:border-neutral-800 flex items-center gap-2 overflow-x-auto text-xs sm:text-sm font-medium scrollbar-none">
           <button
             onClick={() => setActiveTab("overview")}
             className={`px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
               activeTab === "overview"
-                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/35 border border-blue-400/50"
-                : "text-blue-100/80 hover:text-white hover:bg-blue-950/50 border border-blue-500/10 hover:border-blue-500/30"
+                ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-600/35 border border-blue-500"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 dark:text-neutral-300 dark:hover:text-white dark:hover:bg-neutral-900 dark:border-neutral-800"
             }`}
           >
             Overview
@@ -181,11 +181,11 @@ export const KnowledgePanelWidget = () => {
             onClick={() => setActiveTab("songs")}
             className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === "songs"
-                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/35 border border-blue-400/50"
-                : "text-blue-100/80 hover:text-white hover:bg-blue-950/50 border border-blue-500/10 hover:border-blue-500/30"
+                ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-600/35 border border-blue-500"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 dark:text-neutral-300 dark:hover:text-white dark:hover:bg-neutral-900 dark:border-neutral-800"
             }`}
           >
-            <Music2 size={14} className="text-red-400" />
+            <Music2 size={14} className="text-red-500" />
             <span>Songs &amp; YouTube Videos ({songs.length})</span>
           </button>
 
@@ -193,11 +193,11 @@ export const KnowledgePanelWidget = () => {
             onClick={() => setActiveTab("books")}
             className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === "books"
-                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/35 border border-blue-400/50"
-                : "text-blue-100/80 hover:text-white hover:bg-blue-950/50 border border-blue-500/10 hover:border-blue-500/30"
+                ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-600/35 border border-blue-500"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 dark:text-neutral-300 dark:hover:text-white dark:hover:bg-neutral-900 dark:border-neutral-800"
             }`}
           >
-            <BookOpen size={14} className="text-sky-300" />
+            <BookOpen size={14} className="text-sky-500" />
             <span>Books ({books.length})</span>
           </button>
 
@@ -205,18 +205,18 @@ export const KnowledgePanelWidget = () => {
             onClick={() => setActiveTab("publications")}
             className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === "publications"
-                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/35 border border-blue-400/50"
-                : "text-blue-100/80 hover:text-white hover:bg-blue-950/50 border border-blue-500/10 hover:border-blue-500/30"
+                ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-600/35 border border-blue-500"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 dark:text-neutral-300 dark:hover:text-white dark:hover:bg-neutral-900 dark:border-neutral-800"
             }`}
           >
-            <GraduationCap size={14} className="text-indigo-300" />
+            <GraduationCap size={14} className="text-indigo-500" />
             <span>Scholar Citations ({defaultScholarPublications.length})</span>
           </button>
         </div>
 
         {/* TAB 1: OVERVIEW */}
         {activeTab === "overview" && (
-          <div className="divide-y divide-slate-800/40">
+          <div className="divide-y divide-slate-200 dark:divide-neutral-800">
             {/* Horizontal Photo Strip */}
             <div className="py-4">
               <div
@@ -246,35 +246,35 @@ export const KnowledgePanelWidget = () => {
 
             {/* Quick Summary Grid */}
             <div className="py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs">
-              <div className="blue-uix-card p-3.5 rounded-xl flex items-center gap-3 text-slate-100">
-                <Calendar className="w-5 h-5 text-sky-400 flex-shrink-0" />
+              <div className="blue-uix-card p-3.5 rounded-xl flex items-center gap-3 text-slate-900 dark:text-slate-100">
+                <Calendar className="w-5 h-5 text-blue-600 dark:text-sky-400 flex-shrink-0" />
                 <div>
-                  <span className="text-[10px] text-blue-300 uppercase font-semibold tracking-wider block">Born</span>
-                  <strong className="text-white font-bold text-sm">{profile.birthDate}</strong>
+                  <span className="text-[10px] text-slate-500 dark:text-blue-300 uppercase font-semibold tracking-wider block">Born</span>
+                  <strong className="text-slate-900 dark:text-white font-bold text-sm">{profile.birthDate}</strong>
                 </div>
               </div>
 
-              <div className="blue-uix-card p-3.5 rounded-xl flex items-center gap-3 text-slate-100">
-                <Building2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+              <div className="blue-uix-card p-3.5 rounded-xl flex items-center gap-3 text-slate-900 dark:text-slate-100">
+                <Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                 <div>
-                  <span className="text-[10px] text-blue-300 uppercase font-semibold tracking-wider block">Founded Ventures</span>
-                  <strong className="text-white font-bold text-sm">IT Tech BD &amp; Biostar TV</strong>
+                  <span className="text-[10px] text-slate-500 dark:text-blue-300 uppercase font-semibold tracking-wider block">Founded Ventures</span>
+                  <strong className="text-slate-900 dark:text-white font-bold text-sm">IT Tech BD &amp; Biostar TV</strong>
                 </div>
               </div>
 
-              <div className="blue-uix-card p-3.5 rounded-xl flex items-center gap-3 text-slate-100">
-                <GraduationCap className="w-5 h-5 text-indigo-400 flex-shrink-0" />
+              <div className="blue-uix-card p-3.5 rounded-xl flex items-center gap-3 text-slate-900 dark:text-slate-100">
+                <GraduationCap className="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
                 <div>
-                  <span className="text-[10px] text-blue-300 uppercase font-semibold tracking-wider block">Education</span>
-                  <strong className="text-white font-bold text-sm">NUBTK · CSE</strong>
+                  <span className="text-[10px] text-slate-500 dark:text-blue-300 uppercase font-semibold tracking-wider block">Education</span>
+                  <strong className="text-slate-900 dark:text-white font-bold text-sm">NUBTK · CSE</strong>
                 </div>
               </div>
 
-              <div className="blue-uix-card p-3.5 rounded-xl flex items-center gap-3 text-slate-100">
-                <Mail className="w-5 h-5 text-amber-400 flex-shrink-0" />
+              <div className="blue-uix-card p-3.5 rounded-xl flex items-center gap-3 text-slate-900 dark:text-slate-100">
+                <Mail className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                 <div>
-                  <span className="text-[10px] text-blue-300 uppercase font-semibold tracking-wider block">Official Inquiries</span>
-                  <a href="mailto:shinhasarder2343@gmail.com" className="text-sky-300 font-semibold hover:underline truncate block">
+                  <span className="text-[10px] text-slate-500 dark:text-blue-300 uppercase font-semibold tracking-wider block">Official Inquiries</span>
+                  <a href="mailto:shinhasarder2343@gmail.com" className="text-blue-600 dark:text-sky-300 font-semibold hover:underline truncate block">
                     shinhasarder2343@gmail.com
                   </a>
                 </div>
@@ -282,47 +282,47 @@ export const KnowledgePanelWidget = () => {
             </div>
 
             {/* Clean Biography - High contrast readable typography */}
-            <div className="py-6 border-t border-blue-500/20">
-              <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+            <div className="py-6 border-t border-slate-200 dark:border-neutral-800">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                 <span>Biography</span>
-                <span className="text-xs font-normal text-blue-300 bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-500/30">Verified</span>
+                <span className="text-xs font-normal text-blue-700 bg-blue-50 border border-blue-200 dark:text-sky-300 dark:bg-neutral-900 dark:border-neutral-800 px-2.5 py-0.5 rounded-full">Verified</span>
               </h2>
-              <p className="text-slate-100 text-sm sm:text-base leading-relaxed text-justify font-normal">
+              <p className="text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-relaxed text-justify font-normal">
                 {profile.bioText}
               </p>
             </div>
 
             {/* Key Entity Attributes Table */}
-            <div className="py-6 border-t border-blue-500/20">
-              <h2 className="text-base font-bold text-white mb-3">Entity Attributes &amp; Background</h2>
-              <div className="border border-blue-500/30 rounded-xl overflow-hidden shadow-lg bg-[#061230]/70">
-                <table className="w-full text-xs sm:text-sm text-left divide-y divide-blue-500/20">
-                  <tbody className="divide-y divide-blue-500/20">
+            <div className="py-6 border-t border-slate-200 dark:border-neutral-800">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white mb-3">Entity Attributes &amp; Background</h2>
+              <div className="border border-slate-200 dark:border-neutral-800 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-neutral-950">
+                <table className="w-full text-xs sm:text-sm text-left divide-y divide-slate-200 dark:divide-neutral-800">
+                  <tbody className="divide-y divide-slate-200 dark:divide-neutral-800">
                     <tr>
-                      <th className="py-3 px-4 bg-blue-950/80 text-blue-200 font-semibold w-40">Born</th>
-                      <td className="py-3 px-4 text-white font-medium">
+                      <th className="py-3 px-4 bg-slate-50 text-slate-800 dark:bg-neutral-900 dark:text-neutral-300 font-semibold w-40">Born</th>
+                      <td className="py-3 px-4 text-slate-900 dark:text-white font-medium">
                         {profile.birthDate}, {profile.birthPlace}
                       </td>
                     </tr>
                     <tr>
-                      <th className="py-3 px-4 bg-blue-950/80 text-blue-200 font-semibold">Occupation</th>
-                      <td className="py-3 px-4 text-sky-300 font-bold">{profile.tagline || "Entrepreneur"}</td>
+                      <th className="py-3 px-4 bg-slate-50 text-slate-800 dark:bg-neutral-900 dark:text-neutral-300 font-semibold">Occupation</th>
+                      <td className="py-3 px-4 text-blue-600 dark:text-sky-400 font-bold">{profile.tagline || "Entrepreneur"}</td>
                     </tr>
                     <tr>
-                      <th className="py-3 px-4 bg-blue-950/80 text-blue-200 font-semibold">Organizations</th>
-                      <td className="py-3 px-4 text-slate-100">
-                        <strong className="text-white">IT Tech BD</strong> (Founder &amp; CEO) · <strong className="text-white">Biostar TV World</strong> (Founder &amp; CEO)
+                      <th className="py-3 px-4 bg-slate-50 text-slate-800 dark:bg-neutral-900 dark:text-neutral-300 font-semibold">Organizations</th>
+                      <td className="py-3 px-4 text-slate-700 dark:text-slate-200">
+                        <strong className="text-slate-900 dark:text-white">IT Tech BD</strong> (Founder &amp; CEO) · <strong className="text-slate-900 dark:text-white">Biostar TV World</strong> (Founder &amp; CEO)
                       </td>
                     </tr>
                     <tr>
-                      <th className="py-3 px-4 bg-blue-950/80 text-blue-200 font-semibold">Education</th>
-                      <td className="py-3 px-4 text-slate-100">
+                      <th className="py-3 px-4 bg-slate-50 text-slate-800 dark:bg-neutral-900 dark:text-neutral-300 font-semibold">Education</th>
+                      <td className="py-3 px-4 text-slate-700 dark:text-slate-200">
                         {profile.education} · {profile.school}
                       </td>
                     </tr>
                     <tr>
-                      <th className="py-3 px-4 bg-blue-950/80 text-blue-200 font-semibold">Parents</th>
-                      <td className="py-3 px-4 text-slate-100">
+                      <th className="py-3 px-4 bg-slate-50 text-slate-800 dark:bg-neutral-900 dark:text-neutral-300 font-semibold">Parents</th>
+                      <td className="py-3 px-4 text-slate-700 dark:text-slate-200">
                         {profile.father} · {profile.mother}
                       </td>
                     </tr>
@@ -334,8 +334,8 @@ export const KnowledgePanelWidget = () => {
             {/* Technical Skills Circular Graph */}
             <div className="py-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold text-white">Engineering &amp; Core Skill Proficiencies</h2>
-                <Link to="/p/skills.html" className="text-xs text-sky-400 hover:underline flex items-center gap-1">
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">Engineering &amp; Core Skill Proficiencies</h2>
+                <Link to="/p/skills.html" className="text-xs text-blue-600 dark:text-sky-400 hover:underline flex items-center gap-1">
                   <span>Full Skills</span>
                   <ChevronRight size={13} />
                 </Link>
@@ -349,14 +349,14 @@ export const KnowledgePanelWidget = () => {
         {activeTab === "songs" && (
           <div className="py-6 space-y-6">
             {/* Official YouTube Channel Banner */}
-            <div className="p-4 rounded-xl bg-gradient-to-r from-red-950/30 via-slate-900/60 to-slate-900/40 border border-red-900/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="p-4 rounded-xl bg-red-50 text-slate-900 border border-red-200 dark:bg-gradient-to-r dark:from-red-950/30 dark:via-slate-900/60 dark:to-slate-900/40 dark:border-red-900/30 dark:text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-red-600 flex items-center justify-center text-white shrink-0 shadow-md">
                   <Youtube className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-sm sm:text-base">Official YouTube Channel</h3>
-                  <p className="text-xs text-slate-400">
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">Official YouTube Channel</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
                     Watch official music videos, singles, and performances on YouTube.
                   </p>
                 </div>
@@ -365,7 +365,7 @@ export const KnowledgePanelWidget = () => {
                 href={profile.youtubeChannel || OFFICIAL_YOUTUBE_CHANNEL}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-colors shrink-0"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-colors shrink-0 shadow-sm"
               >
                 <span>Visit YouTube Channel</span>
                 <ExternalLink size={13} />
@@ -373,7 +373,7 @@ export const KnowledgePanelWidget = () => {
             </div>
 
             {/* Deezer Audio Stream Widget */}
-            <div className="rounded-xl overflow-hidden border border-slate-800/60 bg-black">
+            <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800/60 bg-black shadow-sm">
               <iframe
                 title="Deezer Official Artist Player"
                 src="https://widget.deezer.com/widget/dark/artist/338551431"
@@ -386,20 +386,20 @@ export const KnowledgePanelWidget = () => {
             </div>
 
             {/* Song list with direct YouTube Watch and Audio synthesis */}
-            <div className="border border-slate-800/60 rounded-xl divide-y divide-slate-800/40 overflow-hidden bg-slate-900/20">
+            <div className="border border-slate-200 dark:border-slate-800/60 rounded-xl divide-y divide-slate-200 dark:divide-slate-800/40 overflow-hidden bg-white dark:bg-slate-900/20 shadow-sm">
               {songs.map((song: Song, i: number) => {
                 const videoId = song.youtubeId || "dQMyeL9CDks";
                 return (
                   <div
                     key={song.id}
-                    className="p-3.5 sm:p-4 hover:bg-slate-900/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    className="p-3.5 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="w-6 h-6 rounded-full bg-slate-800 text-slate-400 text-xs font-mono font-semibold flex items-center justify-center shrink-0">
+                      <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 text-xs font-mono font-semibold flex items-center justify-center shrink-0">
                         {i + 1}
                       </span>
 
-                      <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-slate-800 bg-black">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-slate-200 dark:border-slate-800 bg-black">
                         <img
                           src={song.youtubeId ? `https://i.ytimg.com/vi/${song.youtubeId}/hqdefault.jpg` : song.cover}
                           alt={song.title}
@@ -411,8 +411,8 @@ export const KnowledgePanelWidget = () => {
                       </div>
 
                       <div className="min-w-0">
-                        <h4 className="font-semibold text-white text-sm truncate">{song.title}</h4>
-                        <div className="flex items-center gap-2 text-xs text-slate-400">
+                        <h4 className="font-semibold text-slate-900 dark:text-white text-sm truncate">{song.title}</h4>
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                           <span>{song.genre}</span>
                           <span>·</span>
                           <span>{song.year}</span>
@@ -425,7 +425,7 @@ export const KnowledgePanelWidget = () => {
                     <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                       <button
                         onClick={() => setSelectedVideo({ id: videoId, title: song.title })}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/90 hover:bg-red-600 text-white text-xs font-medium transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition-colors shadow-sm"
                       >
                         <Play size={12} className="fill-white" />
                         <span>Watch Video</span>
@@ -435,7 +435,7 @@ export const KnowledgePanelWidget = () => {
                         href={song.youtubeUrl || `${OFFICIAL_YOUTUBE_CHANNEL}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                        className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
                         title="Open on YouTube"
                       >
                         <ExternalLink size={14} />
@@ -447,7 +447,7 @@ export const KnowledgePanelWidget = () => {
             </div>
 
             <div className="flex justify-end">
-              <Link to="/p/songs.html" className="text-xs text-sky-400 hover:underline flex items-center gap-1 font-medium">
+              <Link to="/p/songs.html" className="text-xs text-blue-600 dark:text-sky-400 hover:underline flex items-center gap-1 font-medium">
                 <span>View Full Music &amp; Audio Synthesizer Page</span>
                 <ChevronRight size={14} />
               </Link>
@@ -460,10 +460,10 @@ export const KnowledgePanelWidget = () => {
           <div className="py-6 space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-white text-lg">Published Books ({books.length})</h3>
-                <p className="text-xs text-slate-400">Official author publications on Google Books and Chaptra.</p>
+                <h3 className="font-bold text-slate-900 dark:text-white text-lg">Published Books ({books.length})</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Official author publications on Google Books and Chaptra.</p>
               </div>
-              <Link to="/p/books.html" className="text-xs text-sky-400 hover:underline flex items-center gap-1 font-medium">
+              <Link to="/p/books.html" className="text-xs text-blue-600 dark:text-sky-400 hover:underline flex items-center gap-1 font-medium">
                 <span>All Books</span>
                 <ChevronRight size={14} />
               </Link>
@@ -473,15 +473,15 @@ export const KnowledgePanelWidget = () => {
               {books.map((book) => (
                 <div
                   key={book.id}
-                  className="p-3.5 rounded-xl border border-slate-800/60 bg-slate-900/30 flex flex-col justify-between hover:border-slate-700 transition-all"
+                  className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-900/30 flex flex-col justify-between hover:border-blue-400 dark:hover:border-slate-700 transition-all shadow-sm"
                 >
                   <div className="flex gap-3">
-                    <div className="w-14 h-20 rounded overflow-hidden shrink-0 bg-black border border-slate-800">
+                    <div className="w-14 h-20 rounded overflow-hidden shrink-0 bg-black border border-slate-200 dark:border-slate-800">
                       <img src={book.cover} alt={book.title} className="w-full h-full object-cover" />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="font-semibold text-white text-xs line-clamp-2">{book.title}</h4>
-                      <p className="text-[11px] text-sky-400 mt-1">{book.category}</p>
+                      <h4 className="font-semibold text-slate-900 dark:text-white text-xs line-clamp-2">{book.title}</h4>
+                      <p className="text-[11px] text-blue-600 dark:text-sky-400 font-medium mt-1">{book.category}</p>
                       <p className="text-[10px] text-slate-500 mt-0.5">{book.publishedDate}</p>
                     </div>
                   </div>
@@ -490,7 +490,7 @@ export const KnowledgePanelWidget = () => {
                     href={book.chaptraUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-3 text-xs text-slate-300 hover:text-white flex items-center justify-center gap-1 py-1.5 rounded bg-slate-800/60 hover:bg-slate-800 transition-colors"
+                    className="mt-3 text-xs text-slate-700 hover:text-blue-600 dark:text-slate-300 dark:hover:text-white flex items-center justify-center gap-1 py-1.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-transparent font-medium"
                   >
                     <span>Read on Chaptra</span>
                     <ExternalLink size={11} />
@@ -506,28 +506,28 @@ export const KnowledgePanelWidget = () => {
           <div className="py-6 space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-white text-lg">
+                <h3 className="font-bold text-slate-900 dark:text-white text-lg">
                   Research Papers &amp; Academic Works ({defaultScholarPublications.length})
                 </h3>
-                <p className="text-xs text-slate-400">Detected from Google Scholar citations index.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Detected from Google Scholar citations index.</p>
               </div>
               <a
                 href={profile.scholar || "https://scholar.google.com/citations?user=ixspgUAAAAAJ&hl=en"}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold shadow-sm"
               >
                 <span>Google Scholar Profile</span>
                 <ExternalLink size={12} />
               </a>
             </div>
 
-            <div className="border border-slate-800/60 rounded-xl divide-y divide-slate-800/40 bg-slate-900/20">
+            <div className="border border-slate-200 dark:border-slate-800/60 rounded-xl divide-y divide-slate-200 dark:divide-slate-800/40 bg-white dark:bg-slate-900/20 shadow-sm">
               {defaultScholarPublications.map((pub) => (
-                <div key={pub.id} className="p-4 hover:bg-slate-900/40 transition-colors">
-                  <h4 className="font-semibold text-white text-sm">{pub.title}</h4>
-                  <p className="text-xs text-slate-400 mt-1">{pub.authors} · {pub.year}</p>
-                  <p className="text-xs text-slate-400">{pub.venue}</p>
+                <div key={pub.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
+                  <h4 className="font-semibold text-slate-900 dark:text-white text-sm">{pub.title}</h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{pub.authors} · {pub.year}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{pub.venue}</p>
                 </div>
               ))}
             </div>

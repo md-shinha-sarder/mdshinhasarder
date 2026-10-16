@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
-import PageInfobox from "@/components/PageInfobox";
 import {
   FolderKanban,
   ExternalLink,
@@ -207,63 +206,31 @@ const ProjectsPage = () => {
   const filtered = selectedCat === "all" ? allProjects : allProjects.filter((p) => p.category === selectedCat);
 
   return (
-    <div className="min-h-screen bg-black text-slate-100 selection:bg-blue-500/30 selection:text-blue-200">
+    <div className="min-h-screen bg-white text-slate-900 dark:bg-black dark:text-slate-100 selection:bg-blue-500/30 selection:text-blue-200 transition-colors duration-300">
       <Helmet>
-        <title>Projects &amp; Ventures — MD. Shinha Sarder</title>
+        <title>Projects - MD. Shinha Sarder</title>
         <meta
           name="description"
-          content="Explore the enterprises, software systems, web applications, and innovations engineered by MD. Shinha Sarder, Founder &amp; CEO of IT Tech BD and Biostar TV World."
+          content="Enterprises, software systems, web applications, and innovations engineered by MD. Shinha Sarder."
         />
+        <meta property="og:title" content="Projects - MD. Shinha Sarder" />
         <link rel="canonical" href="https://www.mdshinhasarder.com/p/projects.html" />
       </Helmet>
 
       <Navbar />
 
-      <main className="pt-28 pb-20 container mx-auto px-4 sm:px-6 max-w-6xl">
-        {/* Quick Breadcrumbs */}
-        <div className="flex items-center gap-2 mb-6 text-xs text-blue-200/80">
-          <Link to="/" className="hover:text-white transition-colors">Home</Link>
-          <span>/</span>
-          <span className="text-white font-medium">Projects &amp; Ventures</span>
+      <main className="pt-24 pb-20 container mx-auto px-4 sm:px-6 max-w-6xl">
+        {/* Page Header */}
+        <div className="mb-8 border-b border-slate-200 dark:border-neutral-800 pb-5">
+          <div className="flex items-center gap-2 mb-2 text-xs text-slate-500 dark:text-neutral-400">
+            <Link to="/" className="hover:text-blue-600 dark:hover:text-white transition-colors">Home</Link>
+            <span>/</span>
+            <span className="text-slate-900 dark:text-white font-medium">Projects</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Projects
+          </h1>
         </div>
-
-        {/* Blue UI/UX Design Board Projects Infobox */}
-        <PageInfobox
-          title="MD. Shinha Sarder — Technology Ventures &amp; Engineering Systems"
-          subtitle="Founder &amp; CEO, IT Tech BD &amp; Biostar TV World · Systems Architect"
-          badge="Founder &amp; Chief Executive Officer"
-          badgeIcon={Building2}
-          avatarUrl="/profile.webp"
-          avatarAlt="MD. Shinha Sarder"
-          verified={true}
-          description="Commercial technology firms, software applications, media broadcasting networks, and computational research architectures spearheaded and engineered by MD. Shinha Sarder."
-          stats={[
-            { label: "Ventures Founded", value: "2 Flagships", color: "text-white font-bold", subtext: "IT Tech BD & Biostar TV" },
-            { label: "Systems Built", value: `${allProjects.length}`, color: "text-sky-300 font-bold", subtext: "Production Software" },
-            { label: "Core Architecture", value: "Next.js 16", color: "text-indigo-300 font-bold", subtext: "Node.js & Python" },
-            { label: "Operations", value: "Global", color: "text-emerald-400 font-bold", subtext: "Khulna, Bangladesh" },
-          ]}
-          facts={[
-            { label: "Leadership Entity", value: <span className="text-white font-bold">MD. Shinha Sarder (Founder &amp; CEO)</span> },
-            { label: "Active Enterprises", value: <span className="text-sky-300 font-semibold">IT Tech BD (Software Solutions, Cloud &amp; Web Systems) · Biostar TV World (Digital Media &amp; Broadcast Network)</span> },
-            { label: "Technical Stacks", value: <span className="text-slate-100">Next.js 16 App Router, React, Node.js, Python, PostgreSQL, REST APIs, Microservices, Cloud Security &amp; SEO Architecture</span> },
-            { label: "Research Prototypes", value: <span className="text-slate-100">Algorithm Visualizer (BFS/DFS, Dijkstra), Computer Vision Facial Biometrics, Microservices API Suite</span> },
-            { label: "Headquarters & Service", value: <span className="text-slate-100">Khulna, Bangladesh — Delivering full-stack technology and media solutions locally and globally</span> },
-          ]}
-          actions={[
-            {
-              label: "Explore Skills",
-              href: "/skills",
-              icon: Terminal,
-              primary: true,
-            },
-            {
-              label: "View Publications",
-              href: "/publications",
-              icon: ExternalLink,
-            },
-          ]}
-        />
 
         {/* Filter Tabs */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
@@ -279,8 +246,8 @@ const ProjectsPage = () => {
               onClick={() => setSelectedCat(tab.id as any)}
               className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                 selectedCat === tab.id
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-600/40 border border-blue-400"
-                  : "bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800 border border-blue-900/40"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/40 border border-blue-500"
+                  : "bg-slate-100 text-slate-700 hover:text-slate-900 hover:bg-slate-200 border border-slate-200 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:text-white dark:border-blue-900/40"
               }`}
             >
               {tab.label}
@@ -293,42 +260,42 @@ const ProjectsPage = () => {
           {filtered.map((proj) => (
             <div
               key={proj.id}
-              className={`bg-gradient-to-br from-[#0c183a]/90 via-[#0a1532]/90 to-[#070e24]/95 border ${
-                proj.featured ? "border-blue-500/50 shadow-blue-950/80" : "border-blue-500/20"
-              } hover:border-blue-400/60 rounded-3xl p-6 sm:p-8 shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between`}
+              className={`bg-white dark:bg-gradient-to-br dark:from-[#0c183a]/90 dark:via-[#0a1532]/90 dark:to-[#070e24]/95 border ${
+                proj.featured ? "border-blue-400 dark:border-blue-500/50" : "border-slate-200 dark:border-blue-500/20"
+              } hover:border-blue-500 rounded-3xl p-6 sm:p-8 shadow-sm dark:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between`}
             >
               <div>
                 {/* Header row */}
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-blue-400 block mb-1">
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 block mb-1">
                       {proj.role} · {proj.period}
                     </span>
-                    <h2 className="text-xl sm:text-2xl font-serif font-bold text-white group-hover:text-blue-300 transition-colors">
+                    <h2 className="text-xl sm:text-2xl font-serif font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors">
                       {proj.title}
                     </h2>
                   </div>
                   {proj.featured && (
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 flex-shrink-0">
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-400/30 flex-shrink-0">
                       Flagship
                     </span>
                   )}
                 </div>
 
                 {/* Description */}
-                <p className="text-xs sm:text-sm text-slate-300 mb-5 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-5 leading-relaxed">
                   {proj.desc}
                 </p>
 
                 {/* Key Features Bullet List */}
-                <div className="mb-5 bg-[#050b1f]/60 rounded-2xl p-4 border border-blue-900/40">
-                  <span className="text-[11px] uppercase font-bold tracking-wider text-blue-300 block mb-2">
+                <div className="mb-5 bg-slate-50 dark:bg-[#050b1f]/60 rounded-2xl p-4 border border-slate-200 dark:border-blue-900/40">
+                  <span className="text-[11px] uppercase font-bold tracking-wider text-blue-700 dark:text-blue-300 block mb-2">
                     Key Architectural Highlights:
                   </span>
-                  <ul className="space-y-1.5 text-xs text-slate-300">
+                  <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
                     {proj.features.map((feat, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <CheckCircle2 size={13} className="text-blue-400 mt-0.5 flex-shrink-0" />
+                        <CheckCircle2 size={13} className="text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                         <span>{feat}</span>
                       </li>
                     ))}
@@ -342,7 +309,7 @@ const ProjectsPage = () => {
                   {proj.tags.map((t) => (
                     <span
                       key={t}
-                      className="text-[10px] uppercase tracking-wider text-blue-200 bg-blue-950/80 border border-blue-800/40 px-2.5 py-0.5 rounded-full font-medium"
+                      className="text-[10px] uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 dark:text-blue-200 dark:bg-blue-950/80 dark:border-blue-800/40 px-2.5 py-0.5 rounded-full font-medium"
                     >
                       {t}
                     </span>
@@ -350,7 +317,7 @@ const ProjectsPage = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="pt-4 border-t border-blue-900/40 flex items-center gap-3">
+                <div className="pt-4 border-t border-slate-200 dark:border-blue-900/40 flex items-center gap-3">
                   {proj.liveUrl && (
                     <a
                       href={proj.liveUrl}
@@ -367,7 +334,7 @@ const ProjectsPage = () => {
                       href={proj.githubUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold border border-blue-900/50 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-slate-200 text-xs font-semibold dark:border-blue-900/50 transition-colors"
                     >
                       <Github size={13} />
                       <span>Source / Profile</span>
@@ -380,21 +347,21 @@ const ProjectsPage = () => {
         </div>
 
         {/* Bottom Banner */}
-        <div className="bg-gradient-to-r from-blue-950/80 via-[#0a1532]/90 to-blue-950/80 border border-blue-500/30 rounded-3xl p-8 text-center">
-          <h3 className="text-xl font-bold text-white mb-2">Have a project or partnership in mind?</h3>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto mb-6">
+        <div className="bg-slate-50 dark:bg-gradient-to-r dark:from-blue-950/80 dark:via-[#0a1532]/90 dark:to-blue-950/80 border border-slate-200 dark:border-blue-500/30 rounded-3xl p-8 text-center shadow-sm">
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Have a project or partnership in mind?</h3>
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl mx-auto mb-6">
             MD. Shinha Sarder collaborates with technology companies, publishers, educational institutions, and research groups worldwide.
           </p>
           <div className="flex items-center justify-center gap-3">
             <a
               href="mailto:Shinhasarder2343@gmail.com"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold shadow-lg shadow-blue-600/30 transition-transform hover:scale-105"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-600/30 transition-transform hover:scale-105"
             >
               Get in Touch (Email)
             </a>
             <Link
-              to="/skills"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs sm:text-sm font-semibold border border-blue-900/50 transition-colors"
+              to="/p/skills.html"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs sm:text-sm font-semibold border border-slate-300 dark:border-blue-900/50 transition-colors"
             >
               Review Technical Skills
               <ArrowRight size={14} />

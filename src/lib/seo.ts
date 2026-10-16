@@ -42,11 +42,9 @@ export const autoDescription = (post: Pick<BlogPost, "title" | "excerpt" | "cont
 };
 
 export const autoTitle = (title: string): string => {
-  const suffix = ` | ${SITE.name}`;
-  const max = 60;
-  if (title.length + suffix.length <= max) return title + suffix;
-  if (title.length <= max) return title;
-  return title.slice(0, max - 1).trimEnd() + "…";
+  const suffix = ` - ${SITE.name}`;
+  if (!title) return SITE.name;
+  return `${title}${suffix}`;
 };
 
 export const buildSeo = (post: BlogPost) => {

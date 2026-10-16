@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Gradients & Shadows -->
+    <linearGradient id="rocketBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <linearGradient id="blueAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="visorGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4338ca"/>
+      <stop offset="100%" stop-color="#312e81"/>
+    </linearGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Floating Sparkles & Plus Stars -->
+  <g stroke="#818cf8" stroke-width="1.8" stroke-linecap="round" opacity="0.85">
+    <!-- Star 1 Top Left -->
+    <path d="M190 75v12M184 81h12"/>
+    <!-- Star 2 Center Top -->
+    <path d="M268 70v10M263 75h10"/>
+    <!-- Star 3 Right of Astronaut -->
+    <path d="M330 115v10M325 120h10"/>
+    <!-- Star 4 Near Rocket -->
+    <path d="M430 115v12M424 121h12"/>
+    <!-- Star 5 Far Right -->
+    <path d="M438 250v10M433 255h10"/>
+    <!-- Star 6 Lower Left -->
+    <path d="M220 270v10M215 275h10"/>
+    <!-- Star 7 Far Left -->
+    <path d="M150 160v10M145 165h10"/>
+    <!-- Small dots -->
+    <circle cx="205" cy="190" r="1.5" fill="#818cf8" stroke="none"/>
+    <circle cx="280" cy="140" r="1.5" fill="#818cf8" stroke="none"/>
+    <circle cx="370" cy="85" r="1.5" fill="#818cf8" stroke="none"/>
+    <circle cx="395" cy="220" r="1.5" fill="#818cf8" stroke="none"/>
+  </g>
+
+  <!-- Wavy Rocket Exhaust Trail -->
+  <path d="M475 140 C460 160 440 180 435 200 C430 220 445 235 440 250 C435 265 410 275 390 280"
+        stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 6" opacity="0.75"/>
+
+  <!-- Rocket Ship Flying Upward -->
+  <g transform="translate(460, 60) rotate(35)">
+    <!-- Rocket Fins -->
+    <path d="M-14 42 L-26 58 L-10 56 Z" fill="#4f46e5" stroke="#4338ca" stroke-width="2"/>
+    <path d="M14 42 L26 58 L10 56 Z" fill="#4f46e5" stroke="#4338ca" stroke-width="2"/>
+    <path d="M0 45 L0 60" stroke="#4338ca" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Rocket Body -->
+    <path d="M0 -30 C18 0 18 35 15 50 L-15 50 C-18 35 -18 0 0 -30 Z"
+          fill="url(#rocketBody)" stroke="#4338ca" stroke-width="2.5" stroke-linejoin="round"/>
+    
+    <!-- Rocket Nosecone -->
+    <path d="M0 -30 C12 -8 13 0 0 0 C-13 0 -12 -8 0 -30 Z" fill="#4f46e5"/>
+    
+    <!-- Rocket Window / Porthole -->
+    <circle cx="0" cy="20" r="9" fill="#e0e7ff" stroke="#4338ca" stroke-width="2.2"/>
+    <circle cx="0" cy="20" r="5" fill="#6366f1"/>
+    <circle cx="-2" cy="18" r="1.8" fill="#ffffff"/>
+
+    <!-- Exhaust Flame -->
+    <path d="M-9 52 C-5 68 0 74 0 74 C0 74 5 68 9 52 Z" fill="#6366f1" opacity="0.9"/>
+    <path d="M-5 52 C-2 62 0 66 0 66 C0 62 2 62 5 52 Z" fill="#a5b4fc"/>
+  </g>
+
+  <!-- Astronaut & Puppy Dog in Space -->
+  <g transform="translate(190, 70)">
+    <!-- Astronaut Backpack Tank / Life Support -->
+    <rect x="52" y="105" width="46" height="70" rx="20" fill="#e0e7ff" stroke="#4338ca" stroke-width="2.5" transform="rotate(-15 75 140)"/>
+    <path d="M72 105 L72 90 C72 82 85 80 88 88 L88 100" stroke="#4338ca" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    <circle cx="88" cy="84" r="3" fill="#6366f1"/>
+
+    <!-- Legs & Boots (angled floating position) -->
+    <!-- Right Leg -->
+    <path d="M125 180 C145 195 160 215 185 220 L180 238 C150 235 130 210 115 192 Z"
+          fill="#ffffff" stroke="#4338ca" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- Left Leg (Bent) -->
+    <path d="M100 185 C95 205 90 220 75 230 L60 218 C72 205 78 195 85 180 Z"
+          fill="#ffffff" stroke="#4338ca" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- Right Boot -->
+    <path d="M175 220 C190 220 205 225 210 236 C210 242 195 245 178 240 Z"
+          fill="#4f46e5" stroke="#4338ca" stroke-width="2.5"/>
+    <!-- Left Boot -->
+    <path d="M72 225 C62 232 50 238 42 230 C38 222 48 214 62 216 Z"
+          fill="#4f46e5" stroke="#4338ca" stroke-width="2.5"/>
+
+    <!-- Knee Accent Patches -->
+    <ellipse cx="145" cy="202" rx="10" ry="7" fill="#6366f1" transform="rotate(25 145 202)"/>
+    <ellipse cx="85" cy="208" rx="8" ry="6" fill="#6366f1" transform="rotate(-25 85 208)"/>
+
+    <!-- Astronaut Body / Torso -->
+    <path d="M75 118 C85 105 130 108 145 125 C155 140 148 185 130 195 C112 202 85 195 72 178 C62 160 65 132 75 118 Z"
+          fill="#ffffff" stroke="#4338ca" stroke-width="2.5" stroke-linejoin="round"/>
+
+    <!-- Left Arm & Waving Hand -->
+    <!-- Upper Arm -->
+    <path d="M140 120 C155 105 170 85 180 65" stroke="#4338ca" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <path d="M140 120 C155 105 170 85 180 65" stroke="#ffffff" stroke-width="11" stroke-linecap="round" fill="none"/>
+    <!-- Forearm & Glove Waving -->
+    <path d="M180 65 L188 40" stroke="#4338ca" stroke-width="15" stroke-linecap="round" fill="none"/>
+    <path d="M180 65 L188 40" stroke="#ffffff" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <!-- Glove -->
+    <circle cx="188" cy="35" r="9" fill="#ffffff" stroke="#4338ca" stroke-width="2.5"/>
+    <path d="M188 26 C190 22 195 24 195 28 L195 35" stroke="#4338ca" stroke-width="2.5" stroke-linecap="round" fill="#ffffff"/>
+    <path d="M194 28 C198 25 203 28 201 34" stroke="#4338ca" stroke-width="2.2" stroke-linecap="round" fill="#ffffff"/>
+    <ellipse cx="188" cy="38" rx="6" ry="3" fill="#6366f1"/>
+
+    <!-- Right Arm (folded gently around pet) -->
+    <path d="M78 135 C68 150 72 170 88 180" stroke="#4338ca" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <path d="M78 135 C68 150 72 170 88 180" stroke="#ffffff" stroke-width="9" stroke-linecap="round" fill="none"/>
+    <circle cx="92" cy="180" r="7" fill="#4f46e5" stroke="#4338ca" stroke-width="2"/>
+
+    <!-- Astronaut Helmet -->
+    <circle cx="112" cy="78" r="32" fill="#ffffff" stroke="#4338ca" stroke-width="2.8"/>
+    <!-- Helmet Visor (Dark Blue/Indigo with Reflection) -->
+    <ellipse cx="115" cy="76" rx="22" ry="18" fill="url(#visorGlass)" stroke="#312e81" stroke-width="2"/>
+    <!-- Cute Eyes inside Visor -->
+    <ellipse cx="108" cy="74" rx="2.5" ry="4" fill="#ffffff"/>
+    <ellipse cx="122" cy="74" rx="2.5" ry="4" fill="#ffffff"/>
+    <circle cx="109" cy="73" r="1.2" fill="#1e1b4b"/>
+    <circle cx="123" cy="73" r="1.2" fill="#1e1b4b"/>
+    <!-- Smiling Mouth -->
+    <path d="M112 81 Q115 84 118 81" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    <!-- Helmet Visor Reflection Light -->
+    <path d="M102 66 C108 62 120 62 126 65" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6"/>
+
+    <!-- Cute Dog Astronaut in Chest Pouch -->
+    <g transform="translate(100, 125)">
+      <!-- Pouch pocket -->
+      <path d="M-8 25 C-12 40 28 40 28 25 Z" fill="#6366f1" stroke="#4338ca" stroke-width="2"/>
+      
+      <!-- Puppy Head -->
+      <circle cx="10" cy="12" r="14" fill="#ffffff" stroke="#4338ca" stroke-width="2"/>
+      <!-- Puppy Helmet -->
+      <circle cx="10" cy="12" r="17" fill="none" stroke="#6366f1" stroke-width="1.8" stroke-dasharray="32 8"/>
+      
+      <!-- Puppy Ears -->
+      <path d="M-2 4 C-8 4 -7 14 -4 16 Z" fill="#4f46e5" stroke="#4338ca" stroke-width="1.8"/>
+      <path d="M22 4 C28 4 27 14 24 16 Z" fill="#4f46e5" stroke="#4338ca" stroke-width="1.8"/>
+      
+      <!-- Puppy Face -->
+      <ellipse cx="5" cy="10" rx="1.8" ry="2.2" fill="#1e1b4b"/>
+      <ellipse cx="15" cy="10" rx="1.8" ry="2.2" fill="#1e1b4b"/>
+      <circle cx="10" cy="15" r="2" fill="#4338ca"/>
+      <path d="M8 17 Q10 19 12 17" stroke="#4338ca" stroke-width="1.2" fill="none"/>
+    </g>
+  </g>
+</svg>

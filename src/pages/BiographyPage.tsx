@@ -4,20 +4,13 @@ import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
-import PageInfobox from "@/components/PageInfobox";
 import {
-  BadgeCheck,
-  Calendar,
-  MapPin,
   GraduationCap,
-  Building2,
-  Users,
   Share2,
   Check,
   ExternalLink,
   Youtube,
   BookOpen,
-  Music,
 } from "lucide-react";
 import { useProfileData } from "@/hooks/useProfileData";
 
@@ -31,34 +24,15 @@ export const BiographyPage = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const entityFacts = [
-    { label: "Full Name", value: <span className="text-white font-bold">{profile.name}</span> },
-    { label: "Born", value: <span className="text-slate-100">{profile.birthDate} ({profile.birthPlace})</span> },
-    { label: "Known As", value: <span className="text-sky-300 font-semibold">Founder &amp; CEO, IT Tech BD and Biostar TV World</span> },
-    { label: "Occupations", value: <span className="text-blue-300 font-medium">Entrepreneur, Musical Artist, Author, Researcher, YouTuber &amp; Content Creator</span> },
-    { label: "Higher Education", value: <span className="text-slate-100">{profile.education}</span> },
-    { label: "Secondary School", value: <span className="text-slate-100">{profile.school}</span> },
-    { label: "Father", value: <span className="text-slate-100">{profile.father}</span> },
-    { label: "Mother", value: <span className="text-slate-100">{profile.mother}</span> },
-    { label: "Hometown", value: <span className="text-slate-100">Shirgati village, Aichgati UnionParishad, Khulna, Bangladesh</span> },
-    { label: "National Identity", value: <span className="text-slate-100">Bangladeshi Tech Entrepreneur &amp; Published Author</span> },
-  ];
-
-  const entityStats = [
-    { label: "Published Books", value: "20+", color: "text-sky-400", subtext: "Chaptra & Google Books" },
-    { label: "Music Releases", value: "15", color: "text-amber-400", subtext: "Deezer & Spotify" },
-    { label: "Enterprises", value: "2", color: "text-emerald-400", subtext: "IT Tech BD & Biostar TV" },
-    { label: "Citations", value: "37+", color: "text-indigo-400", subtext: "Google Scholar" },
-  ];
-
   return (
-    <div className="relative min-h-screen bg-black text-slate-100 selection:bg-blue-500/30 selection:text-blue-200">
+    <div className="relative min-h-screen bg-white text-slate-900 dark:bg-black dark:text-slate-100 selection:bg-blue-500/30 selection:text-blue-200 transition-colors duration-300">
       <Helmet>
-        <title>Biography — MD. Shinha Sarder</title>
+        <title>Biography - MD. Shinha Sarder</title>
         <meta
           name="description"
-          content="Complete verified biography of MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World. Early life, education, entrepreneurial career, authorship, and musical artistry."
+          content="Biography of MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World. Entrepreneur, author, researcher, and musical artist."
         />
+        <meta property="og:title" content="Biography - MD. Shinha Sarder" />
         <meta property="og:image" content="/profile.webp" />
         <link rel="canonical" href="https://www.mdshinhasarder.com/p/biography.html" />
       </Helmet>
@@ -68,90 +42,69 @@ export const BiographyPage = () => {
       <div className="relative z-10 flex flex-col min-h-screen">
         <Navbar />
 
-        <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-16 w-full">
-          {/* Top Breadcrumb & Actions */}
-          <div className="flex items-center justify-between gap-4 pb-6 border-b border-blue-500/20 mb-8">
-            <div className="flex items-center gap-2 text-xs text-blue-200/80">
-              <Link to="/" className="hover:text-white transition-colors">Home</Link>
-              <span>/</span>
-              <span className="text-white font-medium">Biography</span>
+        <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-24 pb-16 w-full">
+          {/* Top Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-neutral-800 mb-8">
+            <div>
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-neutral-400 mb-2">
+                <Link to="/" className="hover:text-blue-600 dark:hover:text-white transition-colors">Home</Link>
+                <span>/</span>
+                <span className="text-slate-900 dark:text-white font-medium">Biography</span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+                Biography
+              </h1>
             </div>
 
             <button
               onClick={handleCopyLink}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-950/60 hover:bg-blue-900/80 border border-blue-500/30 text-xs text-blue-200 hover:text-white transition-colors"
+              className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-xs font-medium text-slate-700 dark:text-neutral-200 transition-colors"
             >
-              {copied ? <Check size={14} className="text-emerald-400" /> : <Share2 size={14} />}
+              {copied ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
               <span>{copied ? "Copied" : "Share Biography"}</span>
             </button>
           </div>
 
-          {/* Blue UI/UX Design Board Infobox */}
-          <PageInfobox
-            title={profile.name}
-            subtitle={`${profile.tagline || "Entrepreneur"} · ${profile.ventures}`}
-            badge="Google Knowledge Graph &amp; Official Entity"
-            badgeIcon={BadgeCheck}
-            avatarUrl="/profile.webp"
-            avatarAlt={profile.name}
-            verified={true}
-            description="Official biographical record of MD. Shinha Sarder, documented across international encyclopedias, Google Knowledge Graph, academic registries, and digital broadcast networks."
-            stats={entityStats}
-            facts={entityFacts}
-            actions={[
-              { label: "Music Releases", href: "/songs", icon: Music, primary: true },
-              { label: "Published Books", href: "/books", icon: BookOpen },
-              { label: "Scholar Citations", href: "/publications", icon: GraduationCap },
-            ]}
-          />
-
-          {/* Canonical Biography Text Article inside Blue UI/UX Card */}
-          <article className="blue-uix-board p-6 sm:p-8 rounded-2xl sm:rounded-3xl mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-2">
-              <span>Canonical Narrative &amp; Career History</span>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-950 border border-blue-500/30 text-sky-300">
-                Verified Document
-              </span>
-            </h2>
-            <div className="text-slate-100 text-sm sm:text-base leading-relaxed text-justify space-y-4">
-              <p>{profile.bioText}</p>
-            </div>
+          {/* Biography Article */}
+          <article className="prose dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 text-base leading-relaxed text-justify space-y-5 mb-10">
+            <p>{profile.bioText}</p>
           </article>
 
           {/* Direct Portals */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6 border-t border-blue-500/20">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6 border-t border-slate-200 dark:border-neutral-800">
             <Link
               to="/p/songs.html"
-              className="p-4 rounded-xl border border-blue-500/30 bg-blue-950/40 hover:bg-blue-900/60 transition-colors flex items-center justify-between group"
+              className="p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:bg-neutral-900 transition-colors flex items-center justify-between group shadow-sm dark:shadow-none"
             >
               <div className="flex items-center gap-2.5">
-                <Youtube className="w-5 h-5 text-red-400 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-semibold text-white">Songs &amp; Videos (15 Tracks)</span>
+                <Youtube className="w-5 h-5 text-red-500 dark:text-red-400 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-semibold text-slate-900 dark:text-white">Songs &amp; Videos (15 Tracks)</span>
               </div>
-              <ExternalLink size={12} className="text-blue-300" />
+              <ExternalLink size={12} className="text-blue-600 dark:text-blue-400" />
             </Link>
 
             <Link
               to="/p/books.html"
-              className="p-4 rounded-xl border border-blue-500/30 bg-blue-950/40 hover:bg-blue-900/60 transition-colors flex items-center justify-between group"
+              className="p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:bg-neutral-900 transition-colors flex items-center justify-between group shadow-sm dark:shadow-none"
             >
               <div className="flex items-center gap-2.5">
-                <BookOpen className="w-5 h-5 text-sky-400 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-semibold text-white">Books &amp; Works (20 Books)</span>
+                <BookOpen className="w-5 h-5 text-sky-600 dark:text-sky-400 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-semibold text-slate-900 dark:text-white">Books &amp; Works (20 Books)</span>
               </div>
-              <ExternalLink size={12} className="text-blue-300" />
+              <ExternalLink size={12} className="text-blue-600 dark:text-blue-400" />
             </Link>
 
             <Link
               to="/p/publication.html"
-              className="p-4 rounded-xl border border-blue-500/30 bg-blue-950/40 hover:bg-blue-900/60 transition-colors flex items-center justify-between group"
+              className="p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:bg-neutral-900 transition-colors flex items-center justify-between group shadow-sm dark:shadow-none"
             >
               <div className="flex items-center gap-2.5">
-                <GraduationCap className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-semibold text-white">Scholar Citations (37+ Citations)</span>
+                <GraduationCap className="w-5 h-5 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-semibold text-slate-900 dark:text-white">Scholar Citations (37+ Citations)</span>
               </div>
-              <ExternalLink size={12} className="text-blue-300" />
+              <ExternalLink size={12} className="text-blue-600 dark:text-blue-400" />
             </Link>
+          </div>
           </div>
         </main>
 

@@ -4,7 +4,6 @@ import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
-import PageInfobox from "@/components/PageInfobox";
 import {
   Images,
   X,
@@ -209,13 +208,14 @@ export const GalleryPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-slate-100 selection:bg-blue-500/30 selection:text-blue-200">
+    <div className="min-h-screen bg-white text-slate-900 dark:bg-black dark:text-slate-100 selection:bg-blue-500/30 selection:text-blue-200 transition-colors duration-300">
       <Helmet>
-        <title>Visual Media &amp; Photo Gallery — MD. Shinha Sarder</title>
+        <title>Gallery - MD. Shinha Sarder</title>
         <meta
           name="description"
-          content="Complete visual gallery automatically aggregating all photos from all posts, all pages, book covers, songs, and official verified portraits of MD. Shinha Sarder."
+          content="Visual gallery and official photo media archive of MD. Shinha Sarder."
         />
+        <meta property="og:title" content="Gallery - MD. Shinha Sarder" />
         <meta property="og:image" content="https://mdshinhasarder.com/profile.webp" />
         <link rel="canonical" href="https://www.mdshinhasarder.com/p/gallery.html" />
       </Helmet>
@@ -226,50 +226,27 @@ export const GalleryPage = () => {
         <Navbar />
 
         <main className="flex-1 max-w-6xl mx-auto px-4 py-8 sm:py-12 w-full">
-          {/* Breadcrumb Header */}
-          <div className="mb-6 flex items-center gap-2 text-xs font-medium text-slate-400">
-            <Link to="/" className="hover:text-blue-400 transition-colors">Home</Link>
-            <span>/</span>
-            <span className="text-blue-400 font-semibold">Gallery</span>
-          </div>
+          {/* Clean Page Title Header */}
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-neutral-800 pb-5">
+            <div>
+              <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-neutral-400">
+                <Link to="/" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Home</Link>
+                <span>/</span>
+                <span className="text-slate-900 dark:text-white font-semibold">Gallery</span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+                Gallery
+              </h1>
+            </div>
 
-          {/* Blue UI/UX Design Board Media Archive Infobox */}
-          <PageInfobox
-            title="MD. Shinha Sarder — Visual Media &amp; Photo Gallery"
-            subtitle="Auto-Synced Media Archive · 310+ Synchronized Visual Assets"
-            badge="Auto-Synced Media Archive"
-            badgeIcon={Images}
-            avatarUrl="/profile.webp"
-            avatarAlt="MD. Shinha Sarder"
-            verified={true}
-            description="Official visual archive automatically aggregating verified studio portraits, editorial photography, 20 book covers, 15 music artworks, and all post/page images. Optimized for Google Image Search Rank #1 indexing."
-            stats={[
-              { label: "Indexed Assets", value: `${allGalleryItems.length}+`, color: "text-white font-bold", subtext: "Live Synchronized" },
-              { label: "Studio Portraits", value: "3 HQ Sets", color: "text-sky-300 font-bold", subtext: "Verified High-Res" },
-              { label: "Book Covers", value: "20 Books", color: "text-amber-400 font-bold", subtext: "Chaptra & Google" },
-              { label: "Music Artworks", value: "15 Tracks", color: "text-emerald-400 font-bold", subtext: "Deezer HD Art" },
-            ]}
-            facts={[
-              { label: "Entity Subject", value: <span className="text-white font-bold">MD. Shinha Sarder (Verified Public Figure)</span> },
-              { label: "Google Image SEO", value: <span className="text-sky-300 font-semibold">Schema.org ImageObject 1.1 + Dynamic image-sitemap.xml (Rank #1 Optimized)</span> },
-              { label: "Geographic Coordinate", value: <span className="text-slate-100">Khulna, Bangladesh</span> },
-              { label: "Indexed Categories", value: <span className="text-slate-100">Official Portraits, Blog Post Photos, Published Pages, Book Covers (Chaptra / Google Books), Music Artworks (Deezer)</span> },
-              { label: "Image Licensing", value: <span className="text-slate-100">All photos attribute to MD. Shinha Sarder under verified digital publishing copyright</span> },
-            ]}
-            actions={[
-              {
-                label: copied ? "Link Copied!" : "Share Gallery",
-                onClick: copyShare,
-                icon: copied ? Check : Share2,
-                primary: true,
-              },
-              {
-                label: "Browse Books",
-                href: "/books",
-                icon: ExternalLink,
-              },
-            ]}
-          />
+            <button
+              onClick={copyShare}
+              className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-xs font-medium text-slate-700 dark:text-neutral-200 transition-colors"
+            >
+              {copied ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
+              <span>{copied ? "Link Copied!" : "Share Gallery"}</span>
+            </button>
+          </div>
 
           {/* Category Filter Pills */}
           <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none">
@@ -285,11 +262,13 @@ export const GalleryPage = () => {
                   className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                     selectedCategory === cat
                       ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
-                      : "bg-[#070c1e]/90 text-slate-400 hover:text-white border border-blue-900/40 hover:border-blue-700/60"
+                      : "bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 dark:bg-[#070c1e]/90 dark:text-slate-400 dark:hover:text-white dark:border-blue-900/40 dark:hover:border-blue-700/60"
                   }`}
                 >
                   <span>{cat}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/40 text-slate-300">
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                    selectedCategory === cat ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700 dark:bg-black/40 dark:text-slate-300"
+                  }`}>
                     {count}
                   </span>
                 </button>
@@ -303,9 +282,9 @@ export const GalleryPage = () => {
               <div
                 key={item.id}
                 onClick={() => openLightbox(index)}
-                className="group relative rounded-2xl overflow-hidden bg-slate-900 border border-blue-900/40 hover:border-blue-500/60 shadow-lg cursor-pointer transition-all duration-300 hover:-translate-y-1"
+                className="group relative rounded-2xl overflow-hidden bg-white border border-slate-200 hover:border-blue-500/60 dark:bg-slate-900 dark:border-blue-900/40 dark:hover:border-blue-500/60 shadow-md cursor-pointer transition-all duration-300 hover:-translate-y-1"
               >
-                <div className="aspect-[4/3] w-full overflow-hidden bg-black/60 relative">
+                <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-black/60 relative">
                   <img
                     src={item.src}
                     alt={item.title}
@@ -325,11 +304,11 @@ export const GalleryPage = () => {
                   </div>
                 </div>
 
-                <div className="p-3 bg-[#070c1e]">
-                  <h3 className="text-xs font-semibold text-white truncate group-hover:text-blue-300 transition-colors">
+                <div className="p-3 bg-white dark:bg-[#070c1e] border-t border-slate-100 dark:border-none">
+                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors">
                     {item.title}
                   </h3>
-                  <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400 truncate mt-0.5">
                     {item.caption}
                   </p>
                 </div>

@@ -56,18 +56,18 @@ export const PageInfobox: React.FC<PageInfoboxProps> = ({
   return (
     <aside
       aria-label="Verified Knowledge & Entity Infobox"
-      className={`w-full rounded-2xl sm:rounded-3xl blue-uix-board p-5 sm:p-7 md:p-8 mb-8 text-slate-100 ${className}`}
+      className={`w-full rounded-2xl sm:rounded-3xl blue-uix-board p-5 sm:p-7 md:p-8 mb-8 text-slate-900 dark:text-slate-100 ${className}`}
     >
       {/* Top Header Row */}
-      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 pb-6 border-b border-blue-500/25">
+      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 pb-6 border-b border-slate-200 dark:border-blue-500/25">
         {/* Avatar with Verified Glow */}
         {avatarUrl && (
           <div className="relative flex-shrink-0">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl p-1 bg-gradient-to-tr from-blue-600 via-sky-400 to-indigo-600 shadow-lg shadow-blue-500/25">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl p-1 bg-gradient-to-tr from-blue-600 via-sky-400 to-indigo-600 shadow-md">
               <img
                 src={avatarUrl}
                 alt={avatarAlt}
-                className="w-full h-full rounded-xl object-cover object-top border-2 border-slate-950 bg-slate-900"
+                className="w-full h-full rounded-xl object-cover object-top border-2 border-slate-200 dark:border-slate-950 bg-slate-100 dark:bg-slate-900"
                 onError={(e) => {
                   e.currentTarget.src = "/profile.webp";
                 }}
@@ -76,7 +76,7 @@ export const PageInfobox: React.FC<PageInfoboxProps> = ({
             {verified && (
               <span
                 title="Verified Entity"
-                className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white ring-2 ring-slate-950 shadow-md"
+                className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white ring-2 ring-white dark:ring-slate-950 shadow-md"
               >
                 <BadgeCheck className="w-4 h-4 fill-blue-600 text-white" />
               </span>
@@ -87,25 +87,25 @@ export const PageInfobox: React.FC<PageInfoboxProps> = ({
         {/* Identity & Subtitles */}
         <div className="flex-1 text-center sm:text-left min-w-0">
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold text-sky-200 bg-blue-950/90 border border-blue-400/40 shadow-sm">
-              <BadgeIcon className="w-3.5 h-3.5 text-sky-400" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 dark:text-sky-200 dark:bg-blue-950/90 dark:border-blue-400/40 shadow-sm">
+              <BadgeIcon className="w-3.5 h-3.5 text-blue-600 dark:text-sky-400" />
               <span>{badge}</span>
             </span>
           </div>
 
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center justify-center sm:justify-start gap-2 flex-wrap">
             <span>{title}</span>
-            {verified && <BadgeCheck className="w-5 h-5 text-sky-400 fill-blue-500/20" />}
+            {verified && <BadgeCheck className="w-5 h-5 text-blue-600 dark:text-sky-400 fill-blue-500/20" />}
           </h2>
 
           {subtitle && (
-            <p className="text-xs sm:text-sm text-sky-300 font-semibold mt-1">
+            <p className="text-xs sm:text-sm text-blue-600 dark:text-sky-300 font-semibold mt-1">
               {subtitle}
             </p>
           )}
 
           {description && (
-            <p className="text-xs sm:text-sm text-slate-200 mt-2 leading-relaxed max-w-3xl">
+            <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 mt-2 leading-relaxed max-w-3xl">
               {description}
             </p>
           )}
@@ -118,7 +118,7 @@ export const PageInfobox: React.FC<PageInfoboxProps> = ({
               const Icon = act.icon;
               const content = (
                 <>
-                  {Icon && <Icon size={14} className={act.primary ? "text-white" : "text-sky-300"} />}
+                  {Icon && <Icon size={14} className={act.primary ? "text-white" : "text-blue-600 dark:text-sky-300"} />}
                   <span>{act.label}</span>
                   {act.external && <ExternalLink size={12} className="opacity-80" />}
                 </>
@@ -126,7 +126,7 @@ export const PageInfobox: React.FC<PageInfoboxProps> = ({
 
               const btnClass = act.primary
                 ? "inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-600/30 transition-all hover:scale-105"
-                : "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-950/70 hover:bg-blue-900/80 text-blue-200 hover:text-white text-xs font-semibold border border-blue-500/30 transition-colors";
+                : "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 dark:bg-blue-950/70 dark:hover:bg-blue-900/80 dark:text-blue-200 dark:hover:text-white dark:border-blue-500/30 text-xs font-semibold transition-colors";
 
               if (act.href) {
                 return (
@@ -153,20 +153,20 @@ export const PageInfobox: React.FC<PageInfoboxProps> = ({
 
       {/* Quick Metrics Bar (if provided) */}
       {stats && stats.length > 0 && (
-        <div className="py-4 border-b border-blue-500/20 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="py-4 border-b border-slate-200 dark:border-blue-500/20 grid grid-cols-2 sm:grid-cols-4 gap-3">
           {stats.map((st, i) => (
             <div
               key={i}
               className="blue-uix-card p-3 rounded-xl flex flex-col justify-center items-center text-center"
             >
-              <span className={`text-lg sm:text-xl font-bold font-mono ${st.color || "text-sky-300"}`}>
+              <span className={`text-lg sm:text-xl font-bold font-mono ${st.color || "text-blue-600 dark:text-sky-300"}`}>
                 {st.value}
               </span>
-              <span className="text-[11px] uppercase font-bold tracking-wider text-blue-200/90 mt-0.5">
+              <span className="text-[11px] uppercase font-bold tracking-wider text-slate-600 dark:text-blue-200/90 mt-0.5">
                 {st.label}
               </span>
               {st.subtext && (
-                <span className="text-[10px] text-blue-300/80 mt-0.5">{st.subtext}</span>
+                <span className="text-[10px] text-slate-500 dark:text-blue-300/80 mt-0.5">{st.subtext}</span>
               )}
             </div>
           ))}
@@ -177,22 +177,22 @@ export const PageInfobox: React.FC<PageInfoboxProps> = ({
       {facts && facts.length > 0 && (
         <div className="pt-5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs uppercase tracking-wider font-bold text-sky-300 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
+            <span className="text-xs uppercase tracking-wider font-bold text-blue-700 dark:text-sky-300 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-blue-500 dark:bg-sky-400 animate-pulse" />
               <span>Verified Entity Details &amp; Metadata</span>
             </span>
-            <span className="text-[11px] text-blue-300/70 font-mono">Google Knowledge Graph Schema</span>
+            <span className="text-[11px] text-slate-500 dark:text-blue-300/70 font-mono">Google Knowledge Graph Schema</span>
           </div>
 
-          <div className="border border-blue-500/35 rounded-xl overflow-hidden shadow-lg bg-[#061230]/80">
-            <table className="w-full text-xs sm:text-sm text-left divide-y divide-blue-500/20">
-              <tbody className="divide-y divide-blue-500/20">
+          <div className="border border-slate-200 dark:border-blue-500/35 rounded-xl overflow-hidden shadow-sm dark:shadow-lg bg-white dark:bg-[#061230]/80">
+            <table className="w-full text-xs sm:text-sm text-left divide-y divide-slate-200 dark:divide-blue-500/20">
+              <tbody className="divide-y divide-slate-200 dark:divide-blue-500/20">
                 {facts.map((f, i) => (
-                  <tr key={i} className="hover:bg-blue-900/30 transition-colors">
-                    <th className="py-2.5 sm:py-3 px-3.5 sm:px-4 bg-blue-950/80 text-blue-200 font-bold w-40 sm:w-56 align-top">
+                  <tr key={i} className="hover:bg-slate-50 dark:hover:bg-blue-900/30 transition-colors">
+                    <th className="py-2.5 sm:py-3 px-3.5 sm:px-4 bg-slate-50 text-slate-800 dark:bg-blue-950/80 dark:text-blue-200 font-bold w-40 sm:w-56 align-top">
                       {f.label}
                     </th>
-                    <td className="py-2.5 sm:py-3 px-3.5 sm:px-4 text-white font-medium align-top leading-relaxed">
+                    <td className="py-2.5 sm:py-3 px-3.5 sm:px-4 text-slate-900 dark:text-white font-medium align-top leading-relaxed">
                       {f.value}
                     </td>
                   </tr>

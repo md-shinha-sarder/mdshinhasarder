@@ -11,22 +11,54 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme] = useState<Theme>("dark");
+  const [theme, setThemeState] = useState<Theme>("dark");
 
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.add("dark");
-    root.classList.remove("light");
-    root.setAttribute("data-theme", "dark");
-    root.style.colorScheme = "dark";
-    localStorage.setItem("theme", "dark");
+    // Check saved theme or system preference
+    const savedTheme = (typeof window !== "undefined" && localStorage.getItem("theme")) as Theme | null;
+    if (savedTheme === "light" || savedTheme === "dark") {
+      applyTheme(savedTheme);
+      setThemeState(savedTheme);
+    } else {
+      // Default to dark as baseline
+      applyTheme("dark");
+      setThemeState("dark");
+    }
   }, []);
 
-  const setTheme = () => {};
-  const toggleTheme = () => {};
+  const applyTheme = (t: Theme) => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    if (t === "light") {
+      root.classList.remove("dark");
+      root.classList.add("light");
+      root.setAttribute("data-theme", "light");
+      root.style.colorScheme = "light";
+    } else {
+      root.classList.remove("light");
+      root.classList.add("dark");
+      root.setAttribute("data-theme", "dark");
+      root.style.colorScheme = "dark";
+    }
+    try {
+      localStorage.setItem("theme", t);
+    } catch {
+      // Ignore in restricted environments
+    }
+  };
+
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+    applyTheme(newTheme);
+  };
+
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme: "dark", setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

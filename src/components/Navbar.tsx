@@ -14,8 +14,11 @@ import {
   BookOpen,
   Newspaper,
   Award,
+  Sun,
+  Moon,
 } from "lucide-react";
 import siteLogo from "@/assets/site-logo.ico";
+import { useTheme } from "@/hooks/useTheme";
 
 interface NavItem {
   label: string;
@@ -42,6 +45,7 @@ const Navbar = () => {
   const [q, setQ] = useState("");
   const { pathname } = useLocation();
   const nav = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   const isMatch = (targetTo: string) => {
     if (targetTo === "/") return pathname === "/";
@@ -93,12 +97,12 @@ const Navbar = () => {
       />
       <div className="flex flex-col">
         <div className="flex items-center gap-1.5">
-          <span className="text-sm sm:text-base font-serif font-bold text-white tracking-tight whitespace-nowrap group-hover:text-blue-400 transition-colors">
+          <span className="text-sm sm:text-base font-serif font-bold text-slate-900 dark:text-white tracking-tight whitespace-nowrap group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
             MD. Shinha Sarder
           </span>
-          <BadgeCheck className="w-4 h-4 text-blue-400 fill-blue-500/20 flex-shrink-0" aria-label="Verified" />
+          <BadgeCheck className="w-4 h-4 text-blue-500 dark:text-blue-400 fill-blue-500/20 flex-shrink-0" aria-label="Verified" />
         </div>
-        <span className="text-[10px] uppercase font-semibold tracking-wider text-blue-400">Entrepreneur</span>
+        <span className="text-[10px] uppercase font-semibold tracking-wider text-blue-600 dark:text-blue-400">Entrepreneur</span>
       </div>
     </Link>
   );
@@ -108,8 +112,8 @@ const Navbar = () => {
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? "bg-black/95 backdrop-blur-md border-b border-blue-900/50 shadow-lg shadow-black/80"
-            : "bg-black/85 backdrop-blur-md border-b border-blue-900/30"
+            ? "bg-white/95 text-slate-900 dark:bg-black/95 dark:text-white backdrop-blur-md border-b border-slate-200 dark:border-neutral-800 shadow-sm"
+            : "bg-white/90 text-slate-900 dark:bg-black/90 dark:text-white backdrop-blur-md border-b border-slate-200/80 dark:border-neutral-800/80"
         }`}
       >
         <div className="container mx-auto px-4 sm:px-6 py-2.5">
@@ -117,7 +121,7 @@ const Navbar = () => {
           <div className="flex items-center justify-between gap-2 lg:hidden">
             <button
               onClick={() => setOpen(!open)}
-              className="text-slate-200 p-2 hover:bg-slate-900 rounded-lg transition-colors"
+              className="text-slate-700 dark:text-slate-200 p-2 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-colors"
               aria-label="Toggle menu"
             >
               {open ? <X size={22} /> : <Menu size={22} />}
@@ -134,7 +138,7 @@ const Navbar = () => {
                       onChange={(e) => setQ(e.target.value)}
                       placeholder="Search site..."
                       aria-label="Search site"
-                      className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-900 text-white placeholder:text-slate-400 border border-blue-900/60 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-white placeholder:text-slate-400 border border-slate-300 dark:border-blue-900/60 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
                 </form>
@@ -143,10 +147,25 @@ const Navbar = () => {
               )}
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
+              {/* Mobile Light/Dark Theme Switcher */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+                title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+                className="p-2 rounded-lg text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900 border border-slate-200 dark:border-blue-900/40 transition-colors flex items-center justify-center"
+              >
+                {theme === "dark" ? (
+                  <Sun size={17} className="text-amber-400" />
+                ) : (
+                  <Moon size={17} className="text-blue-600" />
+                )}
+              </button>
+
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="text-slate-200 p-2 hover:bg-slate-900 rounded-lg transition-colors"
+                className="text-slate-700 dark:text-slate-200 p-2 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-colors"
                 aria-label="Toggle search"
               >
                 {searchOpen ? <X size={18} /> : <Search size={18} />}
@@ -169,11 +188,11 @@ const Navbar = () => {
                       to={l.to}
                       className={`group flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                         isCurrent
-                          ? "bg-blue-950/80 text-blue-400 border border-blue-800/60 shadow-sm"
-                          : "text-slate-300 hover:text-blue-400 hover:bg-blue-950/40"
+                          ? "bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-950/80 dark:text-blue-400 dark:border-blue-800/60 shadow-sm font-bold"
+                          : "text-slate-700 hover:text-blue-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-blue-950/40"
                       }`}
                     >
-                      <Icon size={13} className="text-blue-400 group-hover:scale-110 transition-transform" />
+                      <Icon size={13} className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
                       <span>{l.label}</span>
                     </Link>
                   </li>
@@ -192,15 +211,30 @@ const Navbar = () => {
                       onChange={(e) => setQ(e.target.value)}
                       placeholder="Search site..."
                       aria-label="Search site"
-                      className="w-48 pl-9 pr-3 py-1.5 text-xs bg-slate-900 text-white placeholder:text-slate-400 border border-blue-900/60 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-48 pl-9 pr-3 py-1.5 text-xs bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-white placeholder:text-slate-400 border border-slate-300 dark:border-blue-900/60 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
                 </form>
               ) : null}
 
+              {/* Desktop Theme Switcher Button */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+                title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+                className="p-2 rounded-lg text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900 border border-slate-200 dark:border-blue-900/40 transition-all flex items-center justify-center hover:scale-105"
+              >
+                {theme === "dark" ? (
+                  <Sun size={17} className="text-amber-400 transition-transform" />
+                ) : (
+                  <Moon size={17} className="text-blue-600 transition-transform" />
+                )}
+              </button>
+
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="text-slate-300 p-2 hover:bg-slate-900 rounded-lg transition-colors"
+                className="text-slate-700 dark:text-slate-300 p-2 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-colors"
                 aria-label="Toggle search"
               >
                 {searchOpen ? <X size={18} /> : <Search size={18} />}
@@ -219,18 +253,18 @@ const Navbar = () => {
       />
 
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-50 w-72 max-w-[85vw] bg-[#030612] border-r border-blue-900/40 shadow-2xl transition-transform duration-300 lg:hidden flex flex-col ${
+        className={`fixed top-0 left-0 bottom-0 z-50 w-72 max-w-[85vw] bg-white text-slate-900 border-r border-slate-200 dark:bg-[#030612] dark:text-white dark:border-blue-900/40 shadow-2xl transition-transform duration-300 lg:hidden flex flex-col ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
         aria-hidden={!open}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-blue-900/30">
-          <span className="text-sm font-bold text-white flex items-center gap-2">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-blue-900/30">
+          <span className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
             Menu Navigation
           </span>
           <button
             onClick={() => setOpen(false)}
-            className="text-slate-400 hover:text-white p-1 rounded-md"
+            className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white p-1 rounded-md"
             aria-label="Close menu"
           >
             <X size={20} />
@@ -250,11 +284,11 @@ const Navbar = () => {
                   onClick={() => setOpen(false)}
                   className={`flex items-center gap-3 px-3.5 py-2.5 text-xs font-semibold rounded-lg transition-colors ${
                     isCurrent
-                      ? "bg-blue-950/80 text-blue-400 font-bold border border-blue-800/40"
-                      : "text-slate-300 hover:text-blue-400 hover:bg-slate-900"
+                      ? "bg-blue-50 text-blue-600 font-bold border border-blue-200 dark:bg-blue-950/80 dark:text-blue-400 dark:border-blue-800/40"
+                      : "text-slate-700 hover:text-blue-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-slate-900"
                   }`}
                 >
-                  <Icon size={16} className="text-blue-400" />
+                  <Icon size={16} className="text-blue-600 dark:text-blue-400" />
                   <span>{l.label}</span>
                 </Link>
               );
@@ -262,9 +296,9 @@ const Navbar = () => {
           </div>
         </nav>
 
-        <div className="p-4 border-t border-blue-900/30">
-          <p className="text-[11px] text-slate-400 text-center">
-            Official Portal of <strong className="text-white">MD. Shinha Sarder</strong>
+        <div className="p-4 border-t border-slate-200 dark:border-blue-900/30">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center">
+            Official Portal of <strong className="text-slate-900 dark:text-white">MD. Shinha Sarder</strong>
           </p>
         </div>
       </aside>
