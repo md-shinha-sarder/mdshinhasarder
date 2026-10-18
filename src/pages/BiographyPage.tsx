@@ -105,7 +105,6 @@ export const BiographyPage = () => {
               <ExternalLink size={12} className="text-blue-600 dark:text-blue-400" />
             </Link>
           </div>
-          </div>
         </main>
 
         <FooterSection />

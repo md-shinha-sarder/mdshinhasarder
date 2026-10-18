@@ -4,7 +4,6 @@ import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import SkillCircleGraph from "@/components/SkillCircleGraph";
-import PageInfobox from "@/components/PageInfobox";
 import {
   Cpu,
   Zap,

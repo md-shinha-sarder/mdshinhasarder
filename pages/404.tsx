@@ -40,7 +40,8 @@ export default function Custom404Page() {
   return (
     <div className="relative min-h-screen bg-white text-slate-900 dark:bg-black dark:text-slate-100 selection:bg-blue-500/30 selection:text-blue-200 transition-colors duration-300 flex flex-col">
       <Head>
-        <title>404 — Page Not Found | MD. Shinha Sarder</title>
+        <title>404 - MD. Shinha Sarder</title>
+        <meta property="og:title" content="404 - MD. Shinha Sarder" />
         <meta name="description" content="Oops! This page is lost in space. Return home or explore MD. Shinha Sarder verified portfolio." />
         <meta name="robots" content="noindex, follow" />
       </Head>

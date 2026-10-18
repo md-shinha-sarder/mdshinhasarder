@@ -36,8 +36,8 @@ try {
 
     // A. Generate dist/404.html so Cloudflare Pages serves our SPA bundle with 404 HTTP status
     const notFoundHtml = indexContent
-      .replace(/<title>.*?<\/title>/, "<title>404 — Page Not Found | MD. Shinha Sarder</title>")
-      .replace(/<meta property="og:title" content=".*?" \/>/, '<meta property="og:title" content="404 — Page Not Found | MD. Shinha Sarder" />');
+      .replace(/<title>.*?<\/title>/, "<title>404 - MD. Shinha Sarder</title>")
+      .replace(/<meta property="og:title" content=".*?" \/>/, '<meta property="og:title" content="404 - MD. Shinha Sarder" />');
 
     fs.writeFileSync(path.join(distDir, "404.html"), notFoundHtml);
     fs.writeFileSync(path.join(publicDir, "404.html"), notFoundHtml);
