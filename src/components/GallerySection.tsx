@@ -6,14 +6,14 @@ import { buildAlt } from "@/lib/imageSeo";
 import profilePhoto from "@/assets/profile-photo.webp";
 
 const defaultGalleryPhotos = [
-  { src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj5WnIBxJxtRbxWSsm5Mg8qkKmoiRamOJk0RKmHAX9kx44ibZ2H93_SC5o3qMS3YvFzBNVbnMUESTibQZ44uIWe92zydV3JgZEXwSR4z_pd5dCa__nPNxVYhHBsX44ZyL8Cj-rIcC0iUAPjW3SzRedFZ1UiT_dfol6iNf0QeOM7QtF5DuECWOWw_OicDiuR/w680/MD.%20Shinha%20Sarder.jpg", title: "MD. Shinha Sarder - Official Portrait", tags: ["portrait", "engineer", "founder"], idx: 1 },
-  { src: "https://m.media-amazon.com/images/I/41NRQbBcsoL._SX354_SY354_BL0_QL100__UX716_FMwebp_QL85_.jpg", title: "From Village to Virtual - Book Cover", tags: ["book", "publication"], idx: 2 },
-  { src: "https://m.media-amazon.com/images/I/31Fx5ANnI9L._SX354_SY354_BL0_QL100__UX716_FMwebp_QL85_.jpg", title: "ICT Fundamentals - Academic Publication", tags: ["book", "tech"], idx: 3 },
-  { src: "https://pbs.twimg.com/profile_images/2091609328210030592/42OjWBAO_400x400.jpg", title: "Verified Author Profile Picture", tags: ["portrait"], idx: 4 },
-  { src: "https://wikigence.org/images/thumb/f/f0/MD._Shinha_Sarder.png/300px-MD._Shinha_Sarder.png", title: "WikiGence Encyclopedia Entity Entry", tags: ["portrait", "knowledge"], idx: 5 },
-  { src: "https://wikialpha.co/images/thumb/6/61/MD._Shinha_Sarder.jpg/600px-MD._Shinha_Sarder.jpg", title: "WikiAlpha Biographical Encyclopedia", tags: ["portrait"], idx: 6 },
-  { src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjodXYtmhZXw3DMzsclnR7QKGj4pB7EtltGEVAKHluF9q43M2xhp48sia0BIiGIyv_Z_8btnrrhXK9-DDcc14tX1UxBrZTEqHN_m99S_Cjn6Y0wrqJtfkQhTq2D4Lw7LFydGoWA-BZrW5I-Z0768jaUWRpxaZ7ODP1xV4a4EntzzE7u7g324MoXW_TLG5fp/w387-h222-rw/biostartvworld%20project.jpg", title: "Biostar TV World Broadcast Infrastructure", tags: ["projects"], idx: 7 },
-  { src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh66biVepBPyNV_L5eLokiHUwO450kY7h_t_BbaAH77urDmUN5i_WXoRhk-jhuiFbVFtyYcfzPkbvor-AWI1js9QY7H3y30J4gX1lUK6IB0tXioO03Y0RN-ia-a-gsHG1pVjxhTqGDWNlXOHjzOlLaQ2rysMNCHIf1vs8u-08uUnL0xvnq_hn2NH8l8tbiV/s715/IMG_20241129_193927_117.jpg", title: "ICT Foundation Community Empowerment", tags: ["events"], idx: 8 },
+  { src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj5WnIBxJxtRbxWSsm5Mg8qkKmoiRamOJk0RKmHAX9kx44ibZ2H93_SC5o3qMS3YvFzBNVbnMUESTibQZ44uIWe92zydV3JgZEXwSR4z_pd5dCa__nPNxVYhHBsX44ZyL8Cj-rIcC0iUAPjW3SzRedFZ1UiT_dfol6iNf0QeOM7QtF5DuECWOWw_OicDiuR/s0/MD.%20Shinha%20Sarder.jpg", title: "MD. Shinha Sarder - Official Portrait", tags: ["portrait", "engineer", "founder"], idx: 1 },
+  { src: "https://m.media-amazon.com/images/I/41NRQbBcsoL.jpg", title: "From Village to Virtual - Book Cover", tags: ["book", "publication"], idx: 2 },
+  { src: "https://m.media-amazon.com/images/I/31Fx5ANnI9L.jpg", title: "ICT Fundamentals - Academic Publication", tags: ["book", "tech"], idx: 3 },
+  { src: "https://pbs.twimg.com/profile_images/2091609328210030592/42OjWBAO.jpg", title: "Verified Author Profile Picture", tags: ["portrait"], idx: 4 },
+  { src: "https://wikigence.org/images/f/f0/MD._Shinha_Sarder.png", title: "WikiGence Encyclopedia Entity Entry", tags: ["portrait", "knowledge"], idx: 5 },
+  { src: "https://wikialpha.co/images/6/61/MD._Shinha_Sarder.jpg", title: "WikiAlpha Biographical Encyclopedia", tags: ["portrait"], idx: 6 },
+  { src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjodXYtmhZXw3DMzsclnR7QKGj4pB7EtltGEVAKHluF9q43M2xhp48sia0BIiGIyv_Z_8btnrrhXK9-DDcc14tX1UxBrZTEqHN_m99S_Cjn6Y0wrqJtfkQhTq2D4Lw7LFydGoWA-BZrW5I-Z0768jaUWRpxaZ7ODP1xV4a4EntzzE7u7g324MoXW_TLG5fp/s0/biostartvworld%20project.jpg", title: "Biostar TV World Broadcast Infrastructure", tags: ["projects"], idx: 7 },
+  { src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh66biVepBPyNV_L5eLokiHUwO450kY7h_t_BbaAH77urDmUN5i_WXoRhk-jhuiFbVFtyYcfzPkbvor-AWI1js9QY7H3y30J4gX1lUK6IB0tXioO03Y0RN-ia-a-gsHG1pVjxhTqGDWNlXOHjzOlLaQ2rysMNCHIf1vs8u-08uUnL0xvnq_hn2NH8l8tbiV/s0/IMG_20241129_193927_117.jpg", title: "ICT Foundation Community Empowerment", tags: ["events"], idx: 8 },
 ];
 
 const GallerySection = () => {
@@ -35,9 +35,10 @@ const GallerySection = () => {
         while ((m = re.exec(item.content)) !== null) found.add(m[1]);
       }
       let i = 0;
-      found.forEach((src) => {
+      found.forEach((rawSrc) => {
         i += 1;
-        if (!set.has(src)) {
+        const src = toFullResolutionImageUrl(rawSrc);
+        if (src && !set.has(src)) {
           set.add(src);
           out.push({ src, title: item.title || "Gallery Item", tags: item.tags || [], idx: i });
         }

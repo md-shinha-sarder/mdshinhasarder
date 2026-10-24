@@ -60,16 +60,30 @@ export function buildAlt(title?: string | null, extra?: string | string[] | null
 }
 
 /**
- * Upgrades any Blogger or Google User Content image URL to its 100% original,
- * uncompressed, full-resolution upload size (/s0/).
+ * Upgrades any image URL (Blogger, Google User Content, Amazon, Twitter, Wiki)
+ * to its 100% original, uncompressed, crystal-clear full-resolution upload.
  */
 export function toFullResolutionImageUrl(url?: string | null): string {
   if (!url) return "";
   let clean = url.trim();
-  // Upgrade Blogger/Google User Content to full original upload (/s0/)
+
+  // 1. Google / Blogger User Content (handles /s72-w...-h...-c/, /s320/, /s1600/, /w680/, etc.)
   if (/googleusercontent\.com|blogspot\.com/i.test(clean)) {
-    clean = clean.replace(/\/(s\d+(-c)?|w\d+-h\d+[^/]*)\//i, "/s0/");
+    clean = clean.replace(/\/(s\d+[^/]*|w\d+[^/]*|h\d+[^/]*)\//i, "/s0/");
   }
+  // 2. Amazon Media (strip ._SX..._)
+  else if (/media-amazon\.com/i.test(clean)) {
+    clean = clean.replace(/\._[A-Za-z0-9_,-]+_\./i, ".");
+  }
+  // 3. Twitter / X Media (strip _400x400)
+  else if (/twimg\.com/i.test(clean)) {
+    clean = clean.replace(/_(400x400|normal|bigger|mini)\./i, ".");
+  }
+  // 4. Wiki Thumbnails
+  else if (clean.includes("/thumb/")) {
+    clean = clean.replace(/\/thumb(\/[^/]+\/[^/]+\/[^/]+)\/[^/]+$/i, "$1");
+  }
+
   return clean;
 }
 
@@ -83,7 +97,7 @@ export function enhanceContentImages(html: string, title?: string | null): strin
   let i = 0;
 
   // 1. Upgrade <a> links wrapping images to full original resolution (/s0/)
-  let processed = html.replace(/<a\b([^>]*?href=["'])(https?:\/\/[^"']*?)\/(s\d+(-c)?|w\d+-h\d+[^/]*)\/([^"']+["'][^>]*>)/gi, '$1$2/s0/$5');
+  let processed = html.replace(/<a\b([^>]*?href=["'])(https?:\/\/[^"']*?)\/(s\d+[^/]*|w\d+[^/]*|h\d+[^/]*)\/([^"']+["'][^>]*>)/gi, '$1$2/s0/$4');
 
   // 2. Upgrade <img> tags: change src to /s0/, strip tiny width/height, inject SEO alt
   processed = processed.replace(/<img\b([^>]*?)\/?>(?!\s*<\/img>)/gi, (_m, attrs: string) => {
@@ -91,7 +105,7 @@ export function enhanceContentImages(html: string, title?: string | null): strin
     let out = attrs.trim();
 
     // Upgrade Google/Blogger image src to /s0/ (original uploaded resolution)
-    out = out.replace(/(src=["']https?:\/\/[^"']*?)\/(s\d+(-c)?|w\d+-h\d+[^/]*)\//gi, '$1/s0/');
+    out = out.replace(/(src=["']https?:\/\/[^"']*?)\/(s\d+[^/]*|w\d+[^/]*|h\d+[^/]*)\//gi, '$1/s0/');
 
     // Strip hardcoded Blogger thumbnail attributes that compress images (e.g. width="213" height="320")
     out = out.replace(/\b(width|height)\s*=\s*["']\d+["']/gi, '');

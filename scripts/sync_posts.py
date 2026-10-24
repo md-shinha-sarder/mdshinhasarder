@@ -58,17 +58,26 @@ def clean_slug(title: str, existing_slug: str = "") -> str:
     return s or "post"
 
 def upgrade_image_url(url: str) -> str:
-    """Converts Blogger thumbnail URLs to original uncompressed full-size /s0/ URLs."""
+    """Converts any thumbnail URLs (Blogger, Amazon, Twitter, Wiki) to original full-resolution upload URLs."""
     if not url or not isinstance(url, str):
         return None
-    url = url.strip()
-    # Upgrade standard Blogger thumbnails to original full-size upload (/s0/)
-    url = re.sub(r"/s\d+(-c)?/", "/s0/", url)
-    url = re.sub(r"/w\d+-h\d+[^/]*/", "/s0/", url)
+    clean = url.strip()
+    # 1. Google / Blogger User Content (handles /s72-w...-h...-c/, /s320/, /s1600/, /w680/, etc.)
+    if "googleusercontent.com" in clean or "blogspot.com" in clean:
+        clean = re.sub(r"/(s\d+[^/]*|w\d+[^/]*|h\d+[^/]*)/", "/s0/", clean)
+    # 2. Amazon Media (strip ._SX..._)
+    elif "media-amazon.com" in clean:
+        clean = re.sub(r"\._[A-Za-z0-9_,-]+_\.", ".", clean)
+    # 3. Twitter / X Media (strip _400x400)
+    elif "twimg.com" in clean:
+        clean = re.sub(r"_(400x400|normal|bigger|mini)\.", ".", clean)
+    # 4. Wiki Thumbnails
+    elif "/thumb/" in clean:
+        clean = re.sub(r"/thumb(/[^/]+/[^/]+/[^/]+)/[^/]+$", r"\1", clean)
     # Ensure https
-    if url.startswith("http://"):
-        url = "https://" + url[7:]
-    return url
+    if clean.startswith("http://"):
+        clean = "https://" + clean[7:]
+    return clean
 
 def normalize_post(raw: dict, source: str = "unknown") -> dict:
     title = str(raw.get("title", "")).strip() or "Untitled"
@@ -97,8 +106,8 @@ def normalize_post(raw: dict, source: str = "unknown") -> dict:
     content = str(raw.get("content", "")).strip()
     if content:
         # Upgrade Blogger inline images to /s0/ and strip tiny fixed dimensions
-        content = re.sub(r'(src=["\']https?://[^"\']*?)/(s\d+(-c)?|w\d+-h\d+[^/]*)/', r'\1/s0/', content, flags=re.IGNORECASE)
-        content = re.sub(r'(href=["\']https?://[^"\']*?)/(s\d+(-c)?|w\d+-h\d+[^/]*)/', r'\1/s0/', content, flags=re.IGNORECASE)
+        content = re.sub(r'(src=["\']https?://[^"\']*?)/(s\d+[^/]*|w\d+[^/]*|h\d+[^/]*)/', r'\1/s0/', content, flags=re.IGNORECASE)
+        content = re.sub(r'(href=["\']https?://[^"\']*?)/(s\d+[^/]*|w\d+[^/]*|h\d+[^/]*)/', r'\1/s0/', content, flags=re.IGNORECASE)
         content = re.sub(r'\s+(width|height)=["\']\d+["\']', '', content, flags=re.IGNORECASE)
 
     excerpt = str(raw.get("excerpt", "")).strip()
