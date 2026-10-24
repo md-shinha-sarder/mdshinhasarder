@@ -327,11 +327,11 @@ export default function SongsPage() {
 
                     <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-slate-200 dark:border-blue-400/30 bg-black shadow-sm">
                       <img
-                        src={song.youtubeId ? `https://i.ytimg.com/vi/${song.youtubeId}/hqdefault.jpg` : song.cover}
+                        src={`/images/${song.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '').slice(0, 60)}.jpg`}
                         alt={song.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          e.currentTarget.src = DEEZER_ARTIST_COVER;
+                          e.currentTarget.src = song.youtubeId ? `https://i.ytimg.com/vi/${song.youtubeId}/hqdefault.jpg` : (song.cover || DEEZER_ARTIST_COVER);
                         }}
                       />
                     </div>

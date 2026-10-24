@@ -13,15 +13,19 @@ import {
   Share2,
   Check,
   ExternalLink,
-  Sparkles,
+  Copy,
+  Download,
+  Image as ImageIcon,
 } from "lucide-react";
 import { usePosts, usePages } from "@/hooks/usePosts";
 import { DEFAULT_BOOKS as chaptraBooksData } from "@/hooks/useBooksData";
 import { DEFAULT_SONGS as songsData } from "@/hooks/useSongsData";
+import { toDomainImageUrl } from "@/lib/imageSeo";
 
 interface GalleryItem {
   id: string;
   src: string;
+  canonicalUrl: string;
   title: string;
   category: "Portraits" | "Posts Photos" | "Pages Photos" | "Book Covers" | "Music & Media";
   caption: string;
@@ -35,6 +39,7 @@ export const GalleryPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedImgUrl, setCopiedImgUrl] = useState(false);
 
   // Automatically aggregate photos from ALL posts, ALL pages, all books, songs, and portraits
   const allGalleryItems = useMemo(() => {
@@ -52,9 +57,13 @@ export const GalleryPage = () => {
       const cleanSrc = src.trim();
       if (seen.has(cleanSrc)) return;
       seen.add(cleanSrc);
+
+      const canonicalUrl = toDomainImageUrl(cleanSrc, `${title} ${caption}`);
+
       items.push({
         id: `img-${items.length + 1}-${cleanSrc.slice(-12).replace(/[^a-zA-Z0-9]/g, "")}`,
         src: cleanSrc,
+        canonicalUrl,
         title,
         category,
         caption,
@@ -62,24 +71,30 @@ export const GalleryPage = () => {
       });
     };
 
-    // 1. Official Verified Portraits & Studio Assets
+    // 1. Official Verified Portraits & Studio Assets (hosted directly on mdshinhasarder.com/images/)
     addPhoto(
-      "https://mdshinhasarder.com/profile.webp",
+      "https://mdshinhasarder.com/images/md-shinha-sarder-official-portrait.profile.webp",
       "Official Portrait — MD. Shinha Sarder",
       "Portraits",
       "Official verified portrait of MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World."
     );
     addPhoto(
-      "https://mdshinhasarder.com/hero-portrait.jpg",
+      "https://mdshinhasarder.com/images/md-shinha-sarder-author-researcher.hero-portrait.jpg",
       "Editorial Portrait — ICT Author & Researcher",
       "Portraits",
       "Editorial portrait of MD. Shinha Sarder captured during academic monograph publishing."
     );
     addPhoto(
-      "https://mdshinhasarder.com/hero-bg.jpg",
+      "https://mdshinhasarder.com/images/md-shinha-sarder-creative-tech-studio.hero-bg.jpg",
       "Creative Technology Studio & Workspace",
       "Portraits",
       "Digital development studio and high-tech workspace of MD. Shinha Sarder."
+    );
+    addPhoto(
+      "https://mdshinhasarder.com/images/md-shinha-sarder-executive-founder.profile-photo.webp",
+      "Executive & Founder Portrait",
+      "Portraits",
+      "Executive portrait of MD. Shinha Sarder, leader of Biostar TV World and IT Tech BD."
     );
 
     // 2. Photos from ALL Blogger Posts (Featured image + all embedded <img> inside post content)
@@ -181,6 +196,7 @@ export const GalleryPage = () => {
 
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
+    setCopiedImgUrl(false);
   };
 
   const closeLightbox = () => {
@@ -190,6 +206,7 @@ export const GalleryPage = () => {
   const nextLightbox = () => {
     if (lightboxIndex !== null) {
       setLightboxIndex((lightboxIndex + 1) % filteredItems.length);
+      setCopiedImgUrl(false);
     }
   };
 
@@ -198,6 +215,7 @@ export const GalleryPage = () => {
       setLightboxIndex(
         (lightboxIndex - 1 + filteredItems.length) % filteredItems.length
       );
+      setCopiedImgUrl(false);
     }
   };
 
@@ -205,6 +223,12 @@ export const GalleryPage = () => {
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const copyImageUrl = (url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedImgUrl(true);
+    setTimeout(() => setCopiedImgUrl(false), 2000);
   };
 
   return (
@@ -216,7 +240,7 @@ export const GalleryPage = () => {
           content="Visual gallery and official photo media archive of MD. Shinha Sarder."
         />
         <meta property="og:title" content="Gallery - MD. Shinha Sarder" />
-        <meta property="og:image" content="https://mdshinhasarder.com/profile.webp" />
+        <meta property="og:image" content="https://mdshinhasarder.com/images/md-shinha-sarder-official-portrait.profile.webp" />
         <link rel="canonical" href="https://www.mdshinhasarder.com/p/gallery.html" />
       </Helmet>
 
@@ -248,7 +272,7 @@ export const GalleryPage = () => {
             </button>
           </div>
 
-          {/* Category Filter Pills */}
+          {/* Category Filter Buttons */}
           <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none">
             {categories.map((cat) => {
               const count =
@@ -262,12 +286,12 @@ export const GalleryPage = () => {
                   className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                     selectedCategory === cat
                       ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
-                      : "bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 dark:bg-[#070c1e]/90 dark:text-slate-400 dark:hover:text-white dark:border-blue-900/40 dark:hover:border-blue-700/60"
+                      : "bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:text-white dark:border-neutral-800"
                   }`}
                 >
                   <span>{cat}</span>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                    selectedCategory === cat ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700 dark:bg-black/40 dark:text-slate-300"
+                    selectedCategory === cat ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700 dark:bg-neutral-800 dark:text-neutral-300"
                   }`}>
                     {count}
                   </span>
@@ -276,15 +300,15 @@ export const GalleryPage = () => {
             })}
           </div>
 
-          {/* Photos Masonry / Grid */}
+          {/* Photos Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
             {filteredItems.map((item, index) => (
               <div
                 key={item.id}
                 onClick={() => openLightbox(index)}
-                className="group relative rounded-2xl overflow-hidden bg-white border border-slate-200 hover:border-blue-500/60 dark:bg-slate-900 dark:border-blue-900/40 dark:hover:border-blue-500/60 shadow-md cursor-pointer transition-all duration-300 hover:-translate-y-1"
+                className="group relative rounded-2xl overflow-hidden bg-white border border-slate-200 hover:border-blue-500 dark:bg-neutral-950 dark:border-neutral-800 dark:hover:border-neutral-600 shadow-sm cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
               >
-                <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-black/60 relative">
+                <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-black relative">
                   <img
                     src={item.src}
                     alt={item.title}
@@ -296,7 +320,7 @@ export const GalleryPage = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                     <div className="flex items-center justify-between w-full">
-                      <span className="text-[10px] font-bold text-blue-300 uppercase tracking-wider">
+                      <span className="text-[10px] font-bold text-sky-300 uppercase tracking-wider">
                         {item.category}
                       </span>
                       <ZoomIn size={16} className="text-white" />
@@ -304,12 +328,15 @@ export const GalleryPage = () => {
                   </div>
                 </div>
 
-                <div className="p-3 bg-white dark:bg-[#070c1e] border-t border-slate-100 dark:border-none">
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors">
+                <div className="p-3 bg-white dark:bg-neutral-950 border-t border-slate-100 dark:border-neutral-800">
+                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-sky-400 transition-colors">
                     {item.title}
                   </h3>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-400 truncate mt-0.5">
+                  <p className="text-[11px] text-slate-500 dark:text-neutral-400 truncate mt-0.5">
                     {item.caption}
+                  </p>
+                  <p className="text-[10px] font-mono text-slate-400 dark:text-neutral-500 truncate mt-1">
+                    {item.canonicalUrl.replace("https://", "")}
                   </p>
                 </div>
               </div>
@@ -322,7 +349,7 @@ export const GalleryPage = () => {
               <button
                 type="button"
                 onClick={closeLightbox}
-                className="absolute top-5 right-5 p-2 rounded-full bg-slate-900 text-slate-300 hover:text-white border border-slate-700 transition-colors z-10"
+                className="absolute top-5 right-5 p-2 rounded-full bg-neutral-900 text-neutral-300 hover:text-white border border-neutral-700 transition-colors z-10"
                 aria-label="Close lightbox"
               >
                 <X size={20} />
@@ -331,7 +358,7 @@ export const GalleryPage = () => {
               <button
                 type="button"
                 onClick={prevLightbox}
-                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-slate-900/80 text-white hover:bg-slate-800 border border-slate-700 transition-colors z-10"
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-neutral-900/80 text-white hover:bg-neutral-800 border border-neutral-700 transition-colors z-10"
                 aria-label="Previous image"
               >
                 <ChevronLeft size={24} />
@@ -340,42 +367,69 @@ export const GalleryPage = () => {
               <button
                 type="button"
                 onClick={nextLightbox}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-slate-900/80 text-white hover:bg-slate-800 border border-slate-700 transition-colors z-10"
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-neutral-900/80 text-white hover:bg-neutral-800 border border-neutral-700 transition-colors z-10"
                 aria-label="Next image"
               >
                 <ChevronRight size={24} />
               </button>
 
               <div className="max-w-4xl w-full flex flex-col items-center">
-                <div className="relative max-h-[75vh] w-auto rounded-2xl overflow-hidden border border-blue-900/50 shadow-2xl bg-black">
+                <div className="relative max-h-[70vh] w-auto rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl bg-black">
                   <img
                     src={filteredItems[lightboxIndex].src}
                     alt={filteredItems[lightboxIndex].title}
-                    className="max-h-[75vh] w-auto object-contain"
+                    className="max-h-[70vh] w-auto object-contain"
                   />
                 </div>
 
                 <div className="mt-4 text-center max-w-xl">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-950 text-blue-300 border border-blue-800/50 inline-block mb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-neutral-900 text-sky-400 border border-neutral-800 inline-block mb-1">
                     {filteredItems[lightboxIndex].category}
                   </span>
                   <h2 className="text-base font-bold text-white">
                     {filteredItems[lightboxIndex].title}
                   </h2>
-                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
                     {filteredItems[lightboxIndex].caption}
                   </p>
-                  {filteredItems[lightboxIndex].sourceUrl && (
+
+                  {/* Canonical Image URL on domain mdshinhasarder.com */}
+                  <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
                     <a
-                      href={filteredItems[lightboxIndex].sourceUrl}
+                      href={filteredItems[lightboxIndex].canonicalUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-blue-400 hover:underline mt-2"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 text-[11px] font-mono text-neutral-300 hover:text-white transition-colors"
+                      title="Direct Image URL on mdshinhasarder.com"
                     >
-                      <span>View Source Page</span>
-                      <ExternalLink size={12} />
+                      <ImageIcon size={12} className="text-sky-400" />
+                      <span className="max-w-[240px] sm:max-w-xs truncate">
+                        {filteredItems[lightboxIndex].canonicalUrl.replace("https://", "")}
+                      </span>
+                      <ExternalLink size={11} />
                     </a>
-                  )}
+
+                    <button
+                      type="button"
+                      onClick={() => copyImageUrl(filteredItems[lightboxIndex].canonicalUrl)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 text-[11px] font-medium text-neutral-300 hover:text-white transition-colors"
+                    >
+                      {copiedImgUrl ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                      <span>{copiedImgUrl ? "Image URL Copied!" : "Copy Link"}</span>
+                    </button>
+
+                    {filteredItems[lightboxIndex].sourceUrl && (
+                      <a
+                        href={filteredItems[lightboxIndex].sourceUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 text-[11px] font-medium text-sky-400 hover:text-sky-300 transition-colors"
+                      >
+                        <span>View Source</span>
+                        <ExternalLink size={12} />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

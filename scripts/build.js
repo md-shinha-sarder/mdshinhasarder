@@ -23,6 +23,9 @@ function run(command, desc) {
 }
 
 try {
+  // 0. Prepare and host all SEO canonical images on mdshinhasarder.com/images/
+  run("node scripts/prepare_seo_images.js", "Preparing canonical SEO images on mdshinhasarder.com/images");
+
   // 1. Build Vite SPA distribution into dist/
   run("npx vite build", "Building Vite SPA bundle");
 

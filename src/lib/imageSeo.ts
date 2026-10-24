@@ -1,6 +1,47 @@
-// Image SEO helpers: descriptive alt text + proper sizing/loading attributes.
+// Image SEO helpers: descriptive alt text, canonical domain URLs, and proper sizing/loading attributes.
 
+export const SITE_DOMAIN = "https://mdshinhasarder.com";
 const BRAND = "MD. Shinha Sarder";
+
+export function slugify(text?: string | null): string {
+  if (!text) return "image";
+  return String(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")
+    .slice(0, 60);
+}
+
+/**
+ * Transforms any image URL to the canonical SEO format on domain https://mdshinhasarder.com/images/...
+ * Pattern: https://mdshinhasarder.com/images/{captionSlug}.{imageFileName}.{ext}
+ */
+export function toDomainImageUrl(src?: string | null, caption?: string | null): string {
+  if (!src) return `${SITE_DOMAIN}/images/md-shinha-sarder-official-portrait.profile.webp`;
+
+  const trimmed = src.trim();
+
+  // If already full canonical domain URL
+  if (trimmed.startsWith(`${SITE_DOMAIN}/images/`)) {
+    return trimmed;
+  }
+
+  // Detect extension
+  const extMatch = trimmed.match(/\.(webp|jpg|jpeg|png|svg|ico)(?:[?#]|$)/i);
+  const ext = extMatch ? extMatch[1].toLowerCase() : "jpg";
+
+  // Extract base filename from path
+  const lastSegment = trimmed.split("/").pop()?.split("?")[0] || "image";
+  const rawBase = lastSegment.replace(/\.[^/.]+$/, "");
+  const cleanBase = slugify(rawBase) || "asset";
+
+  if (caption && caption.trim()) {
+    const captionSlug = slugify(caption);
+    return `${SITE_DOMAIN}/images/${captionSlug}.${cleanBase}.${ext}`;
+  }
+
+  return `${SITE_DOMAIN}/images/${cleanBase}.${ext}`;
+}
 
 export function buildAlt(title?: string | null, extra?: string | string[] | null): string {
   const t = (title || "").trim();
@@ -35,8 +76,6 @@ export function enhanceContentImages(html: string, title?: string | null): strin
     const hasLoading = /\bloading\s*=/i.test(attrs);
     const hasDecoding = /\bdecoding\s*=/i.test(attrs);
     const hasPriority = /\bfetchpriority\s*=/i.test(attrs);
-    const hasWidth = /\bwidth\s*=/i.test(attrs);
-    const hasHeight = /\bheight\s*=/i.test(attrs);
 
     let out = attrs.trim();
     if (!hasAlt) out += ` alt="${escapeAttr(buildAlt(title, `photo ${i}`))}"`;

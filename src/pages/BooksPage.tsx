@@ -137,10 +137,13 @@ export default function BooksPage() {
                 <div className="flex gap-4">
                   <div className="w-20 h-28 rounded-xl overflow-hidden shrink-0 bg-slate-100 dark:bg-blue-950 border border-slate-200 dark:border-blue-400/30 shadow-sm">
                     <img
-                      src={book.cover}
+                      src={`/images/${book.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '').slice(0, 60)}.jpg`}
                       alt={book.title}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.src = book.cover || "/hero-portrait.jpg";
+                      }}
                     />
                   </div>
 

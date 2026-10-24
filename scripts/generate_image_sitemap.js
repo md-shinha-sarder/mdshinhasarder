@@ -497,8 +497,9 @@ function crawlLocalAssets() {
   for (const item of LOCAL_ASSET_METADATA) {
     const fullPath = path.join(publicDir, item.file);
     if (fs.existsSync(fullPath)) {
+      const slug = item.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "").slice(0, 60);
       localImages.push({
-        loc: `${SITE_URL}/${item.file}`,
+        loc: `${SITE_URL}/images/${slug}.${item.file}`,
         title: item.title,
         caption: item.caption,
         geo_location: GEO_LOCATION,
@@ -603,8 +604,9 @@ export async function generateImageSitemap(options = {}) {
 
   // 3. Index All Published Book Covers (Chaptra, Google Books, Amazon, Blogger)
   for (const book of BOOK_CATALOG) {
+    const slug = book.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "").slice(0, 60);
     const bookImg = {
-      loc: book.cover,
+      loc: `${SITE_URL}/images/${slug}.${book.slug}.jpg`,
       title: `${book.title} — Book Cover by MD. Shinha Sarder`,
       caption: `${book.description} Published under ${book.category} by author MD. Shinha Sarder.`,
       geo_location: GEO_LOCATION,
@@ -617,9 +619,9 @@ export async function generateImageSitemap(options = {}) {
 
   // 4. Index All Musical Works, Soundtracks & YouTube Video Thumbnails
   for (const song of SONG_CATALOG) {
-    // Deezer 1000x1000 Cover
+    const slug = song.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "").slice(0, 60);
     const songImg = {
-      loc: song.cover,
+      loc: `${SITE_URL}/images/${slug}.track-art.jpg`,
       title: `${song.title} — Single Artwork | MD. Shinha Sarder`,
       caption: `${song.description} (${song.year}, ${song.genre}) released by musical artist MD. Shinha Sarder on Deezer and Spotify.`,
       geo_location: GEO_LOCATION,
