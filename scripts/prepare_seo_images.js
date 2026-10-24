@@ -204,6 +204,13 @@ async function prepareImages() {
       fs.copyFileSync(path.join(IMAGES_DIR, f), path.join(DIST_IMAGES_DIR, f));
     }
     console.log(`✔ Synced ${files.length} images into dist/images/`);
+
+    const publicMediaDir = path.join(PUBLIC_DIR, "media");
+    const distMediaDir = path.join(ROOT_DIR, "dist", "media");
+    if (fs.existsSync(publicMediaDir)) {
+      fs.cpSync(publicMediaDir, distMediaDir, { recursive: true });
+      console.log("✔ Synced public/media/ into dist/media/");
+    }
   }
 
   const allReadyFiles = fs.readdirSync(IMAGES_DIR);

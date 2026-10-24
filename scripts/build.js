@@ -98,6 +98,12 @@ try {
     fs.copyFileSync(pubHeaders, distHeaders);
   }
 
+  const pubMedia = path.join(publicDir, "media");
+  const distMedia = path.join(distDir, "media");
+  if (fs.existsSync(pubMedia)) {
+    fs.cpSync(pubMedia, distMedia, { recursive: true });
+  }
+
   console.log("\n✔ [Build Pipeline] Full build completed successfully for Cloudflare Pages + Vercel + Next.js!\n");
 } catch (err) {
   console.error("\n✖ [Build Pipeline] Build failed:", err.message);

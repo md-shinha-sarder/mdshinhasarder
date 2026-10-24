@@ -11,6 +11,7 @@ import { postPath } from "@/lib/postUrl";
 import { buildSeo } from "@/lib/seo";
 import { buildAlt, enhanceContentImages } from "@/lib/imageSeo";
 import { getStoredAdminPosts, getCachedAllPosts } from "@/lib/postSync";
+import { resolveMediaUrl } from "@/lib/mediaUrl";
 import { toast } from "sonner";
 
 const fmt = (d?: string | null) => {
@@ -412,12 +413,15 @@ const PostDetailContent = () => {
                 {post.image && (
                   <div className="w-full mb-8 rounded-xl overflow-hidden border border-slate-200 dark:border-blue-500/25 shadow-xl bg-slate-50 dark:bg-[#070e24]/70 flex items-center justify-center p-1 sm:p-2">
                     <img
-                      src={post.image}
+                      src={resolveMediaUrl(post.image)}
                       alt={buildAlt(post.title, postTags)}
                       loading="eager"
                       decoding="async"
                       {...({ fetchpriority: "high" } as any)}
                       className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-lg mx-auto"
+                      onError={(e) => {
+                        e.currentTarget.src = "/hero-portrait.jpg";
+                      }}
                     />
                   </div>
                 )}

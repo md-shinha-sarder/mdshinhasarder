@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,10 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Rss, ExternalLink, RefreshCw, Database, Copy, Check } from "lucide-react";
+import { Plus, Pencil, Trash2, Rss, ExternalLink, RefreshCw, Database, Copy, Check, Image as ImageIcon, Search } from "lucide-react";
 import { toast } from "sonner";
 import { MediaPicker } from "@/components/admin/MediaPicker";
-import { toSiteMediaUrl } from "@/lib/mediaUrl";
+import { resolveMediaUrl } from "@/lib/mediaUrl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePosts } from "@/hooks/usePosts";
 import { TipTapEditor } from "@/components/editor/TipTapEditor";
@@ -35,6 +35,7 @@ interface Post {
   seo_description: string | null;
   status: "draft" | "published";
   synced_to_cloud?: boolean;
+  source?: "admin" | "supabase" | "blogger";
 }
 
 const blank: Post = {
@@ -59,6 +60,8 @@ const PostsAdmin = () => {
   const [copiedSql, setCopiedSql] = useState(false);
   const [tagsStr, setTagsStr] = useState("");
   const [saving, setSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
 
   const load = async () => {
     // 1. Get stored admin posts
@@ -79,12 +82,13 @@ const PostsAdmin = () => {
           title: p.title,
           excerpt: p.excerpt,
           content: p.content,
-          cover_url: p.cover_url,
+          cover_url: resolveMediaUrl(p.cover_url),
           tags: Array.isArray(p.tags) ? p.tags : [],
           seo_title: p.seo_title,
           seo_description: p.seo_description,
           status: p.status,
           synced_to_cloud: true,
+          source: "supabase",
         }));
       }
     } catch {
@@ -101,12 +105,13 @@ const PostsAdmin = () => {
         title: p.title,
         excerpt: p.excerpt,
         content: p.content,
-        cover_url: p.image,
+        cover_url: resolveMediaUrl(p.image || p.cover_url),
         tags: Array.isArray(p.tags) ? p.tags : [],
         seo_title: p.seo_title || null,
         seo_description: p.seo_description || null,
         status: p.status,
         synced_to_cloud: p.synced_to_cloud,
+        source: "admin",
       });
     });
 
@@ -116,6 +121,63 @@ const PostsAdmin = () => {
   useEffect(() => {
     load();
   }, []);
+
+  // Combined list of ALL posts (Uploaded/Custom + Blogger)
+  const combinedPosts = useMemo(() => {
+    const seen = new Set<string>();
+    const list: Post[] = [];
+
+    // Custom / Uploaded posts first
+    for (const p of items) {
+      const key = (p.slug || p.id).toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        list.push({ ...p, source: p.source || "admin" });
+      }
+    }
+
+    // Blogger posts
+    for (const p of bloggerPosts) {
+      const key = (p.slug || p.id).toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        list.push({
+          id: p.id,
+          slug: p.slug,
+          title: p.title,
+          excerpt: p.excerpt,
+          content: p.content,
+          cover_url: resolveMediaUrl(p.image),
+          tags: p.tags || [],
+          seo_title: p.seo_title || null,
+          seo_description: p.seo_description || null,
+          status: "published",
+          source: "blogger",
+        });
+      }
+    }
+
+    return list;
+  }, [items, bloggerPosts]);
+
+  // Filtered by tab and search query
+  const displayedPosts = useMemo(() => {
+    let base = combinedPosts;
+    if (activeTab === "uploaded") {
+      base = items;
+    } else if (activeTab === "blogger") {
+      base = combinedPosts.filter((p) => p.source === "blogger");
+    }
+
+    if (!searchTerm.trim()) return base;
+    const q = searchTerm.toLowerCase();
+    return base.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.slug.toLowerCase().includes(q) ||
+        (p.tags || []).some((t) => t.toLowerCase().includes(q))
+    );
+  }, [combinedPosts, items, activeTab, searchTerm]);
 
   const startEdit = (p: Post) => {
     setEditing(p);
@@ -161,13 +223,15 @@ const PostsAdmin = () => {
         .map((t) => t.trim())
         .filter(Boolean);
 
+      const resolvedCover = resolveMediaUrl(editing.cover_url);
+
       const res = await saveAdminPost({
         id: editing.id || undefined,
         slug: finalSlug,
         title: editing.title.trim(),
         excerpt: editing.excerpt || "",
         content: editing.content || "",
-        image: editing.cover_url,
+        image: resolvedCover,
         tags,
         seo_title: editing.seo_title || null,
         seo_description: editing.seo_description || null,
@@ -213,9 +277,9 @@ const PostsAdmin = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-white">Posts &amp; Synchronization</h1>
+          <h1 className="text-3xl font-serif font-bold text-white">Posts &amp; Articles</h1>
           <p className="text-muted-foreground text-sm">
-            Create, edit, and instantly sync articles across public pages &amp; Supabase database.
+            All Blogger posts &amp; uploaded articles in one unified system with photo previews.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -241,7 +305,7 @@ const PostsAdmin = () => {
           </Button>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button onClick={startNew} className="bg-gradient-gold text-primary-foreground shadow-lg">
+              <Button onClick={startNew} className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg">
                 <Plus size={16} className="mr-1.5" /> New Post
               </Button>
             </DialogTrigger>
@@ -295,7 +359,7 @@ const PostsAdmin = () => {
                   </div>
                   <MediaPicker
                     label="Cover Image *"
-                    value={toSiteMediaUrl(editing.cover_url || "")}
+                    value={resolveMediaUrl(editing.cover_url || "")}
                     onChange={(url) => setEditing({ ...editing, cover_url: url })}
                   />
                   <div>
@@ -385,36 +449,72 @@ const PostsAdmin = () => {
         </DialogContent>
       </Dialog>
 
-      <Tabs defaultValue="db">
-        <TabsList className="bg-[#0c183a] border border-blue-500/20">
-          <TabsTrigger value="db" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-            Custom / Synced Posts ({items.length})
-          </TabsTrigger>
-          <TabsTrigger value="blogger" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-            <Rss size={14} className="mr-1.5" /> Blogger Feed ({bloggerPosts.length})
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="db">
-          <div className="bg-[#0c183a]/80 border border-blue-500/20 rounded-2xl divide-y divide-blue-500/15 overflow-hidden">
-            {items.length === 0 && (
-              <div className="p-12 text-center text-slate-400">
-                <p className="mb-2">No custom posts created yet.</p>
-                <p className="text-xs text-slate-500">
-                  Click &ldquo;New Post&rdquo; to publish an article that syncs instantly to public pages.
-                </p>
-              </div>
-            )}
-            {items.map((p) => (
+      {/* Search Input & Navigation Tabs */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full sm:w-auto">
+          <TabsList className="bg-[#0c183a] border border-blue-500/20">
+            <TabsTrigger value="all" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-xs">
+              All Posts ({combinedPosts.length})
+            </TabsTrigger>
+            <TabsTrigger value="uploaded" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-xs">
+              Uploaded / Custom ({items.length})
+            </TabsTrigger>
+            <TabsTrigger value="blogger" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-xs">
+              <Rss size={13} className="mr-1" /> Blogger Feed ({bloggerPosts.length})
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <div className="relative w-full sm:w-64">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search posts..."
+            className="pl-9 h-9 bg-[#070e24] border-blue-500/30 text-white text-xs placeholder:text-slate-500"
+          />
+        </div>
+      </div>
+
+      {/* Unified Posts List Table */}
+      <div className="bg-[#0c183a]/80 border border-blue-500/20 rounded-2xl divide-y divide-blue-500/15 overflow-hidden shadow-xl">
+        {displayedPosts.length === 0 ? (
+          <div className="p-12 text-center text-slate-400">
+            <p className="mb-2">No posts found matching your criteria.</p>
+            <p className="text-xs text-slate-500">
+              {activeTab === "uploaded"
+                ? "Click 'New Post' above to upload and publish an article."
+                : "Try clearing the search query or changing tabs."}
+            </p>
+          </div>
+        ) : (
+          displayedPosts.map((p) => {
+            const isCustom = p.source === "admin" || p.source === "supabase" || items.some((it) => it.slug === p.slug);
+            const imgSrc = resolveMediaUrl(p.cover_url || (p as any).image);
+
+            return (
               <div key={p.id} className="flex items-center justify-between p-4 hover:bg-blue-500/5 transition-colors">
-                <div className="flex items-center gap-3 min-w-0">
-                  {p.cover_url && (
-                    <img src={p.cover_url} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0 border border-blue-500/20" />
-                  )}
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-blue-500/30 bg-slate-950 flex items-center justify-center">
+                    {imgSrc ? (
+                      <img
+                        src={imgSrc}
+                        alt={p.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "/hero-portrait.jpg";
+                        }}
+                      />
+                    ) : (
+                      <ImageIcon size={18} className="text-slate-500" />
+                    )}
+                  </div>
+
                   <div className="min-w-0">
                     <div className="font-medium text-white truncate flex items-center gap-2">
-                      {p.title}
+                      <span className="truncate">{p.title}</span>
                       <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-semibold ${
+                        className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-semibold shrink-0 ${
                           p.status === "published"
                             ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
                             : "bg-slate-500/15 text-slate-400 border border-slate-500/30"
@@ -422,66 +522,61 @@ const PostsAdmin = () => {
                       >
                         {p.status}
                       </span>
-                      {p.synced_to_cloud ? (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30">
-                          Cloud Synced
+                      {isCustom ? (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-sky-300 border border-blue-500/30 shrink-0 font-medium">
+                          Uploaded
                         </span>
                       ) : (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                          Live Synced
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0 font-medium">
+                          Blogger
                         </span>
                       )}
                     </div>
                     <div className="text-xs text-slate-400 truncate mt-0.5">
-                      /{p.slug} · {(p.tags || []).join(", ") || "No tags"}
+                      /{p.slug} · {(p.tags || []).join(", ") || "General"}
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2 shrink-0 items-center">
+
+                <div className="flex gap-1.5 shrink-0 items-center">
                   <Link
                     to={`/post/${p.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-slate-400 hover:text-blue-400 p-2 transition-colors"
+                    className="text-slate-400 hover:text-blue-400 p-2 transition-colors rounded-lg hover:bg-blue-500/10"
                     title="View public post"
                   >
                     <ExternalLink size={15} />
                   </Link>
-                  <Button size="icon" variant="ghost" onClick={() => startEdit(p)} className="hover:text-blue-400">
-                    <Pencil size={14} />
-                  </Button>
-                  <Button size="icon" variant="ghost" onClick={() => remove(p.id)} className="hover:text-red-400">
-                    <Trash2 size={14} />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </TabsContent>
-        <TabsContent value="blogger">
-          <div className="bg-[#0c183a]/80 border border-blue-500/20 rounded-2xl divide-y divide-blue-500/15 max-h-[70vh] overflow-y-auto">
-            {bloggerPosts.length === 0 && <div className="p-8 text-center text-slate-400">No Blogger posts found.</div>}
-            {bloggerPosts.map((p) => (
-              <div key={p.id} className="flex items-center justify-between p-4 hover:bg-blue-500/5 transition-colors">
-                <div className="flex items-center gap-3 min-w-0">
-                  {p.image && (
-                    <img src={p.image} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0 border border-blue-500/20" />
+
+                  {isCustom && (
+                    <>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => startEdit(p)}
+                        className="hover:text-blue-400 hover:bg-blue-500/10"
+                        title="Edit post"
+                      >
+                        <Pencil size={14} />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => remove(p.id)}
+                        className="hover:text-red-400 hover:bg-red-500/10"
+                        title="Delete post"
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </>
                   )}
-                  <div className="min-w-0">
-                    <div className="font-medium text-white truncate">{p.title}</div>
-                    <div className="text-xs text-slate-400 truncate mt-0.5">
-                      {(p.tags || []).join(", ") || "General"}
-                    </div>
-                  </div>
                 </div>
-                <Link to={postPath(p)} className="text-blue-400 hover:text-blue-300 shrink-0 p-2" title="Open post">
-                  <ExternalLink size={16} />
-                </Link>
               </div>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 };

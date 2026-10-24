@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Upload, X, Image as ImageIcon, Library, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { toSiteMediaUrl } from "@/lib/mediaUrl";
+import { toSiteMediaUrl, resolveMediaUrl } from "@/lib/mediaUrl";
 
 interface MediaRow { id: string; name: string; url: string; path: string; mime_type: string | null; }
 
@@ -110,7 +110,7 @@ async function uploadFile(file: File, userId: string): Promise<string> {
   } catch (_e) {
     void _e;
   }
-  return toSiteMediaUrl(pub.publicUrl);
+  return pub.publicUrl;
 }
 
 /** Single-image picker with drag/drop, file upload, URL input, and library browser. */
@@ -123,11 +123,18 @@ export function MediaPicker({ value, onChange, label = "Image", accept = "image/
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = useCallback(async (files: FileList | null) => {
-    if (!files?.length || !user) return;
+    if (!files?.length) return;
+    const uid = user?.id || "admin";
     setBusy(true);
-    try { const url = await uploadFile(files[0], user.id); onChange(url); toast.success("Uploaded"); }
-    catch (e: any) { toast.error(e.message); }
-    finally { setBusy(false); }
+    try {
+      const url = await uploadFile(files[0], uid);
+      onChange(url);
+      toast.success("Image uploaded successfully");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to upload image");
+    } finally {
+      setBusy(false);
+    }
   }, [onChange, user]);
 
   return (
@@ -141,7 +148,14 @@ export function MediaPicker({ value, onChange, label = "Image", accept = "image/
       >
         {value ? (
           <div className="p-3 flex items-center gap-3">
-            <img src={value} alt="" className="w-20 h-20 rounded object-cover border border-border" />
+            <img
+              src={resolveMediaUrl(value)}
+              alt=""
+              className="w-20 h-20 rounded object-cover border border-border"
+              onError={(e) => {
+                e.currentTarget.src = "/hero-portrait.jpg";
+              }}
+            />
             <div className="flex-1 min-w-0">
               <div className="text-xs text-muted-foreground truncate">{value}</div>
               <div className="flex flex-wrap gap-2 mt-2">

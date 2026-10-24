@@ -6,6 +6,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { resolveMediaUrl } from "@/lib/mediaUrl";
 
 export interface SyncedPost {
   id: string;
@@ -88,7 +89,8 @@ export function normalizePost(raw: any, defaultSource: "admin" | "supabase" | "b
   const nowIso = new Date().toISOString();
   const published = String(raw.published || raw.published_at || raw.created_at || nowIso);
   const updated = String(raw.updated || raw.updated_at || published);
-  const image = raw.cover_url || raw.image || null;
+  const rawImg = raw.cover_url || raw.image || null;
+  const image = rawImg ? resolveMediaUrl(String(rawImg)) : null;
   const excerpt = String(raw.excerpt || "").trim();
   const content = String(raw.content || "").trim();
   const id = String(raw.id || slug);

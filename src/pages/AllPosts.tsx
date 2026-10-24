@@ -9,6 +9,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { usePosts } from "@/hooks/usePosts";
 import { postPath } from "@/lib/postUrl";
 import { buildAlt } from "@/lib/imageSeo";
+import { resolveMediaUrl } from "@/lib/mediaUrl";
 
 const fmt = (d?: string | null) => {
   if (!d) return "";
@@ -149,11 +150,14 @@ const AllPostsContent = () => {
                       {p.image && (
                         <div className="aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-black flex items-center justify-center p-2">
                           <img
-                            src={p.image}
+                            src={resolveMediaUrl(p.image)}
                             alt={buildAlt(p.title, pTags)}
                             loading="lazy"
                             decoding="async"
                             className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-500"
+                            onError={(e) => {
+                              e.currentTarget.src = "/hero-portrait.jpg";
+                            }}
                           />
                         </div>
                       )}
