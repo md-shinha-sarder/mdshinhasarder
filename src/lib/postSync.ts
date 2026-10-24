@@ -7,6 +7,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { resolveMediaUrl } from "@/lib/mediaUrl";
+import { toFullResolutionImageUrl } from "@/lib/imageSeo";
 
 export interface SyncedPost {
   id: string;
@@ -90,7 +91,7 @@ export function normalizePost(raw: any, defaultSource: "admin" | "supabase" | "b
   const published = String(raw.published || raw.published_at || raw.created_at || nowIso);
   const updated = String(raw.updated || raw.updated_at || published);
   const rawImg = raw.cover_url || raw.image || null;
-  const image = rawImg ? resolveMediaUrl(String(rawImg)) : null;
+  const image = rawImg ? toFullResolutionImageUrl(resolveMediaUrl(String(rawImg))) : null;
   const excerpt = String(raw.excerpt || "").trim();
   const content = String(raw.content || "").trim();
   const id = String(raw.id || slug);
@@ -264,14 +265,23 @@ export function fetchLiveBloggerFeed(type: "posts" | "pages"): Promise<SyncedPos
           }
 
           let image: string | null = null;
-          const mediaThumb = entry.media$thumbnail?.url;
-          if (mediaThumb) {
-            image = String(mediaThumb).replace(/\/s\d+(-c)?\//, "/s1600/").replace(/\/w\d+-h\d+[^/]*\//, "/s1600/");
+          // Prefer link wrapping image if available (often has full original upload URL)
+          if (content) {
+            const linkMatch = content.match(/<a[^>]+href=["'](https?:\/\/[^"']*?(?:blogger\.googleusercontent\.com\/img\/b\/[^"']+|\.(?:jpg|jpeg|png|webp)))["']/i);
+            if (linkMatch) {
+              image = toFullResolutionImageUrl(linkMatch[1]);
+            }
+          }
+          if (!image) {
+            const mediaThumb = entry.media$thumbnail?.url;
+            if (mediaThumb) {
+              image = toFullResolutionImageUrl(String(mediaThumb));
+            }
           }
           if (!image && content) {
             const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
             if (imgMatch) {
-              image = String(imgMatch[1]).replace(/\/s\d+(-c)?\//, "/s1600/").replace(/\/w\d+-h\d+[^/]*\//, "/s1600/");
+              image = toFullResolutionImageUrl(String(imgMatch[1]));
             }
           }
 

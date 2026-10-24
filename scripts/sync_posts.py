@@ -58,13 +58,13 @@ def clean_slug(title: str, existing_slug: str = "") -> str:
     return s or "post"
 
 def upgrade_image_url(url: str) -> str:
-    """Converts Blogger thumbnail URLs to high-resolution full-size URLs."""
+    """Converts Blogger thumbnail URLs to original uncompressed full-size /s0/ URLs."""
     if not url or not isinstance(url, str):
         return None
     url = url.strip()
-    # Upgrade standard Blogger thumbnails
-    url = re.sub(r"/s\d+(-c)?/", "/s1600/", url)
-    url = re.sub(r"/w\d+-h\d+[^/]*/", "/s1600/", url)
+    # Upgrade standard Blogger thumbnails to original full-size upload (/s0/)
+    url = re.sub(r"/s\d+(-c)?/", "/s0/", url)
+    url = re.sub(r"/w\d+-h\d+[^/]*/", "/s0/", url)
     # Ensure https
     if url.startswith("http://"):
         url = "https://" + url[7:]
@@ -95,6 +95,12 @@ def normalize_post(raw: dict, source: str = "unknown") -> dict:
     url = str(raw.get("url", ""))
 
     content = str(raw.get("content", "")).strip()
+    if content:
+        # Upgrade Blogger inline images to /s0/ and strip tiny fixed dimensions
+        content = re.sub(r'(src=["\']https?://[^"\']*?)/(s\d+(-c)?|w\d+-h\d+[^/]*)/', r'\1/s0/', content, flags=re.IGNORECASE)
+        content = re.sub(r'(href=["\']https?://[^"\']*?)/(s\d+(-c)?|w\d+-h\d+[^/]*)/', r'\1/s0/', content, flags=re.IGNORECASE)
+        content = re.sub(r'\s+(width|height)=["\']\d+["\']', '', content, flags=re.IGNORECASE)
+
     excerpt = str(raw.get("excerpt", "")).strip()
     if not excerpt and content:
         # Strip html tags for clean snippet

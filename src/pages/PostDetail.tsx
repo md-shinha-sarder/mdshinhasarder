@@ -1,7 +1,7 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Calendar, Facebook, Twitter, Linkedin, Link as LinkIcon, MessageCircle, Compass, Home, BookOpen, Music, FileText } from "lucide-react";
+import { ArrowLeft, Calendar, Facebook, Twitter, Linkedin, Link as LinkIcon, MessageCircle, Compass, Home, BookOpen, Music, FileText, ZoomIn, Maximize2, ExternalLink, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
@@ -9,7 +9,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { usePosts, usePages } from "@/hooks/usePosts";
 import { postPath } from "@/lib/postUrl";
 import { buildSeo } from "@/lib/seo";
-import { buildAlt, enhanceContentImages } from "@/lib/imageSeo";
+import { buildAlt, enhanceContentImages, toFullResolutionImageUrl } from "@/lib/imageSeo";
 import { getStoredAdminPosts, getCachedAllPosts, getCachedAllPages } from "@/lib/postSync";
 import { resolveMediaUrl } from "@/lib/mediaUrl";
 import { toast } from "sonner";
@@ -209,6 +209,12 @@ const PostDetailContent = () => {
   const seo = post ? buildSeo(post) : null;
   const cleanDesc = seo?.metaDescription || "";
   const canonical = seo?.canonical || url;
+
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+
+  const fullHeroImageUrl = useMemo(() => {
+    return toFullResolutionImageUrl(resolveMediaUrl(post?.image));
+  }, [post?.image]);
 
   // Clean and deduplicate post content so cover photo is shown only once
   const cleanedContent = useMemo(() => {
@@ -433,7 +439,7 @@ const PostDetailContent = () => {
         )}
 
         <article className="pt-32 pb-16">
-          <div className="container mx-auto px-6 max-w-3xl">
+          <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
             <Link
               to="/#blog"
               className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-blue-400 mb-8 transition-colors"
@@ -497,19 +503,33 @@ const PostDetailContent = () => {
                   )}
                 </div>
 
-                {post.image && (
-                  <div className="w-full mb-8 flex justify-center">
-                    <img
-                      src={resolveMediaUrl(post.image)}
-                      alt={buildAlt(post.title, postTags)}
-                      loading="eager"
-                      decoding="async"
-                      {...({ fetchpriority: "high" } as any)}
-                      className="w-full max-w-full h-auto object-contain rounded-xl"
-                      onError={(e) => {
-                        e.currentTarget.src = "/hero-portrait.jpg";
-                      }}
-                    />
+                {post.image && fullHeroImageUrl && (
+                  <div className="w-full mb-8 flex flex-col items-center">
+                    <div
+                      onClick={() => setPhotoModalOpen(true)}
+                      className="group relative w-full cursor-zoom-in overflow-hidden rounded-2xl bg-slate-900/40 flex items-center justify-center transition-all"
+                      title="Click to view full photo at 100% original upload resolution"
+                    >
+                      <img
+                        src={fullHeroImageUrl}
+                        alt={buildAlt(post.title, postTags)}
+                        loading="eager"
+                        decoding="async"
+                        {...({ fetchpriority: "high" } as any)}
+                        className="w-full max-w-full h-auto object-contain rounded-2xl group-hover:scale-[1.01] transition-transform duration-300"
+                        onError={(e) => {
+                          e.currentTarget.src = "/hero-portrait.jpg";
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4 pointer-events-none">
+                        <span className="text-xs font-medium text-white bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-md">
+                          <ZoomIn size={14} className="text-blue-400" /> Click to view full original photo
+                        </span>
+                        <span className="text-xs font-mono font-bold text-sky-300 bg-black/80 backdrop-blur-md px-2.5 py-1.5 rounded-lg shadow-md flex items-center gap-1">
+                          <Maximize2 size={13} /> Original Full HD
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -605,6 +625,53 @@ const PostDetailContent = () => {
             )}
           </div>
         </article>
+
+        {/* Full-Screen Crystal-Clear Photo Modal */}
+        {photoModalOpen && fullHeroImageUrl && (
+          <div
+            onClick={() => setPhotoModalOpen(false)}
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-3 sm:p-6"
+          >
+            <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+              <a
+                href={fullHeroImageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-white/20 text-xs font-medium text-slate-200 hover:text-white hover:bg-slate-800 transition-colors shadow-lg"
+                title="Open raw original image file in new tab"
+              >
+                <ExternalLink size={14} />
+                <span>Open Raw Original</span>
+              </a>
+              <button
+                type="button"
+                onClick={() => setPhotoModalOpen(false)}
+                aria-label="Close"
+                className="w-9 h-9 rounded-xl bg-slate-900/90 border border-white/20 text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-[95vw] max-h-[88vh] flex flex-col items-center justify-center"
+            >
+              <img
+                src={fullHeroImageUrl}
+                alt={post?.title || "Full photo"}
+                loading="eager"
+                decoding="async"
+                className="max-w-[95vw] max-h-[82vh] w-auto h-auto object-contain rounded-xl shadow-2xl"
+              />
+              <p className="mt-3 text-xs text-slate-300 text-center font-medium max-w-xl truncate">
+                {post?.title} — <span className="text-blue-400 font-semibold">Real Full Uploaded Resolution</span>
+              </p>
+            </div>
+          </div>
+        )}
+
         <FooterSection />
       </div>
     </div>

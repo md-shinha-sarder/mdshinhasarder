@@ -60,31 +60,57 @@ export function buildAlt(title?: string | null, extra?: string | string[] | null
 }
 
 /**
- * Rewrites <img> tags inside post HTML so search engines and browsers can
- * index and lay them out without CLS:
- *  - injects descriptive alt text (post title + index) when missing/empty
- *  - adds loading="lazy", decoding="async", fetchpriority="low" for inline images
- *  - adds width/height hints (1200x800) so the browser reserves space
- *  - keeps existing attributes intact
+ * Upgrades any Blogger or Google User Content image URL to its 100% original,
+ * uncompressed, full-resolution upload size (/s0/).
+ */
+export function toFullResolutionImageUrl(url?: string | null): string {
+  if (!url) return "";
+  let clean = url.trim();
+  // Upgrade Blogger/Google User Content to full original upload (/s0/)
+  if (/googleusercontent\.com|blogspot\.com/i.test(clean)) {
+    clean = clean.replace(/\/(s\d+(-c)?|w\d+-h\d+[^/]*)\//i, "/s0/");
+  }
+  return clean;
+}
+
+/**
+ * Rewrites <img> and <a> tags inside post HTML so photos are displayed
+ * in crystal-clear full resolution (upgraded to /s0/), stripping Blogger's
+ * tiny inline width/height constraints and adding proper SEO alt tags.
  */
 export function enhanceContentImages(html: string, title?: string | null): string {
   if (!html) return html;
   let i = 0;
-  return html.replace(/<img\b([^>]*?)\/?>(?!\s*<\/img>)/gi, (_m, attrs: string) => {
-    i += 1;
-    const hasAlt = /\balt\s*=/i.test(attrs);
-    const hasLoading = /\bloading\s*=/i.test(attrs);
-    const hasDecoding = /\bdecoding\s*=/i.test(attrs);
-    const hasPriority = /\bfetchpriority\s*=/i.test(attrs);
 
+  // 1. Upgrade <a> links wrapping images to full original resolution (/s0/)
+  let processed = html.replace(/<a\b([^>]*?href=["'])(https?:\/\/[^"']*?)\/(s\d+(-c)?|w\d+-h\d+[^/]*)\/([^"']+["'][^>]*>)/gi, '$1$2/s0/$5');
+
+  // 2. Upgrade <img> tags: change src to /s0/, strip tiny width/height, inject SEO alt
+  processed = processed.replace(/<img\b([^>]*?)\/?>(?!\s*<\/img>)/gi, (_m, attrs: string) => {
+    i += 1;
     let out = attrs.trim();
+
+    // Upgrade Google/Blogger image src to /s0/ (original uploaded resolution)
+    out = out.replace(/(src=["']https?:\/\/[^"']*?)\/(s\d+(-c)?|w\d+-h\d+[^/]*)\//gi, '$1/s0/');
+
+    // Strip hardcoded Blogger thumbnail attributes that compress images (e.g. width="213" height="320")
+    out = out.replace(/\b(width|height)\s*=\s*["']\d+["']/gi, '');
+
+    const hasAlt = /\balt\s*=/i.test(out);
+    const hasLoading = /\bloading\s*=/i.test(out);
+    const hasDecoding = /\bdecoding\s*=/i.test(out);
+    const hasPriority = /\bfetchpriority\s*=/i.test(out);
+
     if (!hasAlt) out += ` alt="${escapeAttr(buildAlt(title, `photo ${i}`))}"`;
     else out = out.replace(/\balt\s*=\s*(["'])\s*\1/i, ` alt="${escapeAttr(buildAlt(title, `photo ${i}`))}"`);
     if (!hasLoading) out += ` loading="lazy"`;
     if (!hasDecoding) out += ` decoding="async"`;
     if (!hasPriority) out += ` fetchpriority="low"`;
-    return `<img ${out} />`;
+
+    return `<img ${out.trim()} class="w-full max-w-full h-auto object-contain rounded-xl my-4 mx-auto" />`;
   });
+
+  return processed;
 }
 
 function escapeAttr(s: string) {

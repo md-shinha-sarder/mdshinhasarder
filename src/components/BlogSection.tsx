@@ -2,7 +2,7 @@ import { ArrowRight, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { usePosts } from "@/hooks/usePosts";
 import { postPath } from "@/lib/postUrl";
-import { buildAlt } from "@/lib/imageSeo";
+import { buildAlt, toFullResolutionImageUrl } from "@/lib/imageSeo";
 import { resolveMediaUrl } from "@/lib/mediaUrl";
 
 const fmt = (d?: string | null) => {
@@ -57,7 +57,7 @@ const BlogSection = () => {
                   {p.image ? (
                     <div className="aspect-[16/9] w-full overflow-hidden bg-[#070e24]">
                       <img
-                        src={resolveMediaUrl(p.image)}
+                        src={toFullResolutionImageUrl(resolveMediaUrl(p.image))}
                         alt={buildAlt(p.title, pTags)}
                         loading="lazy"
                         decoding="async"

@@ -66,7 +66,7 @@ export const GalleryPage = () => {
 
     const upgradeUrl = (u: string) => {
       if (!u) return "";
-      return u.replace(/\/s\d+(-c)?\//, "/s1600/").replace(/\/w\d+-h\d+[^/]*\//, "/s1600/");
+      return u.replace(/\/s\d+(-c)?\//, "/s0/").replace(/\/w\d+-h\d+[^/]*\//, "/s0/");
     };
 
     const extractToken = (url: string) => {
