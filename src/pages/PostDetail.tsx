@@ -23,6 +23,83 @@ const fmt = (d?: string | null) => {
   }
 };
 
+/**
+ * Strips duplicate cover/hero image from the post HTML content so the photo
+ * is rendered only once ("all post photo akta hba 2 ber hba na").
+ */
+function stripDuplicateCoverImage(html: string, heroImage?: string | null): string {
+  if (!html) return "";
+  if (!heroImage) return html;
+
+  const extractToken = (url: string) => {
+    if (!url) return "";
+    const clean = url
+      .replace(/https?:\/\//i, "")
+      .replace(/\/s\d+(-c)?\//i, "/")
+      .replace(/\/w\d+-h\d+[^/]*\//i, "/")
+      .replace(/\/d\//i, "/");
+    const parts = clean.split("/").filter(Boolean);
+    return parts[parts.length - 1] || clean;
+  };
+
+  const heroToken = extractToken(heroImage);
+  let cleaned = html;
+  let firstRemoved = false;
+
+  // 1. Remove separator divs containing matching image or leading image
+  cleaned = cleaned.replace(/<div[^>]*class=["'][^"']*separator[^"']*["'][^>]*>([\s\S]*?)<\/div>/gi, (match, inner) => {
+    const imgMatch = inner.match(/<img[^>]+src=["']([^"']+)["']/i);
+    const hrefMatch = inner.match(/<a[^>]+href=["']([^"']+)["']/i);
+    const imgSrc = imgMatch ? imgMatch[1] : "";
+    const hrefSrc = hrefMatch ? hrefMatch[1] : "";
+
+    const imgToken = extractToken(imgSrc);
+    const hrefToken = extractToken(hrefSrc);
+
+    const isMatch =
+      (imgToken && (imgToken === heroToken || heroImage.includes(imgToken) || imgSrc.includes(heroToken))) ||
+      (hrefToken && (hrefToken === heroToken || heroImage.includes(hrefToken) || hrefSrc.includes(heroToken)));
+
+    if (isMatch || !firstRemoved) {
+      firstRemoved = true;
+      return "";
+    }
+    return match;
+  });
+
+  // 2. Remove <a> wrapping <img> if matching heroImage or if leading image
+  cleaned = cleaned.replace(/<a[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?<img[^>]+src=["']([^"']+)["'][^>]*>[\s\S]*?)<\/a>/gi, (match, href, _inner, src) => {
+    const imgToken = extractToken(src);
+    const hrefToken = extractToken(href);
+
+    const isMatch =
+      (imgToken && (imgToken === heroToken || heroImage.includes(imgToken) || src.includes(heroToken))) ||
+      (hrefToken && (hrefToken === heroToken || heroImage.includes(hrefToken) || href.includes(heroToken)));
+
+    if (isMatch || !firstRemoved) {
+      firstRemoved = true;
+      return "";
+    }
+    return match;
+  });
+
+  // 3. Remove standalone <img> if matching heroImage or if leading image
+  cleaned = cleaned.replace(/<img[^>]+src=["']([^"']+)["'][^>]*\/?>/gi, (match, src) => {
+    const imgToken = extractToken(src);
+    const isMatch = imgToken && (imgToken === heroToken || heroImage.includes(imgToken) || src.includes(heroToken));
+    if (isMatch || !firstRemoved) {
+      firstRemoved = true;
+      return "";
+    }
+    return match;
+  });
+
+  // 4. Strip empty leading wrappers
+  cleaned = cleaned.replace(/^\s*(?:<(?:p|div|span)[^>]*>\s*(?:&nbsp;|\s)*<\/(?:p|div|span)>|<br\s*\/?>|\s)+/i, "");
+
+  return cleaned.trim();
+}
+
 const PostDetailContent = () => {
   const params = useParams();
   const location = useLocation();
@@ -132,6 +209,13 @@ const PostDetailContent = () => {
   const seo = post ? buildSeo(post) : null;
   const cleanDesc = seo?.metaDescription || "";
   const canonical = seo?.canonical || url;
+
+  // Clean and deduplicate post content so cover photo is shown only once
+  const cleanedContent = useMemo(() => {
+    if (!post?.content) return "";
+    const stripped = stripDuplicateCoverImage(post.content, post.image);
+    return enhanceContentImages(stripped, post.title);
+  }, [post?.content, post?.image, post?.title]);
 
   if (!loading && !post) {
     return (
@@ -414,14 +498,14 @@ const PostDetailContent = () => {
                 </div>
 
                 {post.image && (
-                  <div className="w-full mb-8 rounded-xl overflow-hidden border border-slate-200 dark:border-blue-500/25 shadow-xl bg-slate-50 dark:bg-[#070e24]/70 flex items-center justify-center p-1 sm:p-2">
+                  <div className="w-full mb-8 flex justify-center">
                     <img
                       src={resolveMediaUrl(post.image)}
                       alt={buildAlt(post.title, postTags)}
                       loading="eager"
                       decoding="async"
                       {...({ fetchpriority: "high" } as any)}
-                      className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-lg mx-auto"
+                      className="w-full max-w-full h-auto object-contain rounded-xl"
                       onError={(e) => {
                         e.currentTarget.src = "/hero-portrait.jpg";
                       }}
@@ -431,7 +515,7 @@ const PostDetailContent = () => {
 
                 <div
                   className="prose dark:prose-invert max-w-none prose-headings:font-serif prose-headings:text-slate-900 dark:prose-headings:text-white prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-img:rounded-xl prose-img:max-w-full prose-img:h-auto prose-img:object-contain prose-img:mx-auto text-justify [&_p]:text-justify [&_li]:text-justify text-slate-800 dark:text-slate-200 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: enhanceContentImages(post.content || "", post.title) }}
+                  dangerouslySetInnerHTML={{ __html: cleanedContent }}
                 />
 
                 <div className="mt-12 pt-8 border-t border-slate-200 dark:border-blue-500/20">
@@ -496,13 +580,13 @@ const PostDetailContent = () => {
                             className="group bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-slate-400 dark:bg-neutral-950 dark:border-neutral-800 dark:hover:border-neutral-700 transition-all shadow-sm"
                           >
                             {r.image && (
-                              <div className="w-full aspect-video bg-slate-100 dark:bg-black flex items-center justify-center p-1 overflow-hidden">
+                              <div className="w-full aspect-[16/9] bg-slate-100 dark:bg-black overflow-hidden">
                                 <img
                                   src={r.image}
                                   alt={buildAlt(r.title, rTags)}
                                   loading="lazy"
                                   decoding="async"
-                                  className="max-w-full max-h-full w-auto h-auto object-contain"
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
                               </div>
                             )}

@@ -1,5 +1,6 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/hooks/useAuth";
 import {
   LayoutDashboard,
@@ -36,7 +37,11 @@ const items = [
 const AdminLayout = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const nav = useNavigate();
+  const location = useLocation();
   const [drawer, setDrawer] = useState(false);
+
+  const activeItem = items.find((i) => (i.end ? location.pathname === i.to : location.pathname.startsWith(i.to)));
+  const adminPageTitle = activeItem ? `Admin - ${activeItem.label}` : "Admin";
 
   useEffect(() => {
     if (loading) return;
@@ -49,7 +54,17 @@ const AdminLayout = () => {
     }
   }, [user, isAdmin, loading, nav, signOut]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+        <Helmet>
+          <title>Admin - MD. Shinha Sarder</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+        Loading...
+      </div>
+    );
+  }
   if (!user || !isAdmin) return null;
 
   const Sidebar = (
@@ -80,6 +95,10 @@ const AdminLayout = () => {
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
+      <Helmet>
+        <title>{adminPageTitle} - MD. Shinha Sarder</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <aside className="hidden md:flex w-60 border-r border-border bg-card/50 flex-col shrink-0">{Sidebar}</aside>
 
       {drawer && (

@@ -147,18 +147,22 @@ const AllPostsContent = () => {
                       to={postPath(p)}
                       className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-slate-400 dark:bg-neutral-950 dark:border-neutral-800 dark:hover:border-neutral-700 transition-all hover:-translate-y-1 duration-300 flex flex-col shadow-sm"
                     >
-                      {p.image && (
-                        <div className="aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-black flex items-center justify-center p-2">
+                      {p.image ? (
+                        <div className="aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-neutral-900">
                           <img
                             src={resolveMediaUrl(p.image)}
                             alt={buildAlt(p.title, pTags)}
                             loading="lazy"
                             decoding="async"
-                            className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-500"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             onError={(e) => {
                               e.currentTarget.src = "/hero-portrait.jpg";
                             }}
                           />
+                        </div>
+                      ) : (
+                        <div className="aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-neutral-900 flex items-center justify-center text-slate-400">
+                          <span className="text-xs font-serif font-bold text-slate-400 dark:text-neutral-600">MD. Shinha Sarder</span>
                         </div>
                       )}
                       <div className="p-5 flex-1 flex flex-col">

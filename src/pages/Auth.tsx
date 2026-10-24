@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -84,6 +85,10 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
+      <Helmet>
+        <title>Admin - Sign In | MD. Shinha Sarder</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <form onSubmit={submit} className="w-full max-w-md bg-gradient-card rounded-2xl p-8 border border-border shadow-card space-y-5">
         <h1 className="text-2xl font-serif font-bold text-gradient-gold">Admin Sign In</h1>
         <p className="text-sm text-muted-foreground">Sign in with your admin credentials.</p>

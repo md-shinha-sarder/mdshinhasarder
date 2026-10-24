@@ -99,16 +99,20 @@ const AppRoutes = () => {
         <Route path="/auth" element={<Auth />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="songs" element={<SongsAdmin />} />
           <Route path="books" element={<BooksAdmin />} />
           <Route path="profile-data" element={<ProfileAdmin />} />
           <Route path="tech-version" element={<TechVersionAdmin />} />
           <Route path="pages" element={<PagesAdmin />} />
+          <Route path="page" element={<PagesAdmin />} />
           <Route path="posts" element={<PostsAdmin />} />
+          <Route path="post" element={<PostsAdmin />} />
           <Route path="media" element={<MediaAdmin />} />
           <Route path="news-check" element={<NewsCheckAdmin />} />
           <Route path="seo" element={<SeoAdmin />} />
           <Route path="theme" element={<ThemeAdmin />} />
+          <Route path="*" element={<Dashboard />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

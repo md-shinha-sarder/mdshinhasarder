@@ -17,17 +17,20 @@ import {
   Download,
   Image as ImageIcon,
 } from "lucide-react";
+import { useEffect } from "react";
 import { usePosts, usePages } from "@/hooks/usePosts";
 import { DEFAULT_BOOKS as chaptraBooksData } from "@/hooks/useBooksData";
 import { DEFAULT_SONGS as songsData } from "@/hooks/useSongsData";
 import { toDomainImageUrl } from "@/lib/imageSeo";
+import { getCachedAllPosts, getCachedAllPages, getStoredAdminPosts } from "@/lib/postSync";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GalleryItem {
   id: string;
   src: string;
   canonicalUrl: string;
   title: string;
-  category: "Portraits" | "Posts Photos" | "Pages Photos" | "Book Covers" | "Music & Media";
+  category: "Portraits" | "Posts Photos" | "Pages Photos" | "Site Media" | "Book Covers" | "Music & Media";
   caption: string;
   sourceUrl?: string;
 }
@@ -36,15 +39,41 @@ export const GalleryPage = () => {
   const { posts } = usePosts();
   const { pages } = usePages();
 
+  const [dbMedia, setDbMedia] = useState<{ id: string; name: string; url: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const [copiedImgUrl, setCopiedImgUrl] = useState(false);
 
-  // Automatically aggregate photos from ALL posts, ALL pages, all books, songs, and portraits
+  // Load uploaded media from database
+  useEffect(() => {
+    supabase
+      .from("media")
+      .select("id, name, url")
+      .then(({ data }) => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          setDbMedia(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Automatically aggregate photos from ALL posts, ALL pages, all books, songs, portraits, and uploaded site media
   const allGalleryItems = useMemo(() => {
     const seen = new Set<string>();
+    const seenTokens = new Set<string>();
     const items: GalleryItem[] = [];
+
+    const upgradeUrl = (u: string) => {
+      if (!u) return "";
+      return u.replace(/\/s\d+(-c)?\//, "/s1600/").replace(/\/w\d+-h\d+[^/]*\//, "/s1600/");
+    };
+
+    const extractToken = (url: string) => {
+      const clean = url.replace(/https?:\/\//i, "").replace(/\/s\d+(-c)?\//i, "/").replace(/\/w\d+-h\d+[^/]*\//i, "/");
+      const parts = clean.split("/").filter(Boolean);
+      return parts[parts.length - 1] || clean;
+    };
 
     const addPhoto = (
       src: string,
@@ -54,14 +83,16 @@ export const GalleryPage = () => {
       sourceUrl?: string
     ) => {
       if (!src || src.trim() === "") return;
-      const cleanSrc = src.trim();
-      if (seen.has(cleanSrc)) return;
+      const cleanSrc = upgradeUrl(src.trim());
+      const token = extractToken(cleanSrc);
+      if (seen.has(cleanSrc) || seenTokens.has(token)) return;
       seen.add(cleanSrc);
+      seenTokens.add(token);
 
       const canonicalUrl = toDomainImageUrl(cleanSrc, `${title} ${caption}`);
 
       items.push({
-        id: `img-${items.length + 1}-${cleanSrc.slice(-12).replace(/[^a-zA-Z0-9]/g, "")}`,
+        id: `img-${items.length + 1}-${token.slice(-12).replace(/[^a-zA-Z0-9]/g, "")}`,
         src: cleanSrc,
         canonicalUrl,
         title,
@@ -71,7 +102,7 @@ export const GalleryPage = () => {
       });
     };
 
-    // 1. Official Verified Portraits & Studio Assets (hosted directly on mdshinhasarder.com/images/)
+    // 1. Official Verified Portraits & Studio Assets
     addPhoto(
       "https://mdshinhasarder.com/images/md-shinha-sarder-official-portrait.profile.webp",
       "Official Portrait — MD. Shinha Sarder",
@@ -97,37 +128,67 @@ export const GalleryPage = () => {
       "Executive portrait of MD. Shinha Sarder, leader of Biostar TV World and IT Tech BD."
     );
 
-    // 2. Photos from ALL Blogger Posts (Featured image + all embedded <img> inside post content)
-    for (const post of posts) {
+    // 2. Photos from ALL Blogger & Admin Posts (live hook + cached + admin stored)
+    const combinedPosts = [...posts];
+    const cachedPosts = getCachedAllPosts();
+    const adminPosts = getStoredAdminPosts();
+    for (const p of [...adminPosts, ...cachedPosts]) {
+      if (!combinedPosts.some((cp) => cp.slug === p.slug || cp.id === p.id)) {
+        combinedPosts.push(p);
+      }
+    }
+
+    for (const post of combinedPosts) {
       if (post.image) {
         addPhoto(
           post.image,
           post.title || "Blog Post Photo",
           "Posts Photos",
-          `Cover image from post: ${post.title}`,
+          `Cover photo from post: ${post.title}`,
           post.slug ? `/posts/${post.slug}` : undefined
         );
       }
       if (post.content) {
-        const re = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+        // Extract <img> tags
+        const reImg = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
         let match;
-        while ((match = re.exec(post.content)) !== null) {
+        while ((match = reImg.exec(post.content)) !== null) {
           const imgUrl = match[1];
           if (imgUrl && !imgUrl.includes("blank.gif") && !imgUrl.includes("pixel.gif")) {
             addPhoto(
               imgUrl,
-              post.title ? `${post.title} (Embedded)` : "Post Photo",
+              post.title ? `${post.title}` : "Post Photo",
               "Posts Photos",
               `Photo embedded in published post: ${post.title}`,
               post.slug ? `/posts/${post.slug}` : undefined
             );
           }
         }
+        // Extract direct <a> image links
+        const reLink = /<a[^>]+href=["'](https?:\/\/[^"']*(?:blogger\.googleusercontent\.com\/img\/b\/[^"']+|\.(?:jpg|jpeg|png|webp)))["']/gi;
+        let lMatch;
+        while ((lMatch = reLink.exec(post.content)) !== null) {
+          addPhoto(
+            lMatch[1],
+            post.title ? `${post.title}` : "Post Photo",
+            "Posts Photos",
+            `High-resolution photo from post: ${post.title}`,
+            post.slug ? `/posts/${post.slug}` : undefined
+          );
+        }
       }
     }
 
-    // 3. Photos from ALL Blogger Pages (Featured image + all embedded <img> inside page content)
-    for (const page of pages) {
+    // 3. Photos from ALL Blogger Pages (live hook + cached)
+    const combinedPages = [...pages];
+    const cachedPages = getCachedAllPages();
+    for (const pg of cachedPages) {
+      if (!combinedPages.some((cpg) => cpg.slug === pg.slug || cpg.id === pg.id)) {
+        combinedPages.push(pg);
+      }
+    }
+
+    for (const page of combinedPages) {
       if (page.image) {
         addPhoto(
           page.image,
@@ -138,24 +199,47 @@ export const GalleryPage = () => {
         );
       }
       if (page.content) {
-        const re = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+        const reImg = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
         let match;
-        while ((match = re.exec(page.content)) !== null) {
+        while ((match = reImg.exec(page.content)) !== null) {
           const imgUrl = match[1];
           if (imgUrl && !imgUrl.includes("blank.gif") && !imgUrl.includes("pixel.gif")) {
             addPhoto(
               imgUrl,
-              page.title ? `${page.title} (Embedded)` : "Page Photo",
+              page.title ? `${page.title}` : "Page Photo",
               "Pages Photos",
               `Photo embedded in published page: ${page.title}`,
               page.slug ? `/${page.slug}` : undefined
             );
           }
         }
+        const reLink = /<a[^>]+href=["'](https?:\/\/[^"']*(?:blogger\.googleusercontent\.com\/img\/b\/[^"']+|\.(?:jpg|jpeg|png|webp)))["']/gi;
+        let lMatch;
+        while ((lMatch = reLink.exec(page.content)) !== null) {
+          addPhoto(
+            lMatch[1],
+            page.title ? `${page.title}` : "Page Photo",
+            "Pages Photos",
+            `High-resolution photo from page: ${page.title}`,
+            page.slug ? `/${page.slug}` : undefined
+          );
+        }
       }
     }
 
-    // 4. All 20 Book Covers from Chaptra & Google Books
+    // 4. Custom Database / Admin Uploaded Media
+    for (const media of dbMedia) {
+      if (media.url) {
+        addPhoto(
+          media.url,
+          media.name || "Site Media Asset",
+          "Site Media",
+          `Uploaded site media: ${media.name || "Asset"}`
+        );
+      }
+    }
+
+    // 5. All 20 Book Covers from Chaptra & Google Books
     chaptraBooksData.forEach((b) => {
       addPhoto(
         b.cover,
@@ -166,7 +250,7 @@ export const GalleryPage = () => {
       );
     });
 
-    // 5. All 15 Songs & Media Artworks from Deezer
+    // 6. All 15 Songs & Media Artworks from Deezer
     songsData.forEach((s) => {
       addPhoto(
         s.cover,
@@ -178,13 +262,14 @@ export const GalleryPage = () => {
     });
 
     return items;
-  }, [posts, pages]);
+  }, [posts, pages, dbMedia]);
 
-  const categories = [
+  const categories: (GalleryItem["category"] | "All")[] = [
     "All",
     "Portraits",
     "Posts Photos",
     "Pages Photos",
+    "Site Media",
     "Book Covers",
     "Music & Media",
   ];

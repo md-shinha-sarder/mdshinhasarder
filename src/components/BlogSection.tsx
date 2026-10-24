@@ -54,18 +54,22 @@ const BlogSection = () => {
                   to={postPath(p)}
                   className="group bg-gradient-to-br from-[#0c183a]/90 via-[#0a1532]/90 to-[#070e24]/95 rounded-2xl overflow-hidden border border-blue-500/25 hover:border-blue-400/70 transition-all hover:-translate-y-1 duration-300 flex flex-col shadow-xl shadow-blue-950/60"
                 >
-                  {p.image && (
-                    <div className="aspect-[16/10] overflow-hidden bg-[#070e24] flex items-center justify-center p-2">
+                  {p.image ? (
+                    <div className="aspect-[16/9] w-full overflow-hidden bg-[#070e24]">
                       <img
                         src={resolveMediaUrl(p.image)}
                         alt={buildAlt(p.title, pTags)}
                         loading="lazy"
                         decoding="async"
-                        className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
                           e.currentTarget.src = "/hero-portrait.jpg";
                         }}
                       />
+                    </div>
+                  ) : (
+                    <div className="aspect-[16/9] w-full overflow-hidden bg-[#070e24] flex items-center justify-center text-slate-500">
+                      <span className="text-xs font-serif font-bold text-slate-600">MD. Shinha Sarder</span>
                     </div>
                   )}
                   <div className="p-6 flex-1 flex flex-col">

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { X, ZoomIn, Images, ArrowRight } from "lucide-react";
-import { usePosts } from "@/hooks/usePosts";
+import { usePosts, usePages } from "@/hooks/usePosts";
 import { buildAlt } from "@/lib/imageSeo";
 import profilePhoto from "@/assets/profile-photo.webp";
 
@@ -17,33 +17,41 @@ const defaultGalleryPhotos = [
 ];
 
 const GallerySection = () => {
-  const { posts, loading } = usePosts();
+  const { posts, loading: postsLoading } = usePosts();
+  const { pages, loading: pagesLoading } = usePages();
   const [open, setOpen] = useState<string | null>(null);
+  const loading = postsLoading && pagesLoading;
 
   const images = useMemo(() => {
     const set = new Set<string>();
     const out: { src: string; title: string; tags: string[]; idx: number }[] = [];
-    posts.forEach((p) => {
+
+    const processItem = (item: { image?: string | null; title?: string; content?: string; tags?: string[] }) => {
       const found = new Set<string>();
-      if (p.image) found.add(p.image);
-      const re = /<img[^>]+src=["']([^"']+)["']/gi;
-      let m;
-      while ((m = re.exec(p.content)) !== null) found.add(m[1]);
+      if (item.image) found.add(item.image);
+      if (item.content) {
+        const re = /<img[^>]+src=["']([^"']+)["']/gi;
+        let m;
+        while ((m = re.exec(item.content)) !== null) found.add(m[1]);
+      }
       let i = 0;
       found.forEach((src) => {
         i += 1;
         if (!set.has(src)) {
           set.add(src);
-          out.push({ src, title: p.title, tags: p.tags || [], idx: i });
+          out.push({ src, title: item.title || "Gallery Item", tags: item.tags || [], idx: i });
         }
       });
-    });
-    // If fewer than default, combine with defaultGalleryPhotos
+    };
+
+    posts.forEach(processItem);
+    pages.forEach(processItem);
+
     if (out.length === 0) {
       return defaultGalleryPhotos;
     }
     return [...out, ...defaultGalleryPhotos.filter((d) => !set.has(d.src))];
-  }, [posts]);
+  }, [posts, pages]);
 
   return (
     <section id="gallery" className="py-20 relative transition-colors duration-300">
