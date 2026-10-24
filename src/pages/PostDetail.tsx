@@ -6,11 +6,11 @@ import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { usePosts } from "@/hooks/usePosts";
+import { usePosts, usePages } from "@/hooks/usePosts";
 import { postPath } from "@/lib/postUrl";
 import { buildSeo } from "@/lib/seo";
 import { buildAlt, enhanceContentImages } from "@/lib/imageSeo";
-import { getStoredAdminPosts, getCachedAllPosts } from "@/lib/postSync";
+import { getStoredAdminPosts, getCachedAllPosts, getCachedAllPages } from "@/lib/postSync";
 import { resolveMediaUrl } from "@/lib/mediaUrl";
 import { toast } from "sonner";
 
@@ -39,13 +39,15 @@ const PostDetailContent = () => {
     targetSlug = targetSlug.toLowerCase().trim();
   }
 
-  const { posts, loading } = usePosts();
+  const { posts, loading: postsLoading } = usePosts();
+  const { pages, loading: pagesLoading } = usePages();
+  const loading = postsLoading && pagesLoading;
 
-  // Multi-tier slug finder: active hook posts -> admin synced posts -> cached posts
+  // Multi-tier slug finder: active hook posts/pages -> admin synced posts -> cached posts & pages
   const post = useMemo(() => {
     if (!targetSlug) return null;
 
-    // 1. Search hook posts
+    // 1. Search hook posts and pages
     const matchInList = (list: any[]) =>
       list.find((p) => {
         if (!p) return false;
@@ -60,7 +62,7 @@ const PostDetailContent = () => {
         return false;
       });
 
-    const found = matchInList(posts);
+    const found = matchInList(posts) || matchInList(pages);
     if (found) return found;
 
     // 2. Search stored admin posts
@@ -68,10 +70,11 @@ const PostDetailContent = () => {
     const adminFound = matchInList(adminPosts);
     if (adminFound) return adminFound;
 
-    // 3. Search cached all posts
+    // 3. Search cached all posts & cached pages
     const cachedPosts = getCachedAllPosts();
-    return matchInList(cachedPosts) || null;
-  }, [posts, targetSlug]);
+    const cachedPages = getCachedAllPages();
+    return matchInList(cachedPosts) || matchInList(cachedPages) || null;
+  }, [posts, pages, targetSlug]);
 
   const slug = targetSlug;
   const url = typeof window !== "undefined" ? window.location.href : "";

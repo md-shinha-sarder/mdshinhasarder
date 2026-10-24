@@ -143,6 +143,8 @@ export function setStoredAdminPosts(posts: SyncedPost[]): void {
   }
 }
 
+const STORAGE_CACHED_ALL_PAGES = "mds_all_pages_cache_v2";
+
 /**
  * Retrieves the cached unified post list from local storage for instant 0ms rendering.
  */
@@ -170,6 +172,144 @@ export function setCachedAllPosts(posts: SyncedPost[]): void {
     // ignore quota errors
   }
 }
+
+/**
+ * Retrieves the cached unified page list from local storage for instant 0ms rendering.
+ */
+export function getCachedAllPages(): SyncedPost[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_CACHED_ALL_PAGES);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((p) => normalizePost(p));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Caches the unified page list in local storage.
+ */
+export function setCachedAllPages(pages: SyncedPost[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STORAGE_CACHED_ALL_PAGES, JSON.stringify(pages));
+  } catch {
+    // ignore quota errors
+  }
+}
+
+/**
+ * Dynamically fetches live entries from Blogger (shinhaauthor.blogspot.com)
+ * using JSONP without any CORS obstacles or proxy requirements.
+ */
+export function fetchLiveBloggerFeed(type: "posts" | "pages"): Promise<SyncedPost[]> {
+  if (typeof window === "undefined") return Promise.resolve([]);
+
+  return new Promise((resolve) => {
+    const callbackName = `__blogger_cb_${type}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const feedType = type === "posts" ? "posts" : "pages";
+    const maxResults = type === "posts" ? "500" : "100";
+    const script = document.createElement("script");
+    script.src = `https://shinhaauthor.blogspot.com/feeds/${feedType}/default?alt=json-in-script&callback=${callbackName}&max-results=${maxResults}`;
+    script.async = true;
+
+    const cleanup = () => {
+      try {
+        if (script.parentNode) script.parentNode.removeChild(script);
+        delete (window as any)[callbackName];
+      } catch {
+        // ignore cleanup error
+      }
+    };
+
+    const timeout = setTimeout(() => {
+      cleanup();
+      resolve([]);
+    }, 8000);
+
+    (window as any)[callbackName] = (data: any) => {
+      clearTimeout(timeout);
+      cleanup();
+      try {
+        const entries = data?.feed?.entry || [];
+        const isPage = type === "pages";
+        const parsed: SyncedPost[] = entries.map((entry: any) => {
+          const title = String(entry.title?.$t || "").trim() || (isPage ? "Untitled Page" : "Untitled Post");
+          const published = String(entry.published?.$t || new Date().toISOString());
+          const updated = String(entry.updated?.$t || published);
+          const content = String(entry.content?.$t || entry.summary?.$t || "");
+          const summary = String(entry.summary?.$t || "");
+
+          let url = "";
+          let slug = "";
+          const links = entry.link || [];
+          for (const l of links) {
+            if (l.rel === "alternate") {
+              url = l.href || "";
+              if (isPage) {
+                const match = url.match(/\/p\/([^/?#]+(?:\.html)?)/);
+                if (match) slug = match[1].replace(".html", "");
+              } else {
+                const match = url.match(/blogspot\.com\/(\d{4}\/\d{2}\/[^/?#]+(?:\.html)?)/);
+                if (match) slug = match[1].replace(".html", "").split("/").pop() || "";
+              }
+            }
+          }
+
+          if (!slug) {
+            slug = title.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-");
+          }
+
+          let image: string | null = null;
+          const mediaThumb = entry.media$thumbnail?.url;
+          if (mediaThumb) {
+            image = String(mediaThumb).replace(/\/s\d+(-c)?\//, "/s1600/").replace(/\/w\d+-h\d+[^/]*\//, "/s1600/");
+          }
+          if (!image && content) {
+            const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+            if (imgMatch) {
+              image = String(imgMatch[1]).replace(/\/s\d+(-c)?\//, "/s1600/").replace(/\/w\d+-h\d+[^/]*\//, "/s1600/");
+            }
+          }
+
+          const tags = (entry.category || []).map((c: any) => String(c.term || "")).filter(Boolean);
+
+          return normalizePost({
+            id: slug,
+            title,
+            slug,
+            url,
+            image,
+            excerpt: summary || content.replace(/<[^>]+>/g, " ").slice(0, 220).trim(),
+            content,
+            published,
+            updated,
+            tags,
+            status: "published",
+            source: "blogger"
+          }, "blogger");
+        });
+
+        resolve(parsed);
+      } catch (err) {
+        console.warn("[PostSync] Failed parsing Blogger feed:", err);
+        resolve([]);
+      }
+    };
+
+    script.onerror = () => {
+      clearTimeout(timeout);
+      cleanup();
+      resolve([]);
+    };
+
+    document.head.appendChild(script);
+  });
+}
+
 
 /**
  * Broadcasts an update event across the current window and all other browser tabs.

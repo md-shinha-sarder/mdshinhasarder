@@ -5,6 +5,9 @@ import {
   getStoredAdminPosts,
   getCachedAllPosts,
   setCachedAllPosts,
+  getCachedAllPages,
+  setCachedAllPages,
+  fetchLiveBloggerFeed,
   subscribeToPostsUpdates,
   type SyncedPost,
 } from "@/lib/postSync";
@@ -13,6 +16,7 @@ export type BlogPost = SyncedPost;
 
 const memoryCache: Record<string, BlogPost[]> = {
   posts: typeof window !== "undefined" ? getCachedAllPosts() : [],
+  pages: typeof window !== "undefined" ? getCachedAllPages() : [],
 };
 
 const inflight: Record<string, Promise<BlogPost[]>> = {};
@@ -25,6 +29,8 @@ function notify(type: "posts" | "pages", data: BlogPost[]) {
   memoryCache[type] = data;
   if (type === "posts") {
     setCachedAllPosts(data);
+  } else if (type === "pages") {
+    setCachedAllPages(data);
   }
   subscribers[type]?.forEach((callback) => {
     try {
@@ -36,11 +42,11 @@ function notify(type: "posts" | "pages", data: BlogPost[]) {
 }
 
 /**
- * Loads posts from all tiers:
+ * Loads posts or pages from all tiers:
  * 1. Admin local synced storage (highest priority)
- * 2. Supabase DB table `posts` (if exists and reachable)
- * 3. Supabase Edge Function `fetch-posts` / Blogger fallback
- * 4. Static `/posts-sync.json` fallback
+ * 2. Supabase DB table `posts` / `pages` (if exists and reachable)
+ * 3. Static `/posts-sync.json` or `/pages-sync.json` cache
+ * 4. Live direct Blogger feed auto-sync (shinhaauthor.blogspot.com)
  */
 async function load(type: "posts" | "pages", force = false): Promise<BlogPost[]> {
   if (!force && memoryCache[type] && memoryCache[type].length > 0) {
@@ -54,8 +60,25 @@ async function load(type: "posts" | "pages", force = false): Promise<BlogPost[]>
     const adminPosts = type === "posts" ? getStoredAdminPosts() : [];
     let dbPosts: BlogPost[] = [];
     let remotePosts: BlogPost[] = [];
+    let liveBloggerPosts: BlogPost[] = [];
 
-    // 1. Try Supabase DB
+    // 1. Try static sync file immediately for rapid offline-first render
+    const syncFile = type === "posts" ? "/posts-sync.json" : "/pages-sync.json";
+    if (typeof window !== "undefined") {
+      try {
+        const res = await fetch(syncFile);
+        if (res.ok) {
+          const staticData = await res.json();
+          if (Array.isArray(staticData) && staticData.length > 0) {
+            remotePosts = staticData.map((p) => normalizePost(p, "blogger"));
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    // 2. Try Supabase DB
     try {
       const table = type === "posts" ? "posts" : "pages";
       const select =
@@ -95,66 +118,35 @@ async function load(type: "posts" | "pages", force = false): Promise<BlogPost[]>
       // Supabase table not created yet or connection error
     }
 
-    // 2. Try Edge Function / Blogger Fallback
+    // 3. Try direct live Blogger Feed Auto-Sync (shinhaauthor.blogspot.com)
     try {
-      let loaded: any[] | null = null;
-      try {
-        const { data, error } = await supabase.functions.invoke(
-          `fetch-posts?type=${type}${force ? `&t=${Date.now()}` : ""}`
-        );
-        if (!error && data && (data.posts || data.items)) {
-          loaded = (data?.posts ?? data?.items ?? []) as any[];
-        }
-      } catch {
-        // ignore
-      }
-
-      if (!loaded || loaded.length === 0) {
-        const res = await fetch(
-          `https://ihegjzwlvthfqwredssj.supabase.co/functions/v1/fetch-posts?type=${type}${force ? `&t=${Date.now()}` : ""}`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          loaded = (data?.posts ?? data?.items ?? []) as any[];
-        }
-      }
-
-      if (loaded && loaded.length > 0) {
-        remotePosts = loaded.map((p) => normalizePost(p, "blogger"));
+      const live = await fetchLiveBloggerFeed(type);
+      if (live && live.length > 0) {
+        liveBloggerPosts = live;
       }
     } catch {
       // ignore
     }
 
-    // 3. Fallback: try static sync file if both DB and remote returned empty
-    if (dbPosts.length === 0 && remotePosts.length === 0 && typeof window !== "undefined") {
-      try {
-        const res = await fetch("/posts-sync.json");
-        if (res.ok) {
-          const staticPosts = await res.json();
-          if (Array.isArray(staticPosts)) {
-            remotePosts = staticPosts.map((p) => normalizePost(p, "blogger"));
-          }
-        }
-      } catch {
-        // ignore
-      }
-    }
-
     // 4. Merge & Deduplicate
-    // Priority: Admin custom/edited posts > Supabase DB posts > Remote Blogger posts
+    // Priority: Admin custom/edited posts > Supabase DB posts > Live Blogger Posts > Static Cache
     const seenSlugs = new Set<string>();
     const seenIds = new Set<string>();
+    const seenTitles = new Set<string>();
     const merged: BlogPost[] = [];
 
     const addPost = (p: BlogPost) => {
-      const slugKey = (p.slug || "").toLowerCase();
-      const idKey = (p.id || "").toLowerCase();
+      const slugKey = (p.slug || "").toLowerCase().trim();
+      const idKey = (p.id || "").toLowerCase().trim();
+      const titleKey = (p.title || "").toLowerCase().trim();
+
       if (slugKey && seenSlugs.has(slugKey)) return;
       if (idKey && seenIds.has(idKey)) return;
+      if (titleKey && seenTitles.has(titleKey)) return;
 
       if (slugKey) seenSlugs.add(slugKey);
       if (idKey) seenIds.add(idKey);
+      if (titleKey) seenTitles.add(titleKey);
       merged.push(p);
     };
 
@@ -162,10 +154,12 @@ async function load(type: "posts" | "pages", force = false): Promise<BlogPost[]>
     adminPosts.filter((p) => p.status === "published").forEach(addPost);
     // Then Supabase database posts
     dbPosts.forEach(addPost);
-    // Then Remote Blogger posts
+    // Then Live Blogger auto-synced posts
+    liveBloggerPosts.forEach(addPost);
+    // Then Static Cached posts
     remotePosts.forEach(addPost);
 
-    // If still empty, fall back to memory cache or admin drafts
+    // If still empty, fall back to memory cache
     const result = merged.length > 0 ? merged : memoryCache[type] || [];
 
     notify(type, result);
@@ -241,7 +235,16 @@ export const usePosts = () => {
 };
 
 export const usePages = () => {
-  const [pages, setPages] = useState<BlogPost[]>(memoryCache.pages || []);
+  const [pages, setPages] = useState<BlogPost[]>(() => {
+    if (memoryCache.pages && memoryCache.pages.length > 0) {
+      return memoryCache.pages;
+    }
+    if (typeof window !== "undefined") {
+      const cached = getCachedAllPages();
+      if (cached.length > 0) return cached;
+    }
+    return [];
+  });
   const [loading, setLoading] = useState<boolean>(pages.length === 0);
 
   useEffect(() => {
@@ -265,7 +268,18 @@ export const usePages = () => {
     };
   }, []);
 
-  return { pages, loading };
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      const p = await load("pages", true);
+      setPages(p);
+      return p;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { pages, loading, refetch };
 };
 
 export const usePost = (slug?: string) => {

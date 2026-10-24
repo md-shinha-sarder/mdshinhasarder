@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Rss, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, Rss, ExternalLink, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { MediaPicker, MediaMultiPicker } from "@/components/admin/MediaPicker";
 import { toSiteMediaUrl } from "@/lib/mediaUrl";
@@ -26,17 +26,29 @@ interface Page {
 const blank: Page = { id: "", slug: "", title: "", content: "", cover_url: "", images: [], seo_title: "", seo_description: "", status: "draft" };
 
 const PagesAdmin = () => {
-  const { pages: bloggerPages } = usePages();
+  const { pages: bloggerPages, refetch: refetchPages } = usePages();
   const [items, setItems] = useState<Page[]>([]);
   const [editing, setEditing] = useState<Page | null>(null);
   const [open, setOpen] = useState(false);
-
+  const [syncing, setSyncing] = useState(false);
 
   const load = async () => {
     const { data } = await supabase.from("pages").select("*").order("created_at", { ascending: false });
     setItems(((data as any[]) || []).map((p) => ({ ...p, images: p.images || [] })));
   };
   useEffect(() => { load(); }, []);
+
+  const handleSyncPages = async () => {
+    setSyncing(true);
+    try {
+      await refetchPages();
+      toast.success("Synchronized all Blogger pages & photos!");
+    } catch {
+      toast.error("Failed to sync pages");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const save = async () => {
     if (!editing) return;
@@ -62,46 +74,72 @@ const PagesAdmin = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><h1 className="text-2xl sm:text-3xl font-serif font-bold">Pages</h1><p className="text-muted-foreground">Static pages with hero + gallery.</p></div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button onClick={() => setEditing({ ...blank })} className="bg-gradient-gold text-primary-foreground"><Plus size={16} className="mr-1" /> New Page</Button></DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>{editing?.id ? "Edit Page" : "New Page"}</DialogTitle></DialogHeader>
-            {editing && (
-              <div className="space-y-4">
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div><Label>Title</Label><Input value={editing.title} onChange={(e) => setEditing({ ...editing, title: e.target.value })} /></div>
-                  <div><Label>Slug</Label><Input value={editing.slug} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} /></div>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold">Pages</h1>
+          <p className="text-muted-foreground">Blogger synced pages &amp; custom managed pages.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={syncing}
+            onClick={handleSyncPages}
+            className="border-primary/30"
+          >
+            <RefreshCw size={14} className={`mr-1.5 ${syncing ? "animate-spin" : ""}`} />
+            {syncing ? "Syncing..." : "Sync Pages"}
+          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setEditing({ ...blank })} className="bg-gradient-gold text-primary-foreground">
+                <Plus size={16} className="mr-1" /> New Page
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>{editing?.id ? "Edit Page" : "New Page"}</DialogTitle></DialogHeader>
+              {editing && (
+                <div className="space-y-4">
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div><Label>Title</Label><Input value={editing.title} onChange={(e) => setEditing({ ...editing, title: e.target.value })} /></div>
+                    <div><Label>Slug</Label><Input value={editing.slug} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} /></div>
+                  </div>
+                  <div><Label>Content</Label><Textarea rows={8} value={editing.content} onChange={(e) => setEditing({ ...editing, content: e.target.value })} /></div>
+                  <MediaPicker label="Cover Image" value={toSiteMediaUrl(editing.cover_url || "")} onChange={(url) => setEditing({ ...editing, cover_url: url })} />
+                  <MediaMultiPicker label="Page Photos & Videos" value={editing.images} onChange={(imgs) => setEditing({ ...editing, images: imgs })} />
+                  <div><Label>SEO Title</Label><Input value={editing.seo_title || ""} onChange={(e) => setEditing({ ...editing, seo_title: e.target.value })} /></div>
+                  <div><Label>SEO Description</Label><Textarea rows={2} value={editing.seo_description || ""} onChange={(e) => setEditing({ ...editing, seo_description: e.target.value })} /></div>
+                  <div><Label>Status</Label>
+                    <Select value={editing.status} onValueChange={(v) => setEditing({ ...editing, status: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="draft">Draft</SelectItem><SelectItem value="published">Published</SelectItem></SelectContent>
+                    </Select>
+                  </div>
+                  <Button onClick={save} className="w-full">Save</Button>
                 </div>
-                <div><Label>Content</Label><Textarea rows={8} value={editing.content} onChange={(e) => setEditing({ ...editing, content: e.target.value })} /></div>
-                <MediaPicker label="Cover Image" value={toSiteMediaUrl(editing.cover_url || "")} onChange={(url) => setEditing({ ...editing, cover_url: url })} />
-                <MediaMultiPicker label="Page Photos & Videos" value={editing.images} onChange={(imgs) => setEditing({ ...editing, images: imgs })} />
-                <div><Label>SEO Title</Label><Input value={editing.seo_title || ""} onChange={(e) => setEditing({ ...editing, seo_title: e.target.value })} /></div>
-                <div><Label>SEO Description</Label><Textarea rows={2} value={editing.seo_description || ""} onChange={(e) => setEditing({ ...editing, seo_description: e.target.value })} /></div>
-                <div><Label>Status</Label>
-                  <Select value={editing.status} onValueChange={(v) => setEditing({ ...editing, status: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="draft">Draft</SelectItem><SelectItem value="published">Published</SelectItem></SelectContent>
-                  </Select>
-                </div>
-                <Button onClick={save} className="w-full">Save</Button>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
-      <Tabs defaultValue="db">
+      <Tabs defaultValue="blogger">
         <TabsList>
-          <TabsTrigger value="db">Managed ({items.length})</TabsTrigger>
           <TabsTrigger value="blogger"><Rss size={14} className="mr-1" /> Blogger ({bloggerPages.length})</TabsTrigger>
+          <TabsTrigger value="db">Custom ({items.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="db">
           <div className="bg-gradient-card border border-border rounded-xl divide-y divide-border">
-            {items.length === 0 && <div className="p-8 text-center text-muted-foreground">No pages yet.</div>}
+            {items.length === 0 && <div className="p-8 text-center text-muted-foreground">No custom pages yet.</div>}
             {items.map((p) => (
               <div key={p.id} className="flex items-center justify-between p-4 gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  {p.cover_url && <img src={p.cover_url} alt="" className="w-12 h-12 rounded object-cover shrink-0" />}
+                  {p.cover_url && (
+                    <img
+                      src={p.cover_url}
+                      alt=""
+                      onError={(e) => { e.currentTarget.src = "/hero-portrait.jpg"; }}
+                      className="w-12 h-12 rounded object-cover shrink-0"
+                    />
+                  )}
                   <div className="min-w-0">
                     <div className="font-medium truncate">{p.title} <span className="text-xs ml-2 px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{p.status}</span></div>
                     <div className="text-xs text-muted-foreground truncate">/{p.slug} · {p.images?.length || 0} photos</div>
@@ -117,14 +155,23 @@ const PagesAdmin = () => {
         </TabsContent>
         <TabsContent value="blogger">
           <div className="bg-gradient-card border border-border rounded-xl divide-y divide-border max-h-[70vh] overflow-y-auto">
-            {bloggerPages.length === 0 && <div className="p-8 text-center text-muted-foreground">No Blogger pages.</div>}
+            {bloggerPages.length === 0 && <div className="p-8 text-center text-muted-foreground">No Blogger pages synced yet. Click "Sync Pages" to fetch now.</div>}
             {bloggerPages.map((p) => (
               <div key={p.id} className="flex items-center justify-between p-4 gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  {p.image && <img src={p.image} alt="" className="w-12 h-12 rounded object-cover shrink-0" />}
-                  <div className="min-w-0 font-medium truncate">{p.title}</div>
+                  {p.image && (
+                    <img
+                      src={p.image}
+                      alt=""
+                      onError={(e) => { e.currentTarget.src = "/hero-portrait.jpg"; }}
+                      className="w-12 h-12 rounded object-cover shrink-0 bg-slate-800"
+                    />
+                  )}
+                  <div className="min-w-0 font-medium truncate">{p.title || "Untitled Page"}</div>
                 </div>
-                <Link to={postPath(p)} className="text-primary shrink-0"><ExternalLink size={16} /></Link>
+                <Link to={postPath(p)} className="text-primary hover:text-primary/80 shrink-0 p-2">
+                  <ExternalLink size={16} />
+                </Link>
               </div>
             ))}
           </div>
