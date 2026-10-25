@@ -72,7 +72,7 @@ export const KnowledgePanelWidget = () => {
     };
   }, [activeTab]);
 
-  const avatarUrl = "/images/md-shinha-sarder-official-portrait.profile.png";
+  const avatarUrl = "/images/md-shinha-sarder-profile-header.webp";
 
   const socials = [
     { name: "YouTube", href: profile.youtubeChannel || OFFICIAL_YOUTUBE_CHANNEL, icon: Youtube, color: "hover:text-red-400" },
@@ -88,8 +88,8 @@ export const KnowledgePanelWidget = () => {
   ];
 
   const photos = [
-    { src: "/images/md-shinha-sarder-official-portrait.profile.png", label: "Official Portrait" },
-    { src: "/images/site-logo.png", label: "Site Logo & Brand Emblem" },
+    { src: "/images/md-shinha-sarder-profile-header.webp", label: "Official Profile Header" },
+    { src: "/images/site-logo.png", label: "Official Brand Logo & Emblem" },
     { src: "/profile.webp", label: "Official Portrait" },
     { src: "/hero-portrait.jpg", label: "Author & Researcher" },
     { src: "/profile-photo.webp", label: "Founder & CEO" },

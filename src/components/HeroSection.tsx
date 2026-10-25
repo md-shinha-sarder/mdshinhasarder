@@ -1,5 +1,5 @@
 import { MapPin, Calendar, Mail, FileText, ExternalLink, BadgeCheck, ArrowDown, Briefcase, Phone, Globe, GraduationCap } from "lucide-react";
-import profilePhoto from "@/assets/profile-photo.png";
+import profilePhoto from "@/assets/profile-photo.webp";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const info = [
@@ -38,11 +38,11 @@ const HeroSection = () => {
                 <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500 rounded-full opacity-35 blur-xl animate-pulse" />
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-sky-500 rounded-full opacity-70 p-[2px]" />
                 <img
-                  src="/images/md-shinha-sarder-official-portrait.profile.png"
+                  src="/images/md-shinha-sarder-profile-header.webp"
                   onError={(e) => {
                     const target = e.currentTarget;
-                    if (target.src !== window.location.origin + (profilePhoto || "/profile.png")) {
-                      target.src = profilePhoto || "/profile.png";
+                    if (target.src !== window.location.origin + (profilePhoto || "/profile.webp")) {
+                      target.src = profilePhoto || "/profile.webp";
                     }
                   }}
                   alt="MD. Shinha Sarder portrait"
