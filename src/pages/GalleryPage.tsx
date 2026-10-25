@@ -104,10 +104,22 @@ export const GalleryPage = () => {
 
     // 1. Official Verified Portraits & Studio Assets
     addPhoto(
-      "https://mdshinhasarder.com/images/md-shinha-sarder-official-portrait.profile.webp",
+      "https://mdshinhasarder.com/images/md-shinha-sarder-official-portrait.profile.png",
       "Official Portrait — MD. Shinha Sarder",
       "Portraits",
       "Official verified portrait of MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World."
+    );
+    addPhoto(
+      "https://mdshinhasarder.com/images/site-logo.png",
+      "Official Brand Emblem & Site Logo",
+      "Site Media",
+      "Official brand insignia and profile emblem of MD. Shinha Sarder."
+    );
+    addPhoto(
+      "https://mdshinhasarder.com/images/md-shinha-sarder-official-portrait.profile.webp",
+      "Official Portrait (WebP) — MD. Shinha Sarder",
+      "Portraits",
+      "High-definition portrait photograph of MD. Shinha Sarder."
     );
     addPhoto(
       "https://mdshinhasarder.com/images/md-shinha-sarder-author-researcher.hero-portrait.jpg",
@@ -403,25 +415,22 @@ export const GalleryPage = () => {
                       e.currentTarget.src = "/hero-portrait.jpg";
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-[10px] font-bold text-sky-300 uppercase tracking-wider">
-                        {item.category}
-                      </span>
-                      <ZoomIn size={16} className="text-white" />
-                    </div>
+                  <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-md p-1.5 rounded-lg text-white pointer-events-none">
+                    <ZoomIn size={14} />
                   </div>
                 </div>
 
                 <div className="p-3 bg-white dark:bg-neutral-950 border-t border-slate-100 dark:border-neutral-800">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[10px] font-semibold text-blue-600 dark:text-sky-400 uppercase tracking-wider">
+                      {item.category}
+                    </span>
+                  </div>
                   <h3 className="text-xs font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-sky-400 transition-colors">
                     {item.title}
                   </h3>
                   <p className="text-[11px] text-slate-500 dark:text-neutral-400 truncate mt-0.5">
                     {item.caption}
-                  </p>
-                  <p className="text-[10px] font-mono text-slate-400 dark:text-neutral-500 truncate mt-1">
-                    {item.canonicalUrl.replace("https://", "")}
                   </p>
                 </div>
               </div>

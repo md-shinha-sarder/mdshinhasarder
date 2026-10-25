@@ -70,6 +70,21 @@ async function prepareImages() {
   // 1. Copy local portraits & assets with SEO caption names
   const localAssets = [
     {
+      file: "site-logo.png",
+      caption: "md-shinha-sarder-official-logo",
+      ext: "png",
+    },
+    {
+      file: "profile.png",
+      caption: "md-shinha-sarder-official-portrait",
+      ext: "png",
+    },
+    {
+      file: "profile-photo.png",
+      caption: "md-shinha-sarder-executive-founder",
+      ext: "png",
+    },
+    {
       file: "profile.webp",
       caption: "md-shinha-sarder-official-portrait",
       ext: "webp",

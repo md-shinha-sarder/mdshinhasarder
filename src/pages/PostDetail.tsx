@@ -507,8 +507,8 @@ const PostDetailContent = () => {
                   <div className="w-full mb-8 flex flex-col items-center">
                     <div
                       onClick={() => setPhotoModalOpen(true)}
-                      className="group relative w-full cursor-zoom-in overflow-hidden rounded-2xl bg-slate-900/40 flex items-center justify-center transition-all"
-                      title="Click to view full photo at 100% original upload resolution"
+                      className="group relative w-full cursor-zoom-in overflow-hidden rounded-2xl bg-slate-900/10 dark:bg-slate-900/40 flex items-center justify-center transition-all border border-slate-200/60 dark:border-blue-500/20 shadow-sm"
+                      title="Click to view full photo in original resolution"
                     >
                       <img
                         src={fullHeroImageUrl}
@@ -516,19 +516,11 @@ const PostDetailContent = () => {
                         loading="eager"
                         decoding="async"
                         {...({ fetchpriority: "high" } as any)}
-                        className="w-full max-w-full h-auto object-contain rounded-2xl group-hover:scale-[1.01] transition-transform duration-300"
+                        className="w-full max-w-full h-auto object-contain rounded-2xl group-hover:scale-[1.008] transition-transform duration-300"
                         onError={(e) => {
                           e.currentTarget.src = "/hero-portrait.jpg";
                         }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4 pointer-events-none">
-                        <span className="text-xs font-medium text-white bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-md">
-                          <ZoomIn size={14} className="text-blue-400" /> Click to view full original photo
-                        </span>
-                        <span className="text-xs font-mono font-bold text-sky-300 bg-black/80 backdrop-blur-md px-2.5 py-1.5 rounded-lg shadow-md flex items-center gap-1">
-                          <Maximize2 size={13} /> Original Full HD
-                        </span>
-                      </div>
                     </div>
                   </div>
                 )}
@@ -663,11 +655,13 @@ const PostDetailContent = () => {
                 alt={post?.title || "Full photo"}
                 loading="eager"
                 decoding="async"
-                className="max-w-[95vw] max-h-[82vh] w-auto h-auto object-contain rounded-xl shadow-2xl"
+                className="max-w-[95vw] max-h-[85vh] w-auto h-auto object-contain rounded-xl shadow-2xl"
               />
-              <p className="mt-3 text-xs text-slate-300 text-center font-medium max-w-xl truncate">
-                {post?.title} — <span className="text-blue-400 font-semibold">Real Full Uploaded Resolution</span>
-              </p>
+              {post?.title && (
+                <p className="mt-2 text-xs text-slate-400 text-center font-normal max-w-xl truncate">
+                  {post.title}
+                </p>
+              )}
             </div>
           </div>
         )}

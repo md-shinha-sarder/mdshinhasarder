@@ -324,6 +324,18 @@ const SONG_CATALOG = [
 // 3. Local Static Assets in public/
 const LOCAL_ASSET_METADATA = [
   {
+    file: "images/md-shinha-sarder-official-portrait.profile.png",
+    title: "MD. Shinha Sarder — Official Portrait Photograph",
+    caption: "MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World, Author, Musical Artist and Researcher in Khulna, Bangladesh.",
+    landingPath: "/",
+  },
+  {
+    file: "images/site-logo.png",
+    title: "MD. Shinha Sarder — Official Brand Emblem & Site Logo",
+    caption: "Official brand identity logo and digital seal of MD. Shinha Sarder verified entity.",
+    landingPath: "/",
+  },
+  {
     file: "profile.webp",
     title: "MD. Shinha Sarder — Official Portrait Photograph",
     caption: "MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World, Author, Musical Artist and Researcher in Khulna, Bangladesh.",

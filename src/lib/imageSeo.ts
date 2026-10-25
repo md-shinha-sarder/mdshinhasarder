@@ -67,9 +67,12 @@ export function toFullResolutionImageUrl(url?: string | null): string {
   if (!url) return "";
   let clean = url.trim();
 
-  // 1. Google / Blogger User Content (handles /s72-w...-h...-c/, /s320/, /s1600/, /w680/, etc.)
+  // 1. Google / Blogger User Content
+  // Handles /s72-w...-h...-c/, /s320/, /s1600/, /w680/, etc.
   if (/googleusercontent\.com|blogspot\.com/i.test(clean)) {
     clean = clean.replace(/\/(s\d+[^/]*|w\d+[^/]*|h\d+[^/]*)\//i, "/s0/");
+    // Handles parameter style /img/a/...=s72-w240-h320-c or =w240-h320
+    clean = clean.replace(/=(s\d+[^/&?]*|w\d+[^/&?]*|h\d+[^/&?]*)/i, "=s0");
   }
   // 2. Amazon Media (strip ._SX..._)
   else if (/media-amazon\.com/i.test(clean)) {
@@ -96,16 +99,20 @@ export function enhanceContentImages(html: string, title?: string | null): strin
   if (!html) return html;
   let i = 0;
 
-  // 1. Upgrade <a> links wrapping images to full original resolution (/s0/)
-  let processed = html.replace(/<a\b([^>]*?href=["'])(https?:\/\/[^"']*?)\/(s\d+[^/]*|w\d+[^/]*|h\d+[^/]*)\/([^"']+["'][^>]*>)/gi, '$1$2/s0/$4');
+  // 1. Upgrade <a> links wrapping images to full original resolution (/s0/ or =s0)
+  let processed = html
+    .replace(/<a\b([^>]*?href=["'])(https?:\/\/[^"']*?)\/(s\d+[^/]*|w\d+[^/]*|h\d+[^/]*)\/([^"']+["'][^>]*>)/gi, '$1$2/s0/$4')
+    .replace(/<a\b([^>]*?href=["'])(https?:\/\/[^"']*?)=(s\d+[^/&"']*|w\d+[^/&"']*|h\d+[^/&"']*)([^"']*["'][^>]*>)/gi, '$1$2=s0$4');
 
-  // 2. Upgrade <img> tags: change src to /s0/, strip tiny width/height, inject SEO alt
+  // 2. Upgrade <img> tags: change src to /s0/ or =s0, strip tiny width/height, inject SEO alt
   processed = processed.replace(/<img\b([^>]*?)\/?>(?!\s*<\/img>)/gi, (_m, attrs: string) => {
     i += 1;
     let out = attrs.trim();
 
-    // Upgrade Google/Blogger image src to /s0/ (original uploaded resolution)
-    out = out.replace(/(src=["']https?:\/\/[^"']*?)\/(s\d+[^/]*|w\d+[^/]*|h\d+[^/]*)\//gi, '$1/s0/');
+    // Upgrade Google/Blogger image src to /s0/ or =s0 (original uploaded resolution)
+    out = out
+      .replace(/(src=["']https?:\/\/[^"']*?)\/(s\d+[^/]*|w\d+[^/]*|h\d+[^/]*)\//gi, '$1/s0/')
+      .replace(/(src=["']https?:\/\/[^"']*?)=(s\d+[^/&"']*|w\d+[^/&"']*|h\d+[^/&"']*)/gi, '$1=s0');
 
     // Strip hardcoded Blogger thumbnail attributes that compress images (e.g. width="213" height="320")
     out = out.replace(/\b(width|height)\s*=\s*["']\d+["']/gi, '');

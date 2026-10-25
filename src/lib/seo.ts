@@ -55,7 +55,7 @@ export const buildSeo = (post: BlogPost) => {
     canonical,
     metaTitle,
     metaDescription,
-    ogImage: post.image || `${SITE.url}/favicon.ico`,
+    ogImage: post.image || `${SITE.url}/images/md-shinha-sarder-official-portrait.profile.png`,
     ogTitle: post.title.slice(0, 110),
     ogDescription: metaDescription,
     twitterTitle: post.title.slice(0, 70),

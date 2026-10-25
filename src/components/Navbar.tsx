@@ -17,7 +17,7 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
-import siteLogo from "@/assets/site-logo.ico";
+import siteLogo from "@/assets/site-logo.png";
 import { useTheme } from "@/hooks/useTheme";
 
 interface NavItem {
@@ -85,11 +85,11 @@ const Navbar = () => {
   const Brand = (
     <Link to="/" className="flex items-center gap-2 min-w-0 group" onClick={() => setOpen(false)}>
       <img
-        src={siteLogo || "/site-logo.ico"}
+        src="/images/site-logo.png"
         onError={(e) => {
           const target = e.currentTarget;
-          if (target.src !== window.location.origin + "/favicon.ico") {
-            target.src = "/favicon.ico";
+          if (target.src !== window.location.origin + (siteLogo || "/site-logo.png")) {
+            target.src = siteLogo || "/site-logo.png";
           }
         }}
         alt="MD. Shinha Sarder logo"

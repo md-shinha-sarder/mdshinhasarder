@@ -72,7 +72,7 @@ export const KnowledgePanelWidget = () => {
     };
   }, [activeTab]);
 
-  const avatarUrl = "/profile.webp";
+  const avatarUrl = "/images/md-shinha-sarder-official-portrait.profile.png";
 
   const socials = [
     { name: "YouTube", href: profile.youtubeChannel || OFFICIAL_YOUTUBE_CHANNEL, icon: Youtube, color: "hover:text-red-400" },
@@ -88,11 +88,13 @@ export const KnowledgePanelWidget = () => {
   ];
 
   const photos = [
+    { src: "/images/md-shinha-sarder-official-portrait.profile.png", label: "Official Portrait" },
+    { src: "/images/site-logo.png", label: "Site Logo & Brand Emblem" },
     { src: "/profile.webp", label: "Official Portrait" },
     { src: "/hero-portrait.jpg", label: "Author & Researcher" },
     { src: "/profile-photo.webp", label: "Founder & CEO" },
     { src: "/hero-bg.jpg", label: "Developer & Creator" },
-    { src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjQV79hudXoSC3A3-63meKOFFLT-Um2ZMI_i3U65Qo6hitbx9o1eyq9vN6HZUD7NV_dI7ndaPm6l7P4h0crBvneHt4ueHVdP4koqJOMNEoBnvmnIwH7oM4ac_2HnwOvdvrgsz2twPB1mY-c8q5eCkDVCgws_iesMFEk9fnK0o9rdhPou_wyAEsKnbEraNbb/s266/1000020228.jpg", label: "Python Programming Analysis" },
+    { src: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjQV79hudXoSC3A3-63meKOFFLT-Um2ZMI_i3U65Qo6hitbx9o1eyq9vN6HZUD7NV_dI7ndaPm6l7P4h0crBvneHt4ueHVdP4koqJOMNEoBnvmnIwH7oM4ac_2HnwOvdvrgsz2twPB1mY-c8q5eCkDVCgws_iesMFEk9fnK0o9rdhPou_wyAEsKnbEraNbb/s0/1000020228.jpg", label: "Python Programming Analysis" },
     { src: "https://books.google.com/books/content?id=fjSEEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api", label: "Mastering C++" },
     { src: "https://m.media-amazon.com/images/I/41NRQbBcsoL._SX354_SY354_BL0_QL100__UX716_FMwebp_QL85_.jpg", label: "The Entrepreneur Journey" },
     { src: "https://books.google.com/books/content?id=7veEEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api", label: "Journey of Koyra To Khulna" },
@@ -226,19 +228,17 @@ export const KnowledgePanelWidget = () => {
                 {photos.map((item, i) => (
                   <div
                     key={i}
-                    className="relative h-32 w-48 rounded-xl overflow-hidden flex-shrink-0 bg-slate-900 border border-slate-800/60 shadow-sm"
+                    title={item.label}
+                    className="relative h-32 w-48 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 shadow-sm hover:border-blue-500 transition-colors"
                   >
                     <img
                       src={item.src}
                       alt={item.label}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
-                        e.currentTarget.src = "/profile.webp";
+                        e.currentTarget.src = "/hero-portrait.jpg";
                       }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2">
-                      <span className="text-[11px] font-medium text-slate-200 truncate">{item.label}</span>
-                    </div>
                   </div>
                 ))}
               </div>
