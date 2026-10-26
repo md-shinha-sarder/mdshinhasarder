@@ -201,7 +201,7 @@ export const DEFAULT_SONGS: Song[] = [
   },
   {
     id: "ami-chini-go-chini-tomare",
-    title: "Ami Chini Go Chini Tomare (I Recognize You)",
+    title: "আমি চিনি গো চিনি তোমারে (Ami Chini Go Chini)",
     type: "Single",
     year: "2025",
     duration: "3:10",
@@ -233,7 +233,7 @@ export const DEFAULT_SONGS: Song[] = [
   },
   {
     id: "journey-travel-for-shinha",
-    title: "Praneer Shahor Khulna (Beloved Khulna City)",
+    title: "প্রাণের শহর খুলনা (Praneer Shahor Khulna)",
     type: "Single",
     year: "2025",
     duration: "4:00",
@@ -249,7 +249,7 @@ export const DEFAULT_SONGS: Song[] = [
   },
   {
     id: "aguner-moton",
-    title: "Amader Praner Bangladesh (Aguner Moton)",
+    title: "আমাদের প্রাণের বাংলাদেশ (Aguner Moton)",
     type: "Single",
     year: "2025",
     duration: "3:28",
@@ -265,7 +265,7 @@ export const DEFAULT_SONGS: Song[] = [
   },
   {
     id: "fajr-azan",
-    title: "Ramadan Mubarak & Fajr Azan (Dawn Melody)",
+    title: "রমজান মোবারক ও ফজরের সুর (Fajr Azan)",
     type: "Single",
     year: "2025",
     duration: "4:20",

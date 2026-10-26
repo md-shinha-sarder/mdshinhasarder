@@ -35,7 +35,6 @@ import TechVersionAdmin from "./pages/admin/TechVersionAdmin.tsx";
 import SongsAdmin from "./pages/admin/SongsAdmin.tsx";
 import BooksAdmin from "./pages/admin/BooksAdmin.tsx";
 import ProfileAdmin from "./pages/admin/ProfileAdmin.tsx";
-import MediaRedirect from "./pages/MediaRedirect.tsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -96,14 +95,7 @@ const AppRoutes = () => {
         <Route path="/post/:slug" element={<PostDetail />} />
         <Route path="/article/:slug" element={<PostDetail />} />
         <Route path="/:year/:month/:slug" element={<PostDetail />} />
-        {/* Domain Media & Cloudinary Redirect Routes */}
-        <Route path="/media/:slug" element={<MediaRedirect />} />
-        <Route path="/media/*" element={<MediaRedirect />} />
-        <Route path="/images/:slug" element={<MediaRedirect />} />
-        <Route path="/images/*" element={<MediaRedirect />} />
-        <Route path="/cld/:slug" element={<MediaRedirect />} />
-        <Route path="/cld/*" element={<MediaRedirect />} />
-
+        <Route path="/:year/:month/:day/:slug" element={<PostDetail />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />

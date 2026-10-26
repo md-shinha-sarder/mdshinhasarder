@@ -1,6 +1,3 @@
-# Cloudinary CDN Direct Redirect
-/cld/* https://res.cloudinary.com/borle8go/image/upload/f_auto,q_auto/:splat 302
-
 # Media storage proxy to active Supabase bucket
 /media/* https://hpnndbmyibbgrlskskyt.supabase.co/storage/v1/object/public/media/:splat 200
 

@@ -91,26 +91,7 @@ export function normalizePost(raw: any, defaultSource: "admin" | "supabase" | "b
   const published = String(raw.published || raw.published_at || raw.created_at || nowIso);
   const updated = String(raw.updated || raw.updated_at || published);
   const rawImg = raw.cover_url || raw.image || null;
-  let image: string | null = null;
-  if (rawImg) {
-    const rawStr = String(rawImg).trim();
-    if (typeof window !== "undefined") {
-      try {
-        const mappings = localStorage.getItem("mds_domain_image_mappings");
-        if (mappings) {
-          const dict = JSON.parse(mappings);
-          if (dict[rawStr]) {
-            image = dict[rawStr];
-          }
-        }
-      } catch (_e) {
-        void _e;
-      }
-    }
-    if (!image) {
-      image = toFullResolutionImageUrl(resolveMediaUrl(rawStr));
-    }
-  }
+  const image = rawImg ? toFullResolutionImageUrl(resolveMediaUrl(String(rawImg))) : null;
   const excerpt = String(raw.excerpt || "").trim();
   const content = String(raw.content || "").trim();
   const id = String(raw.id || slug);
