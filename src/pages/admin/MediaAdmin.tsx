@@ -190,16 +190,16 @@ const MediaAdmin = () => {
             console.warn("Cloudinary upload notice:", cErr);
           }
 
+          const publicIdentifier = cloudinaryRes?.public_id || safeName;
           const primaryUrl =
-            cloudinaryRes?.secure_url ||
-            cloudinaryRes?.domain_url ||
-            `https://mdshinhasarder.com/images/${safeName}`;
+            cloudinaryRes?.media_redirect_url ||
+            `https://mdshinhasarder.com/media/${publicIdentifier}`;
 
           const mediaItem: MediaItem = {
             id: cloudinaryRes?.asset_id || `local-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
             name: file.name,
             url: primaryUrl,
-            path: safeName,
+            path: publicIdentifier,
             mime_type: file.type || "image/jpeg",
             size_bytes: file.size,
             cloudinary_url: cloudinaryRes?.cdn_optimized_url,
@@ -207,11 +207,11 @@ const MediaAdmin = () => {
 
           newUploadedItems.push(mediaItem);
 
-          // Update instant link preview for the last uploaded file
+          // Update instant link preview with website domain link
           setLastUploadedPreview(primaryUrl);
           setGeneratedLinks(
             generateAllImageLinks(
-              safeName,
+              publicIdentifier,
               file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ")
             )
           );
@@ -453,17 +453,28 @@ const MediaAdmin = () => {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="যেমন: profile.webp বা my-photo.jpg"
+                  placeholder="যেমন: czajweotfpsqbp8nwb9n অথবা ক্লাউডিনারি লিংক পেস্ট করুন"
                   value={inputNameOrUrl}
                   onChange={(e) => setInputNameOrUrl(e.target.value)}
                   className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
                 />
-                <Button type="submit" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0">
-                  <LinkIcon size={14} className="mr-1" /> লিংক তৈরি করুন
+                <Button type="submit" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0 font-semibold">
+                  <LinkIcon size={14} className="mr-1" /> ওয়েবসাইট লিংক তৈরি
                 </Button>
               </div>
-              <div className="flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
+              <div className="flex flex-wrap gap-1.5 text-[11px] text-muted-foreground items-center">
                 <span>দ্রুত ট্রাই করুন:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInputNameOrUrl("czajweotfpsqbp8nwb9n");
+                    setGeneratedLinks(generateAllImageLinks("czajweotfpsqbp8nwb9n", "User Uploaded Media czajweotfpsqbp8nwb9n"));
+                  }}
+                  className="text-emerald-400 hover:underline font-mono font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/30"
+                >
+                  czajweotfpsqbp8nwb9n (আপনার ছবি)
+                </button>
+                <span>·</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -508,7 +519,7 @@ const MediaAdmin = () => {
                   <div className="flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-emerald-400" />
                     <span className="text-xs font-semibold text-foreground uppercase tracking-wide">
-                      তৈরি হওয়া লিংকসমূহ (Generated Direct Links):
+                      ওয়েবসাইট ও ক্লাউডিনারি লিংকসমূহ:
                     </span>
                   </div>
                   <span className="text-[11px] font-mono text-muted-foreground truncate max-w-[150px]">
@@ -516,44 +527,45 @@ const MediaAdmin = () => {
                   </span>
                 </div>
 
-                {/* 1. Main Domain Redirect Link (Auto redirects to Cloudinary) */}
-                <div className="space-y-1">
+                {/* 1. Official Website Link (mdshinhasarder.com domain) */}
+                <div className="space-y-1 bg-blue-950/40 border border-blue-500/40 rounded-xl p-3 shadow-inner">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-blue-400 flex items-center gap-1">
-                      ১. মেইন ডোমেইন লিংক (Main Domain Link - Auto 302 Redirect to Cloudinary):
+                    <span className="font-bold text-blue-300 flex items-center gap-1.5 text-xs sm:text-sm">
+                      <Sparkles size={14} className="text-yellow-400" />
+                      ১. আপনার ওয়েবসাইটের ফটো লিংক (Website Official Link):
                     </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono">
-                      Domain ➔ Cloudinary Auto-Redirect
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono font-semibold">
+                      mdshinhasarder.com Domain Link
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 bg-slate-950/70 border border-blue-500/30 rounded-lg p-1.5 sm:p-2">
-                    <code className="text-[11px] sm:text-xs text-blue-200 font-mono truncate flex-1 select-all">
-                      {generatedLinks.domainMediaUrl || generatedLinks.domainUrl}
+                  <div className="flex items-center gap-2 bg-slate-950 border border-blue-500/40 rounded-lg p-1.5 sm:p-2">
+                    <code className="text-xs sm:text-sm text-yellow-300 font-mono font-semibold truncate flex-1 select-all">
+                      {generatedLinks.websiteUrl || generatedLinks.domainMediaUrl}
                     </code>
                     <Button
                       asChild
                       size="sm"
                       variant="outline"
-                      className="h-7 px-2.5 text-xs shrink-0 border-blue-500/40 text-blue-300 hover:bg-blue-500/10"
-                      title="ডোমেইন লিংক টেস্ট করতে নতুন ট্যাবে ওপেন করুন"
+                      className="h-7 px-2.5 text-xs shrink-0 border-blue-500/50 text-blue-300 hover:bg-blue-500/20"
+                      title="ওয়েবসাইট লিংক টেস্ট করতে নতুন ট্যাবে ওপেন করুন"
                     >
-                      <a href={generatedLinks.domainMediaUrl || generatedLinks.domainUrl} target="_blank" rel="noopener noreferrer">
+                      <a href={generatedLinks.websiteUrl || generatedLinks.domainMediaUrl} target="_blank" rel="noopener noreferrer">
                         <ExternalLink size={12} className="mr-1" /> Open
                       </a>
                     </Button>
                     <Button
                       size="sm"
-                      onClick={() => copyText(generatedLinks.domainMediaUrl || generatedLinks.domainUrl, "ডোমেইন লিংক", "domain")}
+                      onClick={() => copyText(generatedLinks.websiteUrl || generatedLinks.domainMediaUrl, "ওয়েবসাইট ফটো লিংক", "website")}
                       className={`h-7 px-3 text-xs font-semibold shrink-0 transition-colors ${
-                        copiedKey === "domain" ? "bg-emerald-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"
+                        copiedKey === "website" ? "bg-emerald-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
                       }`}
                     >
-                      {copiedKey === "domain" ? <Check size={12} className="mr-1" /> : <Copy size={12} className="mr-1" />}
-                      {copiedKey === "domain" ? "Copied" : "Copy"}
+                      {copiedKey === "website" ? <Check size={12} className="mr-1" /> : <Copy size={12} className="mr-1" />}
+                      {copiedKey === "website" ? "Copied" : "Copy Website Link"}
                     </Button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    এই ডোমেইন লিংকটি ফেসবুক, টুইটার বা যেকোনো ওয়েবসাইটে শেয়ার করলে স্বয়ংক্রিয়ভাবে ক্লাউডিনারি ইমেজে রিডাইরেক্ট হবে।
+                  <p className="text-[11px] text-blue-200/90">
+                    ✅ এটি সরাসরি আপনার ওয়েবসাইটের নিজস্ব লিংক। ব্রাউজার বা যেকোনো সাইটে এই লিংক দিলে স্বয়ংক্রিয়ভাবে ক্লাউডিনারির হাই-কোয়ালিটি ফটোতে যাবে।
                   </p>
                 </div>
 

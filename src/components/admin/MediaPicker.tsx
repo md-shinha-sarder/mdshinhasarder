@@ -63,11 +63,12 @@ async function uploadFile(file: File, userId: string): Promise<string> {
   const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
 
   // 1. Upload to Cloudinary for guaranteed 100% uptime delivery
-  let cloudinaryUrl = "";
+  let websiteLink = "";
   try {
     const cldRes = await uploadImageToCloudinary(file);
-    if (cldRes && cldRes.secure_url) {
-      cloudinaryUrl = cldRes.cdn_optimized_url || cldRes.secure_url;
+    if (cldRes && cldRes.public_id) {
+      // Official website domain link that auto-redirects to Cloudinary
+      websiteLink = cldRes.media_redirect_url || `https://mdshinhasarder.com/media/${cldRes.public_id}`;
     }
   } catch (cErr) {
     console.warn("Cloudinary direct upload note:", cErr);
@@ -79,7 +80,7 @@ async function uploadFile(file: File, userId: string): Promise<string> {
     const { error: upErr } = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
     if (!upErr) {
       const { data: pub } = supabase.storage.from("media").getPublicUrl(path);
-      const urlToStore = pub?.publicUrl || cloudinaryUrl || `/images/${safe}`;
+      const urlToStore = websiteLink || pub?.publicUrl || `/images/${safe}`;
       await supabase.from("media").insert({
         name: file.name,
         url: urlToStore,
@@ -88,14 +89,14 @@ async function uploadFile(file: File, userId: string): Promise<string> {
         size_bytes: file.size,
         uploaded_by: userId || null,
       });
-      return cloudinaryUrl || urlToStore;
+      return websiteLink || urlToStore;
     }
   } catch (_e) {
     // Supabase error non-blocking if Cloudinary succeeded
   }
 
-  if (cloudinaryUrl) {
-    return cloudinaryUrl;
+  if (websiteLink) {
+    return websiteLink;
   }
 
   // Fallback: local compression data url

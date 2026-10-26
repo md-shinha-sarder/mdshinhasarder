@@ -74,3 +74,25 @@ export function toSiteMediaUrl(url?: string | null): string {
   if (!url) return "";
   return resolveMediaUrl(url);
 }
+
+/**
+ * Converts any Cloudinary URL or asset path into the official website domain link.
+ * Example: https://res.cloudinary.com/borle8go/image/upload/f_auto,q_auto/czajweotfpsqbp8nwb9n
+ * -> https://mdshinhasarder.com/media/czajweotfpsqbp8nwb9n
+ */
+export function toWebsiteLink(url?: string | null): string {
+  if (!url) return "";
+  const trimmed = url.trim();
+  if (trimmed.includes("res.cloudinary.com")) {
+    const parts = trimmed.split("/").filter(Boolean);
+    const last = parts[parts.length - 1];
+    if (last) {
+      const publicId = last.replace(/\.[^/.]+$/, "");
+      return `https://mdshinhasarder.com/media/${publicId}`;
+    }
+  }
+  if (trimmed.startsWith("/")) {
+    return `https://mdshinhasarder.com${trimmed}`;
+  }
+  return trimmed;
+}
