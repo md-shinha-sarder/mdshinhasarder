@@ -96,52 +96,54 @@ export function generateAllImageLinks(nameOrUrl: string, title?: string): Genera
   const { publicId, fileName } = extractPublicIdOrName(nameOrUrl);
   const altTitle = title || publicId.replace(/[-_]/g, " ");
 
-  // Official Website Link on the mdshinhasarder.com domain
-  const websiteMediaUrl = `https://mdshinhasarder.com/media/${publicId}`;
+  // Primary Domain Image Link matching site logo and header photo:
+  // e.g. https://mdshinhasarder.com/images/site-logo.png
+  // e.g. https://mdshinhasarder.com/images/hero-portrait.jpg
+  // e.g. https://mdshinhasarder.com/images/czajweotfpsqbp8nwb9n.jpg
   const domainUrl = `https://mdshinhasarder.com/images/${fileName}`;
+  const localPath = `/images/${fileName}`;
   const cldUrl = `https://mdshinhasarder.com/cld/${publicId}`;
 
   const currentOrigin = typeof window !== "undefined" && window.location?.origin
     ? window.location.origin
     : "http://localhost:3000";
-  const localhostUrl = `${currentOrigin}/media/${publicId}`;
+  const localhostUrl = `${currentOrigin}/images/${fileName}`;
 
-  const localPath = `/images/${fileName}`;
   const cloudinaryCdnUrl = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/upload/${publicId}`;
   const cloudinaryAutoUrl = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/upload/f_auto,q_auto/${publicId}`;
   const cloudinaryFetchUrl = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/fetch/f_auto,q_auto/${domainUrl}`;
 
   // Automatically record both publicId and fileName in the media registry
   registerMediaInRegistry({
-    slug: publicId,
+    slug: fileName,
     publicId,
     cloudinaryUrl: cloudinaryAutoUrl,
-    domainUrl: websiteMediaUrl,
+    domainUrl,
     name: altTitle,
   });
   if (fileName !== publicId) {
     registerMediaInRegistry({
-      slug: fileName,
+      slug: publicId,
       publicId,
       cloudinaryUrl: cloudinaryAutoUrl,
-      domainUrl: websiteMediaUrl,
+      domainUrl,
       name: altTitle,
     });
   }
 
   return {
     fileName,
-    websiteUrl: websiteMediaUrl,
+    websiteUrl: domainUrl,
     domainUrl,
-    domainMediaUrl: websiteMediaUrl,
+    domainMediaUrl: domainUrl,
     localhostUrl,
     localPath,
     cloudinaryCdnUrl,
     cloudinaryAutoUrl,
     cloudinaryFetchUrl,
     cldUrl,
-    markdownTag: `![${altTitle}](${websiteMediaUrl})`,
-    htmlTag: `<img src="${websiteMediaUrl}" alt="${altTitle}" loading="lazy" />`,
+    markdownTag: `![${altTitle}](${domainUrl})`,
+    htmlTag: `<img src="${domainUrl}" alt="${altTitle}" loading="lazy" />`,
   };
 }
 
@@ -216,14 +218,34 @@ export async function uploadImageToCloudinary(
   const returnedPublicId = data.public_id || "image";
   const cleanFilename = `${returnedPublicId.split("/").pop()}.${data.format || "webp"}`;
 
-  // Official Website Link on the mdshinhasarder.com domain
-  const media_redirect_url = `https://mdshinhasarder.com/media/${returnedPublicId}`;
-  const domain_url = media_redirect_url;
+  // Domain Image Link matching site-logo and header-portrait in /images folder:
+  const domain_url = `https://mdshinhasarder.com/images/${cleanFilename}`;
+  const media_redirect_url = domain_url;
 
   const currentOrigin = typeof window !== "undefined" && window.location?.origin
     ? window.location.origin
     : "http://localhost:3000";
-  const localhost_url = `${currentOrigin}/media/${returnedPublicId}`;
+  const localhost_url = `${currentOrigin}/images/${cleanFilename}`;
+
+  // Save directly to /public/images/ folder via server API
+  try {
+    if (typeof window !== "undefined" && file instanceof Blob) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const b64 = (reader.result || "").toString().split(";base64,").pop();
+        if (b64) {
+          fetch("/api/save-image", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fileName: cleanFilename, base64: b64 }),
+          }).catch(() => {});
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  } catch (_e) {
+    void _e;
+  }
   const cdn_optimized_url = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/upload/f_auto,q_auto/${returnedPublicId}`;
   const fetch_url = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/fetch/f_auto,q_auto/${media_redirect_url}`;
 

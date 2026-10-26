@@ -192,8 +192,8 @@ const MediaAdmin = () => {
 
           const publicIdentifier = cloudinaryRes?.public_id || safeName;
           const primaryUrl =
-            cloudinaryRes?.media_redirect_url ||
-            `https://mdshinhasarder.com/media/${publicIdentifier}`;
+            cloudinaryRes?.domain_url ||
+            `https://mdshinhasarder.com/images/${safeName}`;
 
           const mediaItem: MediaItem = {
             id: cloudinaryRes?.asset_id || `local-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -211,7 +211,7 @@ const MediaAdmin = () => {
           setLastUploadedPreview(primaryUrl);
           setGeneratedLinks(
             generateAllImageLinks(
-              publicIdentifier,
+              safeName,
               file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ")
             )
           );
@@ -532,10 +532,10 @@ const MediaAdmin = () => {
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-blue-300 flex items-center gap-1.5 text-xs sm:text-sm">
                       <Sparkles size={14} className="text-yellow-400" />
-                      ১. আপনার ওয়েবসাইটের ফটো লিংক (Website Official Link):
+                      ১. ইমেজ ফোল্ডার ফটো লিংক (Official /images Link - Site Logo & Header Style):
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono font-semibold">
-                      mdshinhasarder.com Domain Link
+                      mdshinhasarder.com/images/ Link
                     </span>
                   </div>
                   <div className="flex items-center gap-2 bg-slate-950 border border-blue-500/40 rounded-lg p-1.5 sm:p-2">
@@ -565,7 +565,7 @@ const MediaAdmin = () => {
                     </Button>
                   </div>
                   <p className="text-[11px] text-blue-200/90">
-                    ✅ এটি সরাসরি আপনার ওয়েবসাইটের নিজস্ব লিংক। ব্রাউজার বা যেকোনো সাইটে এই লিংক দিলে স্বয়ংক্রিয়ভাবে ক্লাউডিনারির হাই-কোয়ালিটি ফটোতে যাবে।
+                    ✅ সাইট লোগো (site-logo.png) ও হেডার ফটো (hero-portrait.jpg)-এর মতো এটি সরাসরি images ফোল্ডারের অফিশিয়াল লিংক। ওয়েবসাইট ও ব্রাউজারে এটি ডিরেক্ট ফুল ফটো হিসেবে ওপেন হবে।
                   </p>
                 </div>
 

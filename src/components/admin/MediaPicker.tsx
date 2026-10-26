@@ -68,7 +68,7 @@ async function uploadFile(file: File, userId: string): Promise<string> {
     const cldRes = await uploadImageToCloudinary(file);
     if (cldRes && cldRes.public_id) {
       // Official website domain link that auto-redirects to Cloudinary
-      websiteLink = cldRes.media_redirect_url || `https://mdshinhasarder.com/media/${cldRes.public_id}`;
+      websiteLink = cldRes.domain_url || `https://mdshinhasarder.com/images/${safe}`;
     }
   } catch (cErr) {
     console.warn("Cloudinary direct upload note:", cErr);

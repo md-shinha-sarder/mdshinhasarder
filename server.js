@@ -146,6 +146,39 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Save uploaded photo directly into public/images/ folder
+  if (req.url === "/api/save-image" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const { fileName, base64, dataUrl } = JSON.parse(body);
+        if (!fileName) throw new Error("fileName is required");
+        const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
+        const rawBase64 = base64 || (dataUrl ? dataUrl.split(";base64,").pop() : "");
+        if (rawBase64) {
+          const buffer = Buffer.from(rawBase64, "base64");
+          const targetPublic = path.join(PUBLIC_DIR, "images", safeName);
+          const targetDist = path.join(DIST_DIR, "images", safeName);
+          if (!fs.existsSync(path.join(PUBLIC_DIR, "images"))) {
+            fs.mkdirSync(path.join(PUBLIC_DIR, "images"), { recursive: true });
+          }
+          fs.writeFileSync(targetPublic, buffer);
+          if (fs.existsSync(path.join(DIST_DIR, "images"))) {
+            fs.writeFileSync(targetDist, buffer);
+          }
+        }
+        const domainUrl = `https://mdshinhasarder.com/images/${safeName}`;
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ success: true, fileName: safeName, domainUrl }));
+      } catch (err) {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ success: false, error: err.message }));
+      }
+    });
+    return;
+  }
+
   const cleanUrl = (req.url || "/").split("?")[0];
 
   // Helper to resolve media slug/publicId to Cloudinary URL
