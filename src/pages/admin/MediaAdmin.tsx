@@ -516,20 +516,34 @@ const MediaAdmin = () => {
                   </span>
                 </div>
 
-                {/* 1. Canonical Domain Link */}
+                {/* 1. Main Domain Redirect Link (Auto redirects to Cloudinary) */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-semibold text-blue-400 flex items-center gap-1">
-                      ১. ডোমেইন লিংক (Canonical Domain URL - Google SEO Recommended):
+                      ১. মেইন ডোমেইন লিংক (Main Domain Link - Auto 302 Redirect to Cloudinary):
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono">
+                      Domain ➔ Cloudinary Auto-Redirect
                     </span>
                   </div>
                   <div className="flex items-center gap-2 bg-slate-950/70 border border-blue-500/30 rounded-lg p-1.5 sm:p-2">
                     <code className="text-[11px] sm:text-xs text-blue-200 font-mono truncate flex-1 select-all">
-                      {generatedLinks.domainUrl}
+                      {generatedLinks.domainMediaUrl || generatedLinks.domainUrl}
                     </code>
                     <Button
+                      asChild
                       size="sm"
-                      onClick={() => copyText(generatedLinks.domainUrl, "ডোমেইন লিংক", "domain")}
+                      variant="outline"
+                      className="h-7 px-2.5 text-xs shrink-0 border-blue-500/40 text-blue-300 hover:bg-blue-500/10"
+                      title="ডোমেইন লিংক টেস্ট করতে নতুন ট্যাবে ওপেন করুন"
+                    >
+                      <a href={generatedLinks.domainMediaUrl || generatedLinks.domainUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink size={12} className="mr-1" /> Open
+                      </a>
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => copyText(generatedLinks.domainMediaUrl || generatedLinks.domainUrl, "ডোমেইন লিংক", "domain")}
                       className={`h-7 px-3 text-xs font-semibold shrink-0 transition-colors ${
                         copiedKey === "domain" ? "bg-emerald-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"
                       }`}
@@ -538,19 +552,68 @@ const MediaAdmin = () => {
                       {copiedKey === "domain" ? "Copied" : "Copy"}
                     </Button>
                   </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    এই ডোমেইন লিংকটি ফেসবুক, টুইটার বা যেকোনো ওয়েবসাইটে শেয়ার করলে স্বয়ংক্রিয়ভাবে ক্লাউডিনারি ইমেজে রিডাইরেক্ট হবে।
+                  </p>
                 </div>
 
-                {/* 2. Cloudinary Ultra-Fast CDN Link */}
+                {/* 2. Localhost / Preview Host Link */}
+                {generatedLinks.localhostUrl && (
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-purple-400 flex items-center gap-1">
+                        ২. বর্তমান লোকালহোস্ট টেস্ট লিংক (Localhost / Dev Redirect Link):
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-slate-950/70 border border-purple-500/30 rounded-lg p-1.5 sm:p-2">
+                      <code className="text-[11px] sm:text-xs text-purple-200 font-mono truncate flex-1 select-all">
+                        {generatedLinks.localhostUrl}
+                      </code>
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2.5 text-xs shrink-0 border-purple-500/40 text-purple-300 hover:bg-purple-500/10"
+                      >
+                        <a href={generatedLinks.localhostUrl} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink size={12} className="mr-1" /> Test
+                        </a>
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => copyText(generatedLinks.localhostUrl, "লোকালহোস্ট লিংক", "localhost")}
+                        className={`h-7 px-3 text-xs font-semibold shrink-0 transition-colors ${
+                          copiedKey === "localhost" ? "bg-emerald-600 text-white" : "bg-purple-600 hover:bg-purple-700 text-white"
+                        }`}
+                      >
+                        {copiedKey === "localhost" ? <Check size={12} className="mr-1" /> : <Copy size={12} className="mr-1" />}
+                        {copiedKey === "localhost" ? "Copied" : "Copy"}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Cloudinary Ultra-Fast CDN Link */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-semibold text-emerald-400 flex items-center gap-1">
-                      ২. ক্লাউডিনারি ফাস্ট CDN লিংক (Cloudinary Auto WebP/AVIF Delivery):
+                      ৩. ক্লাউডিনারি ফাস্ট CDN লিংক (Cloudinary Auto WebP/AVIF Direct Delivery):
                     </span>
                   </div>
                   <div className="flex items-center gap-2 bg-slate-950/70 border border-emerald-500/30 rounded-lg p-1.5 sm:p-2">
                     <code className="text-[11px] sm:text-xs text-emerald-200 font-mono truncate flex-1 select-all">
                       {generatedLinks.cloudinaryAutoUrl}
                     </code>
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2.5 text-xs shrink-0 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10"
+                    >
+                      <a href={generatedLinks.cloudinaryAutoUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink size={12} className="mr-1" /> Open
+                      </a>
+                    </Button>
                     <Button
                       size="sm"
                       onClick={() => copyText(generatedLinks.cloudinaryAutoUrl, "ক্লাউডিনারি লিংক", "cld")}
@@ -564,11 +627,11 @@ const MediaAdmin = () => {
                   </div>
                 </div>
 
-                {/* 3. Cloudinary Fetch URL */}
+                {/* 4. Cloudinary Fetch URL */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-medium text-slate-300 flex items-center gap-1">
-                      ৩. ক্লাউডিনারি ফেচ প্রক্সি লিংক (Cloudinary Fetch Proxy):
+                      ৪. ক্লাউডিনারি ফেচ প্রক্সি লিংক (Cloudinary Fetch Proxy):
                     </span>
                   </div>
                   <div className="flex items-center gap-2 bg-slate-950/70 border border-border rounded-lg p-1.5 sm:p-2">
@@ -587,7 +650,7 @@ const MediaAdmin = () => {
                   </div>
                 </div>
 
-                {/* 4. HTML / Markdown Code snippet */}
+                {/* 5. HTML / Markdown Code snippet */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
                   <div className="flex items-center justify-between bg-slate-950/50 border border-border/80 rounded-lg px-2.5 py-1.5">
                     <span className="text-muted-foreground text-[11px]">HTML কোড:</span>
@@ -795,14 +858,25 @@ const MediaAdmin = () => {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Button
+                        asChild
                         size="sm"
-                        onClick={() => copyText(fullDomainUrl, "ডোমেইন লিংক", `lib-${m.id}`)}
+                        variant="outline"
+                        className="h-7 px-2 text-xs border-border/80 hover:bg-secondary shrink-0"
+                        title="ডোমেইন লিংক টেস্ট করতে ওপেন করুন"
+                      >
+                        <a href={`https://mdshinhasarder.com/media/${m.path || m.name}`} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink size={11} className="mr-1" /> Open
+                        </a>
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => copyText(`https://mdshinhasarder.com/media/${m.path || m.name}`, "ডোমেইন লিংক", `lib-${m.id}`)}
                         className={`flex-1 text-xs h-7 px-2 ${
                           copiedKey === `lib-${m.id}` ? "bg-emerald-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"
                         }`}
                       >
                         {copiedKey === `lib-${m.id}` ? <Check size={11} className="mr-1" /> : <Copy size={11} className="mr-1" />}
-                        Copy Link
+                        Domain Link
                       </Button>
                       <Button size="icon" variant="ghost" onClick={() => remove(m)} className="h-7 w-7 text-red-400 hover:bg-red-500/10">
                         <Trash2 size={13} />

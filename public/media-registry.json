@@ -1,0 +1,50 @@
+[
+  {
+    "slug": "profile.webp",
+    "publicId": "md-shinha-sarder-official-portrait",
+    "cloudinaryUrl": "https://res.cloudinary.com/borle8go/image/upload/f_auto,q_auto/md-shinha-sarder-official-portrait",
+    "domainUrl": "https://mdshinhasarder.com/profile.webp",
+    "mediaRedirectUrl": "https://mdshinhasarder.com/media/profile.webp",
+    "name": "Official Profile Portrait"
+  },
+  {
+    "slug": "hero-portrait.jpg",
+    "publicId": "md-shinha-sarder-author-researcher",
+    "cloudinaryUrl": "https://res.cloudinary.com/borle8go/image/upload/f_auto,q_auto/md-shinha-sarder-author-researcher",
+    "domainUrl": "https://mdshinhasarder.com/hero-portrait.jpg",
+    "mediaRedirectUrl": "https://mdshinhasarder.com/media/hero-portrait.jpg",
+    "name": "MD. Shinha Sarder - Author & Researcher"
+  },
+  {
+    "slug": "hero-bg.jpg",
+    "publicId": "md-shinha-sarder-creative-tech-studio",
+    "cloudinaryUrl": "https://res.cloudinary.com/borle8go/image/upload/f_auto,q_auto/md-shinha-sarder-creative-tech-studio",
+    "domainUrl": "https://mdshinhasarder.com/hero-bg.jpg",
+    "mediaRedirectUrl": "https://mdshinhasarder.com/media/hero-bg.jpg",
+    "name": "Creative Tech Studio Background"
+  },
+  {
+    "slug": "favicon.webp",
+    "publicId": "md-shinha-sarder-brand-emblem",
+    "cloudinaryUrl": "https://res.cloudinary.com/borle8go/image/upload/f_auto,q_auto/md-shinha-sarder-brand-emblem",
+    "domainUrl": "https://mdshinhasarder.com/favicon.webp",
+    "mediaRedirectUrl": "https://mdshinhasarder.com/media/favicon.webp",
+    "name": "Official Favicon Brand Emblem"
+  },
+  {
+    "slug": "site-logo.png",
+    "publicId": "md-shinha-sarder-brand-emblem",
+    "cloudinaryUrl": "https://res.cloudinary.com/borle8go/image/upload/f_auto,q_auto/md-shinha-sarder-brand-emblem",
+    "domainUrl": "https://mdshinhasarder.com/images/md-shinha-sarder-brand-emblem.webp",
+    "mediaRedirectUrl": "https://mdshinhasarder.com/media/site-logo.png",
+    "name": "Official Site Logo"
+  },
+  {
+    "slug": "cld-sample-5",
+    "publicId": "cld-sample-5",
+    "cloudinaryUrl": "https://res.cloudinary.com/borle8go/image/upload/f_auto,q_auto/cld-sample-5",
+    "domainUrl": "https://mdshinhasarder.com/media/cld-sample-5",
+    "mediaRedirectUrl": "https://mdshinhasarder.com/media/cld-sample-5",
+    "name": "Cloudinary Sample Asset 5"
+  }
+]

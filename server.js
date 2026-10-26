@@ -97,8 +97,119 @@ const server = http.createServer((req, res) => {
     }
   }
 
+  // Media Registry API (GET and POST)
+  if (req.url === "/api/media-registry" && req.method === "GET") {
+    const regPath = path.join(PUBLIC_DIR, "media-registry.json");
+    const distRegPath = path.join(DIST_DIR, "media-registry.json");
+    const targetPath = fs.existsSync(regPath) ? regPath : (fs.existsSync(distRegPath) ? distRegPath : null);
+    if (targetPath) {
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(fs.readFileSync(targetPath, "utf-8"));
+    } else {
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end("[]");
+    }
+    return;
+  }
+
+  if (req.url === "/api/register-media" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const item = JSON.parse(body);
+        const regPath = path.join(PUBLIC_DIR, "media-registry.json");
+        const distRegPath = path.join(DIST_DIR, "media-registry.json");
+        let list = [];
+        if (fs.existsSync(regPath)) {
+          try { list = JSON.parse(fs.readFileSync(regPath, "utf-8")); } catch (_) {}
+        }
+        // Update or add
+        const cleanSlug = item.slug || item.name || "media";
+        const idx = list.findIndex((x) => x.slug === cleanSlug || x.publicId === item.publicId);
+        if (idx >= 0) {
+          list[idx] = { ...list[idx], ...item };
+        } else {
+          list.unshift(item);
+        }
+        fs.writeFileSync(regPath, JSON.stringify(list, null, 2), "utf-8");
+        if (fs.existsSync(DIST_DIR)) {
+          fs.writeFileSync(distRegPath, JSON.stringify(list, null, 2), "utf-8");
+        }
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ success: true, count: list.length, item }));
+      } catch (err) {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ success: false, error: err.message }));
+      }
+    });
+    return;
+  }
+
   const cleanUrl = (req.url || "/").split("?")[0];
+
+  // Helper to resolve media slug/publicId to Cloudinary URL
+  const resolveCloudinaryRedirect = (rawSlug) => {
+    const slug = decodeURIComponent(rawSlug || "").trim();
+    if (!slug) return null;
+
+    // 1. Check media-registry.json
+    const regPath = path.join(PUBLIC_DIR, "media-registry.json");
+    if (fs.existsSync(regPath)) {
+      try {
+        const list = JSON.parse(fs.readFileSync(regPath, "utf-8"));
+        const found = list.find((x) => x.slug === slug || x.publicId === slug || x.name === slug);
+        if (found && found.cloudinaryUrl) {
+          return found.cloudinaryUrl;
+        }
+      } catch (_) {}
+    }
+
+    // 2. Direct Cloudinary mapping
+    const publicId = slug.replace(/\.[^/.]+$/, "");
+    return `https://res.cloudinary.com/borle8go/image/upload/f_auto,q_auto/${slug.includes(".") ? slug : publicId}`;
+  };
+
+  // Domain Media Redirect: /media/:slug and /cld/:slug automatically 302 redirect to Cloudinary CDN
+  if (cleanUrl.startsWith("/media/") || cleanUrl.startsWith("/cld/")) {
+    const rawSlug = cleanUrl.replace(/^\/(media|cld)\//, "");
+    if (rawSlug) {
+      const targetUrl = resolveCloudinaryRedirect(rawSlug);
+      if (targetUrl) {
+        res.writeHead(302, {
+          "Location": targetUrl,
+          "Cache-Control": "public, max-age=86400",
+          "Access-Control-Allow-Origin": "*",
+          "X-Redirect-By": "MD-Shinha-Sarder-Cloudinary-Router",
+        });
+        res.end();
+        return;
+      }
+    }
+  }
+
   let filePath = path.join(DIST_DIR, cleanUrl);
+  let publicFallbackPath = path.join(PUBLIC_DIR, cleanUrl);
+
+  // If requesting /images/* and file does not exist on disk, redirect to Cloudinary instead of 404/index.html
+  if (cleanUrl.startsWith("/images/")) {
+    const hasDistFile = fs.existsSync(filePath) && fs.statSync(filePath).isFile();
+    const hasPublicFile = fs.existsSync(publicFallbackPath) && fs.statSync(publicFallbackPath).isFile();
+    if (!hasDistFile && !hasPublicFile) {
+      const filename = cleanUrl.replace(/^\/images\//, "");
+      const targetUrl = resolveCloudinaryRedirect(filename);
+      if (targetUrl) {
+        res.writeHead(302, {
+          "Location": targetUrl,
+          "Cache-Control": "public, max-age=86400",
+          "Access-Control-Allow-Origin": "*",
+          "X-Redirect-By": "MD-Shinha-Sarder-Image-Fallback-Router",
+        });
+        res.end();
+        return;
+      }
+    }
+  }
 
   // Check if file exists in dist
   fs.stat(filePath, (err, stats) => {

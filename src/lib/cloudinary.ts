@@ -24,12 +24,50 @@ export const CLOUDINARY_CONFIG = {
 export interface GeneratedImageLinks {
   fileName: string;
   domainUrl: string;
+  domainMediaUrl: string;
+  localhostUrl: string;
   localPath: string;
   cloudinaryCdnUrl: string;
   cloudinaryAutoUrl: string;
   cloudinaryFetchUrl: string;
+  cldUrl: string;
   markdownTag: string;
   htmlTag: string;
+}
+
+export function registerMediaInRegistry(item: {
+  slug: string;
+  publicId: string;
+  cloudinaryUrl: string;
+  domainUrl?: string;
+  name?: string;
+}) {
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem("shinha_media_registry");
+      const list = raw ? JSON.parse(raw) : [];
+      const idx = list.findIndex((x: any) => x.slug === item.slug || x.publicId === item.publicId);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], ...item };
+      } else {
+        list.unshift(item);
+      }
+      localStorage.setItem("shinha_media_registry", JSON.stringify(list.slice(0, 100)));
+    } catch (_err) {
+      void _err;
+    }
+
+    // Also register on local server if active
+    try {
+      fetch("/api/register-media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(item),
+      }).catch(() => {});
+    } catch (_err) {
+      void _err;
+    }
+  }
 }
 
 export function generateAllImageLinks(nameOrUrl: string, title?: string): GeneratedImageLinks {
@@ -48,22 +86,42 @@ export function generateAllImageLinks(nameOrUrl: string, title?: string): Genera
   }
 
   const altTitle = title || baseName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-  const domainUrl = `https://mdshinhasarder.com/images/${baseName}`;
-  const localPath = `/images/${baseName}`;
   const publicId = baseName.replace(/\.[^/.]+$/, "");
+  const domainUrl = `https://mdshinhasarder.com/images/${baseName}`;
+  const domainMediaUrl = `https://mdshinhasarder.com/media/${baseName}`;
+  const cldUrl = `https://mdshinhasarder.com/cld/${publicId}`;
+
+  const currentOrigin = typeof window !== "undefined" && window.location?.origin
+    ? window.location.origin
+    : "http://localhost:3000";
+  const localhostUrl = `${currentOrigin}/media/${baseName}`;
+
+  const localPath = `/images/${baseName}`;
   const cloudinaryCdnUrl = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/upload/${publicId}`;
   const cloudinaryAutoUrl = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/upload/f_auto,q_auto/${publicId}`;
   const cloudinaryFetchUrl = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/fetch/f_auto,q_auto/${domainUrl}`;
 
+  // Automatically record this link into registry so domain redirect works immediately
+  registerMediaInRegistry({
+    slug: baseName,
+    publicId,
+    cloudinaryUrl: cloudinaryAutoUrl,
+    domainUrl,
+    name: altTitle,
+  });
+
   return {
     fileName: baseName,
     domainUrl,
+    domainMediaUrl,
+    localhostUrl,
     localPath,
     cloudinaryCdnUrl,
     cloudinaryAutoUrl,
     cloudinaryFetchUrl,
-    markdownTag: `![${altTitle}](${domainUrl})`,
-    htmlTag: `<img src="${domainUrl}" alt="${altTitle}" loading="lazy" />`,
+    cldUrl,
+    markdownTag: `![${altTitle}](${domainMediaUrl})`,
+    htmlTag: `<img src="${domainMediaUrl}" alt="${altTitle}" loading="lazy" />`,
   };
 }
 
@@ -88,6 +146,8 @@ export interface CloudinaryUploadResult {
   url: string;
   secure_url: string;
   domain_url: string;
+  media_redirect_url: string;
+  localhost_url: string;
   cdn_optimized_url: string;
   fetch_url: string;
 }
@@ -127,12 +187,28 @@ export async function uploadImageToCloudinary(
   const data = await res.json();
   const cleanFilename = `${(data.public_id || "image").split("/").pop()}.${data.format || "webp"}`;
   const domain_url = `https://mdshinhasarder.com/images/${cleanFilename}`;
+  const media_redirect_url = `https://mdshinhasarder.com/media/${cleanFilename}`;
+  const currentOrigin = typeof window !== "undefined" && window.location?.origin
+    ? window.location.origin
+    : "http://localhost:3000";
+  const localhost_url = `${currentOrigin}/media/${cleanFilename}`;
   const cdn_optimized_url = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/upload/f_auto,q_auto/${data.public_id}`;
   const fetch_url = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/fetch/f_auto,q_auto/${domain_url}`;
+
+  // Register uploaded asset so domain redirect works seamlessly across server and client
+  registerMediaInRegistry({
+    slug: cleanFilename,
+    publicId: data.public_id,
+    cloudinaryUrl: cdn_optimized_url,
+    domainUrl: media_redirect_url,
+    name: cleanFilename,
+  });
 
   return {
     ...data,
     domain_url,
+    media_redirect_url,
+    localhost_url,
     cdn_optimized_url,
     fetch_url,
   };
