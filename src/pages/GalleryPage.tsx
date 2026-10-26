@@ -244,6 +244,29 @@ export const GalleryPage = () => {
     }
 
     // 4. Custom Database / Admin Uploaded Media
+    if (typeof window !== "undefined") {
+      try {
+        const rawItems = localStorage.getItem("shinha_media_items");
+        if (rawItems) {
+          const localList = JSON.parse(rawItems);
+          if (Array.isArray(localList)) {
+            for (const item of localList) {
+              if (item.url) {
+                addPhoto(
+                  item.localUrl || item.url,
+                  item.name || "Uploaded Photo",
+                  "Site Media",
+                  `Uploaded photo: ${item.name || "Asset"}`
+                );
+              }
+            }
+          }
+        }
+      } catch (_e) {
+        void _e;
+      }
+    }
+
     for (const media of dbMedia) {
       if (media.url) {
         addPhoto(
