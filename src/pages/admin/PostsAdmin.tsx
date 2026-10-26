@@ -404,7 +404,7 @@ const PostsAdmin = () => {
                           <div className="flex items-center gap-2">
                             <Sparkles size={16} className="text-amber-400" />
                             <Label className="text-sm font-semibold text-white">
-                              Auto Domain Image Link (ডোমেন ইমেজ লিংক ক্রিয়েটর)
+                              Auto Domain Image Link Generator
                             </Label>
                           </div>
                           <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 font-mono">
@@ -451,7 +451,7 @@ const PostsAdmin = () => {
                         <div className="pt-2 border-t border-blue-500/20 flex flex-wrap items-center justify-between gap-2 text-xs">
                           <div className="text-slate-400 flex items-center gap-1.5">
                             <Upload size={13} className="text-blue-400" />
-                            <span>Upload photo directly to <strong className="text-slate-200">/images/{safeSlug}.jpg</strong>:</span>
+                            <span>Upload photo directly to <strong className="text-slate-200">/images/</strong>:</span>
                           </div>
                           <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-200 text-xs font-medium transition-colors flex items-center gap-1.5">
                             <Upload size={13} />
@@ -466,10 +466,14 @@ const PostsAdmin = () => {
                                 if (!file) return;
                                 setUploadingCover(true);
                                 try {
-                                  // 1. Upload to Cloudinary with safeSlug
-                                  await uploadImageToCloudinary(file, safeSlug);
+                                  const rawExt = (file.name.split(".").pop() || "jpg").toLowerCase();
+                                  const fileBase = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "-").toLowerCase();
+                                  const baseSlug = (editing.slug || slugify(editing.title) || fileBase || "post").toLowerCase();
+                                  const uniqueFileName = `${baseSlug}-${Date.now().toString(36).slice(-4)}.${rawExt}`;
+                                  const uniqueDomainUrl = `https://mdshinhasarder.com/images/${uniqueFileName}`;
 
-                                  // 2. Save directly to server /public/images/
+                                  await uploadImageToCloudinary(file, uniqueFileName.replace(/\.[^/.]+$/, ""));
+
                                   const reader = new FileReader();
                                   reader.onload = async () => {
                                     const b64 = (reader.result || "").toString().split(";base64,").pop();
@@ -477,14 +481,14 @@ const PostsAdmin = () => {
                                       await fetch("/api/save-image", {
                                         method: "POST",
                                         headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({ fileName: `${safeSlug}.jpg`, base64: b64 }),
+                                        body: JSON.stringify({ fileName: uniqueFileName, base64: b64 }),
                                       }).catch(() => {});
                                     }
                                   };
                                   reader.readAsDataURL(file);
 
-                                  setEditing({ ...editing, cover_url: autoDomainUrl });
-                                  toast.success(`Photo uploaded and saved to ${autoDomainUrl}`);
+                                  setEditing({ ...editing, cover_url: uniqueDomainUrl });
+                                  toast.success(`Photo uploaded with unique link: ${uniqueDomainUrl}`);
                                 } catch (err: any) {
                                   toast.error(err?.message || "Failed to upload photo");
                                 } finally {
@@ -510,20 +514,25 @@ const PostsAdmin = () => {
                             onClick={async () => {
                               if (!pastedUrl.trim()) return toast.error("Please paste an image URL first");
                               try {
+                                const rawExt = (pastedUrl.split("?")[0].split(".").pop() || "jpg").toLowerCase();
+                                const cleanExt = ["jpg", "jpeg", "png", "webp", "gif"].includes(rawExt) ? rawExt : "jpg";
+                                const uniqueName = `${safeSlug}-${Date.now().toString(36).slice(-4)}.${cleanExt}`;
+                                const uniqueUrl = `https://mdshinhasarder.com/images/${uniqueName}`;
+
                                 const res = await fetch("/api/sync-photos", {
                                   method: "POST",
                                   headers: { "Content-Type": "application/json" },
                                   body: JSON.stringify({
-                                    photos: [{ filename: `${safeSlug}.jpg`, url: pastedUrl.trim(), title: editing.title }],
+                                    photos: [{ filename: uniqueName, url: pastedUrl.trim(), title: editing.title }],
                                   }),
                                 });
                                 if (res.ok) {
-                                  setEditing({ ...editing, cover_url: autoDomainUrl });
+                                  setEditing({ ...editing, cover_url: uniqueUrl });
                                   setPastedUrl("");
-                                  toast.success(`Converted & saved to ${autoDomainUrl}!`);
+                                  toast.success(`Converted & saved to ${uniqueUrl}!`);
                                 } else {
-                                  setEditing({ ...editing, cover_url: autoDomainUrl });
-                                  toast.success(`Assigned domain link ${autoDomainUrl}`);
+                                  setEditing({ ...editing, cover_url: uniqueUrl });
+                                  toast.success(`Assigned domain link ${uniqueUrl}`);
                                 }
                               } catch {
                                 setEditing({ ...editing, cover_url: autoDomainUrl });

@@ -26,6 +26,16 @@ export function resolveMediaUrl(url?: string | null): string {
     return trimmed;
   }
 
+  // Handle direct /images/...
+  if (trimmed.startsWith("/images/")) {
+    return trimmed;
+  }
+
+  // Handle raw filenames like "profile.webp", "site-logo.png", "hero-portrait.jpg"
+  if (/^[a-zA-Z0-9_.-]+\.(?:webp|jpg|jpeg|png|svg|ico)$/i.test(trimmed)) {
+    return `/images/${trimmed}`;
+  }
+
   // Handle https://mdshinhasarder.com/images/[filename]
   const domainImagesMatch = trimmed.match(/^https?:\/\/(?:www\.)?mdshinhasarder\.com\/images\/(.+)$/i);
   if (domainImagesMatch) {

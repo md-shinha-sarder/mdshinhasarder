@@ -35,14 +35,18 @@ export default function MediaRedirect() {
 
     // Fallback formula
     if (!resolvedUrl) {
-      const publicId = cleanSlug.replace(/\.[^/.]+$/, "");
-      resolvedUrl = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/upload/f_auto,q_auto/${cleanSlug.includes(".") ? cleanSlug : publicId}`;
+      if (cleanSlug.includes(".")) {
+        resolvedUrl = `/images/${cleanSlug}`;
+      } else {
+        const publicId = cleanSlug.replace(/\.[^/.]+$/, "");
+        resolvedUrl = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/upload/f_auto,q_auto/${publicId}`;
+      }
     }
 
     setTargetUrl(resolvedUrl);
-    setDomainUrl(`https://mdshinhasarder.com/media/${cleanSlug}`);
+    setDomainUrl(cleanSlug.includes(".") ? `https://mdshinhasarder.com/images/${cleanSlug}` : `https://mdshinhasarder.com/media/${cleanSlug}`);
 
-    // Automatically redirect after a short moment (allows users to see redirect status)
+    // Automatically redirect after a short moment
     const timer = setTimeout(() => {
       if (resolvedUrl) {
         window.location.replace(resolvedUrl);
@@ -76,7 +80,7 @@ export default function MediaRedirect() {
             <Loader2 size={32} className="animate-spin text-blue-400" />
           </div>
           <h1 className="text-xl font-bold font-serif text-white">
-            ফটো রিডাইরেক্ট হচ্ছে...
+            Redirecting to Image...
           </h1>
           <p className="text-xs text-slate-400 font-mono break-all px-2">
             {domainUrl || location.pathname}
@@ -102,7 +106,7 @@ export default function MediaRedirect() {
 
         <div className="space-y-2 text-xs">
           <p className="text-slate-400">
-            স্বয়ংক্রিয়ভাবে ক্লাউডিনারি হাই-রেজুলেশন ইমেজে রিডাইরেক্ট করা হচ্ছে:
+            Delivering high-resolution image asset directly via CDN:
           </p>
           <div className="flex gap-2">
             <Button
@@ -110,7 +114,7 @@ export default function MediaRedirect() {
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs h-9"
             >
               <a href={targetUrl} target="_self">
-                <ExternalLink size={14} className="mr-1.5" /> সরাসরি ওপেন করুন
+                <ExternalLink size={14} className="mr-1.5" /> Open Image
               </a>
             </Button>
             <Button
@@ -119,14 +123,14 @@ export default function MediaRedirect() {
               className="border-slate-700 hover:bg-slate-800 text-xs h-9"
             >
               {copied ? <Check size={14} className="mr-1 text-emerald-400" /> : <Copy size={14} className="mr-1" />}
-              {copied ? "কপি হয়েছে" : "ডোমেইন লিংক"}
+              {copied ? "Copied" : "Copy Domain Link"}
             </Button>
           </div>
         </div>
 
         <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
           <Link to="/" className="inline-flex items-center hover:text-white transition-colors">
-            <ArrowLeft size={14} className="mr-1" /> হোম পেজ
+            <ArrowLeft size={14} className="mr-1" /> Home
           </Link>
           <span className="font-mono text-[11px] text-slate-500">
             Cloud: {CLOUDINARY_CONFIG.cloudName}

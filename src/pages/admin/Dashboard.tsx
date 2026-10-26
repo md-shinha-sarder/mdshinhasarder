@@ -152,11 +152,10 @@ const Dashboard = () => {
 
         {/* Quick Domain Image Link Creator */}
         {(() => {
-          const rawName = (photoInput || "my-new-photo").trim();
+          const rawName = (photoInput || "").trim();
           const cleanSlug = rawName
-            .toLowerCase()
-            .replace(/[^\w\s.-]/g, "")
-            .replace(/[\s_]+/g, "-");
+            ? rawName.toLowerCase().replace(/[^\w\s.-]/g, "").replace(/[\s_]+/g, "-")
+            : "photo-" + Date.now().toString(36).slice(-4);
           const safeFilename = cleanSlug.includes(".") ? cleanSlug : `${cleanSlug}.jpg`;
           const generatedDomainUrl = `https://mdshinhasarder.com/images/${safeFilename}`;
 
@@ -165,7 +164,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-200">
                   <Sparkles size={14} className="text-amber-400" />
-                  <span>Instant Domain Image Link Generator (ডোমেন লিংক ক্রিয়েটর)</span>
+                  <span>Instant Domain Image Link Generator</span>
                 </div>
                 <span className="text-[11px] text-cyan-400 font-mono">
                   https://mdshinhasarder.com/images/{safeFilename}
@@ -211,7 +210,12 @@ const Dashboard = () => {
                         if (!file) return;
                         setUploading(true);
                         try {
-                          await uploadImageToCloudinary(file, safeFilename.replace(/\.[^/.]+$/, ""));
+                          const rawExt = (file.name.split(".").pop() || "jpg").toLowerCase();
+                          const fileBase = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "-").toLowerCase() || "photo";
+                          const uniqueSafe = `${fileBase}-${Date.now().toString(36).slice(-4)}.${rawExt}`;
+                          const uniqueDomain = `https://mdshinhasarder.com/images/${uniqueSafe}`;
+
+                          await uploadImageToCloudinary(file, uniqueSafe.replace(/\.[^/.]+$/, ""));
                           const reader = new FileReader();
                           reader.onload = async () => {
                             const b64 = (reader.result || "").toString().split(";base64,").pop();
@@ -219,12 +223,14 @@ const Dashboard = () => {
                               await fetch("/api/save-image", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ fileName: safeFilename, base64: b64 }),
+                                body: JSON.stringify({ fileName: uniqueSafe, base64: b64 }),
                               }).catch(() => {});
                             }
                           };
                           reader.readAsDataURL(file);
-                          toast.success(`Photo successfully uploaded & saved to ${generatedDomainUrl}`);
+
+                          setPhotoInput(uniqueSafe);
+                          toast.success(`Photo uploaded with unique link: ${uniqueDomain}`);
                         } catch (err: any) {
                           toast.error(err?.message || "Failed to upload photo");
                         } finally {

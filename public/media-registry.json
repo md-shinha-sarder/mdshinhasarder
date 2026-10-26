@@ -41,11 +41,13 @@
   },
   {
     "slug": "site-logo.png",
-    "publicId": "md-shinha-sarder-brand-emblem",
+    "publicId": "site-logo",
     "cloudinaryUrl": "https://res.cloudinary.com/borle8go/image/upload/f_auto,q_auto/md-shinha-sarder-brand-emblem",
-    "domainUrl": "https://mdshinhasarder.com/images/md-shinha-sarder-brand-emblem.webp",
+    "domainUrl": "https://mdshinhasarder.com/images/site-logo.png",
     "mediaRedirectUrl": "https://mdshinhasarder.com/media/site-logo.png",
-    "name": "Official Site Logo"
+    "name": "Site Logo",
+    "sourceUrl": "https://res.cloudinary.com/borle8go/image/upload/f_auto,q_auto/site-logo.png",
+    "syncedAt": "2026-10-26T16:20:54.164Z"
   },
   {
     "slug": "cld-sample-5",

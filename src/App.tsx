@@ -99,6 +99,8 @@ const AppRoutes = () => {
         {/* Domain Media & Cloudinary Redirect Routes */}
         <Route path="/media/:slug" element={<MediaRedirect />} />
         <Route path="/media/*" element={<MediaRedirect />} />
+        <Route path="/images/:slug" element={<MediaRedirect />} />
+        <Route path="/images/*" element={<MediaRedirect />} />
         <Route path="/cld/:slug" element={<MediaRedirect />} />
         <Route path="/cld/*" element={<MediaRedirect />} />
 
