@@ -54,5 +54,13 @@
     "domainUrl": "https://mdshinhasarder.com/media/cld-sample-5",
     "mediaRedirectUrl": "https://mdshinhasarder.com/media/cld-sample-5",
     "name": "Cloudinary Sample Asset 5"
+  },
+  {
+    "slug": "test-check.jpg",
+    "publicId": "test-check",
+    "name": "Test Check",
+    "domainUrl": "https://mdshinhasarder.com/images/test-check.jpg",
+    "sourceUrl": "http://127.0.0.1:3000/images/site-logo.png",
+    "syncedAt": "2026-10-26T15:56:52.147Z"
   }
 ]

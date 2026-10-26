@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Rss, ExternalLink, RefreshCw, Database, Copy, Check, Image as ImageIcon, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Rss, ExternalLink, RefreshCw, Database, Copy, Check, Image as ImageIcon, Search, Globe, Sparkles, FolderSync, Upload, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { resolveMediaUrl } from "@/lib/mediaUrl";
@@ -22,6 +22,8 @@ import {
   getSupabaseSetupSql,
   type SyncedPost,
 } from "@/lib/postSync";
+import { syncAllPhotosToImagesFolder } from "@/lib/syncAllPhotos";
+import { uploadImageToCloudinary } from "@/lib/cloudinary";
 
 interface Post {
   id: string;
@@ -62,6 +64,29 @@ const PostsAdmin = () => {
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [syncingPhotos, setSyncingPhotos] = useState(false);
+  const [syncStatus, setSyncStatus] = useState("");
+  const [copiedDomainLink, setCopiedDomainLink] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [pastedUrl, setPastedUrl] = useState("");
+
+  const handleSyncAllPhotos = async () => {
+    setSyncingPhotos(true);
+    setSyncStatus("Starting photo synchronization...");
+    try {
+      const res = await syncAllPhotosToImagesFolder((msg) => {
+        setSyncStatus(msg);
+      });
+      toast.success(`Synced ${res.totalFound} photos to /images folder with domain links!`);
+      await load();
+      await refetchLivePosts().catch(() => {});
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to sync photos to domain");
+    } finally {
+      setSyncingPhotos(false);
+      setSyncStatus("");
+    }
+  };
 
   const load = async () => {
     // 1. Get stored admin posts
@@ -294,6 +319,16 @@ const PostsAdmin = () => {
           <Button
             variant="outline"
             size="sm"
+            onClick={handleSyncAllPhotos}
+            disabled={syncingPhotos}
+            className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-600/10"
+          >
+            <FolderSync size={15} className={`mr-1.5 text-emerald-400 ${syncingPhotos ? "animate-spin" : ""}`} />
+            {syncingPhotos ? "Syncing..." : "Sync Photos to /images"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={async () => {
               await load();
               await refetchLivePosts();
@@ -357,6 +392,153 @@ const PostsAdmin = () => {
                       onChange={(html) => setEditing({ ...editing, content: html })}
                     />
                   </div>
+                  {/* Auto Domain Image Link Assistant */}
+                  {(() => {
+                    const safeSlug = (editing.slug || slugify(editing.title) || "post").toLowerCase();
+                    const autoDomainUrl = `https://mdshinhasarder.com/images/${safeSlug}.jpg`;
+                    const isCoverMatching = editing.cover_url === autoDomainUrl;
+
+                    return (
+                      <div className="rounded-xl border border-blue-500/30 bg-[#070e24]/90 p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Sparkles size={16} className="text-amber-400" />
+                            <Label className="text-sm font-semibold text-white">
+                              Auto Domain Image Link (ডোমেন ইমেজ লিংক ক্রিয়েটর)
+                            </Label>
+                          </div>
+                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 font-mono">
+                            /images/{safeSlug}.jpg
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                          <div className="flex-1 bg-[#030712] border border-blue-500/20 rounded-lg px-3 py-2 text-xs font-mono text-cyan-300 truncate select-all">
+                            {autoDomainUrl}
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                navigator.clipboard.writeText(autoDomainUrl);
+                                setCopiedDomainLink(true);
+                                toast.success("Domain image link copied to clipboard!");
+                                setTimeout(() => setCopiedDomainLink(false), 2000);
+                              }}
+                              className="border-blue-500/30 text-blue-300 hover:bg-blue-600/10 text-xs h-8"
+                            >
+                              {copiedDomainLink ? <Check size={14} className="mr-1 text-emerald-400" /> : <Copy size={14} className="mr-1" />}
+                              {copiedDomainLink ? "Copied" : "Copy Link"}
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => {
+                                setEditing({ ...editing, cover_url: autoDomainUrl });
+                                toast.success(`Cover image set to ${autoDomainUrl}`);
+                              }}
+                              className={`text-xs h-8 ${isCoverMatching ? "bg-emerald-600 hover:bg-emerald-500 text-white" : "bg-blue-600 hover:bg-blue-500 text-white"}`}
+                            >
+                              {isCoverMatching ? <CheckCircle2 size={14} className="mr-1" /> : <Globe size={14} className="mr-1" />}
+                              {isCoverMatching ? "Assigned" : "Use As Cover"}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Direct File Upload to this Domain Link */}
+                        <div className="pt-2 border-t border-blue-500/20 flex flex-wrap items-center justify-between gap-2 text-xs">
+                          <div className="text-slate-400 flex items-center gap-1.5">
+                            <Upload size={13} className="text-blue-400" />
+                            <span>Upload photo directly to <strong className="text-slate-200">/images/{safeSlug}.jpg</strong>:</span>
+                          </div>
+                          <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-200 text-xs font-medium transition-colors flex items-center gap-1.5">
+                            <Upload size={13} />
+                            <span>{uploadingCover ? "Uploading & Saving..." : "Upload Photo to /images"}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              disabled={uploadingCover}
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                setUploadingCover(true);
+                                try {
+                                  // 1. Upload to Cloudinary with safeSlug
+                                  await uploadImageToCloudinary(file, safeSlug);
+
+                                  // 2. Save directly to server /public/images/
+                                  const reader = new FileReader();
+                                  reader.onload = async () => {
+                                    const b64 = (reader.result || "").toString().split(";base64,").pop();
+                                    if (b64) {
+                                      await fetch("/api/save-image", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ fileName: `${safeSlug}.jpg`, base64: b64 }),
+                                      }).catch(() => {});
+                                    }
+                                  };
+                                  reader.readAsDataURL(file);
+
+                                  setEditing({ ...editing, cover_url: autoDomainUrl });
+                                  toast.success(`Photo uploaded and saved to ${autoDomainUrl}`);
+                                } catch (err: any) {
+                                  toast.error(err?.message || "Failed to upload photo");
+                                } finally {
+                                  setUploadingCover(false);
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+
+                        {/* Quick convert any external/Blogger URL to this domain link */}
+                        <div className="pt-2 border-t border-blue-500/15 flex items-center gap-2">
+                          <Input
+                            placeholder="Or paste any Blogger/Cloudinary/External URL to convert to domain link..."
+                            value={pastedUrl}
+                            onChange={(e) => setPastedUrl(e.target.value)}
+                            className="text-xs h-8 bg-[#040817] border-blue-500/30 text-slate-200"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              if (!pastedUrl.trim()) return toast.error("Please paste an image URL first");
+                              try {
+                                const res = await fetch("/api/sync-photos", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    photos: [{ filename: `${safeSlug}.jpg`, url: pastedUrl.trim(), title: editing.title }],
+                                  }),
+                                });
+                                if (res.ok) {
+                                  setEditing({ ...editing, cover_url: autoDomainUrl });
+                                  setPastedUrl("");
+                                  toast.success(`Converted & saved to ${autoDomainUrl}!`);
+                                } else {
+                                  setEditing({ ...editing, cover_url: autoDomainUrl });
+                                  toast.success(`Assigned domain link ${autoDomainUrl}`);
+                                }
+                              } catch {
+                                setEditing({ ...editing, cover_url: autoDomainUrl });
+                                toast.success(`Assigned domain link ${autoDomainUrl}`);
+                              }
+                            }}
+                            className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-600/10 text-xs h-8 shrink-0"
+                          >
+                            Convert to Domain Link
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   <MediaPicker
                     label="Cover Image *"
                     value={resolveMediaUrl(editing.cover_url || "")}

@@ -26,6 +26,17 @@ export function resolveMediaUrl(url?: string | null): string {
     return trimmed;
   }
 
+  // Handle https://mdshinhasarder.com/images/[filename]
+  const domainImagesMatch = trimmed.match(/^https?:\/\/(?:www\.)?mdshinhasarder\.com\/images\/(.+)$/i);
+  if (domainImagesMatch) {
+    const filename = domainImagesMatch[1];
+    // In local development or AI studio preview, load from local server /images/[filename]
+    if (typeof window !== "undefined" && window.location?.origin && !window.location.origin.includes("mdshinhasarder.com")) {
+      return `/images/${filename}`;
+    }
+    return trimmed;
+  }
+
   // Check if it's a domain/relative media URL
   const domainMatch = trimmed.match(/^https?:\/\/(?:www\.)?mdshinhasarder\.com\/media\/(.+)$/i);
   const relativeMatch = trimmed.match(/^\/media\/(.+)$/i);

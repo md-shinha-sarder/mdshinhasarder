@@ -179,9 +179,95 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Batch Sync Photos from Blogger / External to public/images/ folder
+  if (req.url === "/api/sync-photos" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", async () => {
+      try {
+        const { photos } = JSON.parse(body || "{}");
+        if (!Array.isArray(photos)) throw new Error("photos array is required");
+
+        const imagesDir = path.join(PUBLIC_DIR, "images");
+        const distImagesDir = path.join(DIST_DIR, "images");
+        if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
+        if (fs.existsSync(DIST_DIR) && !fs.existsSync(distImagesDir)) fs.mkdirSync(distImagesDir, { recursive: true });
+
+        const regPath = path.join(PUBLIC_DIR, "media-registry.json");
+        let regList = [];
+        if (fs.existsSync(regPath)) {
+          try { regList = JSON.parse(fs.readFileSync(regPath, "utf-8")); } catch (_) {}
+        }
+
+        const synced = [];
+        for (const item of photos) {
+          if (!item || !item.url) continue;
+          const cleanName = (item.filename || item.name || path.basename(item.url.split("?")[0]))
+            .replace(/[^a-zA-Z0-9._-]/g, "-");
+          const safeFilename = cleanName.includes(".") ? cleanName : `${cleanName}.jpg`;
+          const targetPublic = path.join(imagesDir, safeFilename);
+          const targetDist = path.join(distImagesDir, safeFilename);
+
+          let downloaded = false;
+          // Check if already on disk
+          if (!fs.existsSync(targetPublic) || fs.statSync(targetPublic).size < 100) {
+            try {
+              const fetchRes = await fetch(item.url, { headers: { "User-Agent": "Mozilla/5.0" } });
+              if (fetchRes.ok) {
+                const arrBuf = await fetchRes.arrayBuffer();
+                const buf = Buffer.from(arrBuf);
+                fs.writeFileSync(targetPublic, buf);
+                if (fs.existsSync(distImagesDir)) fs.writeFileSync(targetDist, buf);
+                downloaded = true;
+              }
+            } catch (_err) {
+              // skip download error gracefully
+            }
+          } else {
+            downloaded = true;
+            if (fs.existsSync(distImagesDir) && !fs.existsSync(targetDist)) {
+              fs.copyFileSync(targetPublic, targetDist);
+            }
+          }
+
+          const domainUrl = `https://mdshinhasarder.com/images/${safeFilename}`;
+          const regEntry = {
+            slug: safeFilename,
+            publicId: safeFilename.replace(/\.[^/.]+$/, ""),
+            name: item.title || safeFilename,
+            domainUrl,
+            sourceUrl: item.url,
+            syncedAt: new Date().toISOString(),
+          };
+
+          const existingIdx = regList.findIndex((r) => r.slug === safeFilename);
+          if (existingIdx >= 0) {
+            regList[existingIdx] = { ...regList[existingIdx], ...regEntry };
+          } else {
+            regList.push(regEntry);
+          }
+
+          synced.push({ filename: safeFilename, domainUrl, downloaded });
+        }
+
+        fs.writeFileSync(regPath, JSON.stringify(regList, null, 2), "utf-8");
+        if (fs.existsSync(DIST_DIR)) {
+          fs.writeFileSync(path.join(DIST_DIR, "media-registry.json"), JSON.stringify(regList, null, 2), "utf-8");
+        }
+
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ success: true, count: synced.length, synced }));
+      } catch (err) {
+        res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ success: false, error: err.message }));
+      }
+    });
+    return;
+  }
+
   const cleanUrl = (req.url || "/").split("?")[0];
 
-  // Helper to resolve media slug/publicId to Cloudinary URL
+  // Helper to resolve media slug/publicId to Cloudinary or Registry URL
   const resolveCloudinaryRedirect = (rawSlug) => {
     const slug = decodeURIComponent(rawSlug || "").trim();
     if (!slug) return null;
@@ -192,8 +278,8 @@ const server = http.createServer((req, res) => {
       try {
         const list = JSON.parse(fs.readFileSync(regPath, "utf-8"));
         const found = list.find((x) => x.slug === slug || x.publicId === slug || x.name === slug);
-        if (found && found.cloudinaryUrl) {
-          return found.cloudinaryUrl;
+        if (found && (found.cloudinaryUrl || found.sourceUrl)) {
+          return found.cloudinaryUrl || found.sourceUrl;
         }
       } catch (_) {}
     }
@@ -221,79 +307,147 @@ const server = http.createServer((req, res) => {
     }
   }
 
-  let filePath = path.join(DIST_DIR, cleanUrl);
-  let publicFallbackPath = path.join(PUBLIC_DIR, cleanUrl);
-
-  // If requesting /images/* and file does not exist on disk, redirect to Cloudinary instead of 404/index.html
+  // Robust /images/* handler: Never 404, serve directly from disk, or proxy-cache on-the-fly
   if (cleanUrl.startsWith("/images/")) {
-    const hasDistFile = fs.existsSync(filePath) && fs.statSync(filePath).isFile();
-    const hasPublicFile = fs.existsSync(publicFallbackPath) && fs.statSync(publicFallbackPath).isFile();
-    if (!hasDistFile && !hasPublicFile) {
-      const filename = cleanUrl.replace(/^\/images\//, "");
-      const targetUrl = resolveCloudinaryRedirect(filename);
-      if (targetUrl) {
-        res.writeHead(302, {
-          "Location": targetUrl,
-          "Cache-Control": "public, max-age=86400",
-          "Access-Control-Allow-Origin": "*",
-          "X-Redirect-By": "MD-Shinha-Sarder-Image-Fallback-Router",
-        });
-        res.end();
-        return;
+    const filename = cleanUrl.replace(/^\/images\//, "");
+    const targetPublic = path.join(PUBLIC_DIR, "images", filename);
+    const targetDist = path.join(DIST_DIR, "images", filename);
+
+    // 1. If exists in public/images/
+    if (fs.existsSync(targetPublic) && fs.statSync(targetPublic).isFile()) {
+      if (fs.existsSync(path.join(DIST_DIR, "images")) && !fs.existsSync(targetDist)) {
+        try { fs.copyFileSync(targetPublic, targetDist); } catch (_) {}
       }
-    }
-  }
-
-  // Check if file exists in dist
-  fs.stat(filePath, (err, stats) => {
-    if (!err && stats.isFile()) {
-      const ext = path.extname(filePath).toLowerCase();
-      const contentType = MIME_TYPES[ext] || "application/octet-stream";
-      const headers = {
-        "Content-Type": contentType,
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "SAMEORIGIN",
-        "X-Powered-By": "Next.js/16.2.0, Node.js",
-        "Server": "Node.js/22.14.0 (Next.js 16)",
-        "X-Nextjs-Version": "16.2.0",
-        "X-Framework": "Next.js 16.2.0",
-        "X-CMS": "Supabase CMS, Headless Next.js CMS",
-        "X-CDN-Delivery": "jsDelivr, cdnjs, Cloudflare",
-      };
-
-      if (cleanUrl.startsWith("/assets/")) {
-        headers["Cache-Control"] = "public, max-age=31536000, immutable";
-      } else {
-        headers["Cache-Control"] = "public, max-age=3600, must-revalidate";
-      }
-
-      res.writeHead(200, headers);
-      fs.createReadStream(filePath).pipe(res);
+      const ext = path.extname(targetPublic).toLowerCase();
+      res.writeHead(200, {
+        "Content-Type": MIME_TYPES[ext] || "image/jpeg",
+        "Cache-Control": "public, max-age=86400, must-revalidate",
+        "Access-Control-Allow-Origin": "*",
+      });
+      fs.createReadStream(targetPublic).pipe(res);
       return;
     }
 
-    // SPA fallback: Serve index.html for all client-side routes
-    const indexPath = path.join(DIST_DIR, "index.html");
-    fs.readFile(indexPath, (readErr, content) => {
-      if (readErr) {
-        res.writeHead(404, { "Content-Type": "text/plain" });
-        res.end("App not built yet. Run 'npm run build' first.");
-        return;
-      }
+    // 2. If exists in dist/images/
+    if (fs.existsSync(targetDist) && fs.statSync(targetDist).isFile()) {
+      const ext = path.extname(targetDist).toLowerCase();
       res.writeHead(200, {
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "public, max-age=0, must-revalidate",
-        "X-Frame-Options": "SAMEORIGIN",
-        "X-Content-Type-Options": "nosniff",
-        "X-Powered-By": "Next.js/16.2.0, Node.js",
-        "Server": "Node.js/22.14.0 (Next.js 16)",
-        "X-Nextjs-Version": "16.2.0",
-        "X-Framework": "Next.js 16.2.0",
-        "X-CMS": "Supabase CMS, Headless Next.js CMS",
-        "X-CDN-Delivery": "jsDelivr, cdnjs, Cloudflare",
+        "Content-Type": MIME_TYPES[ext] || "image/jpeg",
+        "Cache-Control": "public, max-age=86400, must-revalidate",
+        "Access-Control-Allow-Origin": "*",
       });
-      res.end(content);
+      fs.createReadStream(targetDist).pipe(res);
+      return;
+    }
+
+    // 3. File not yet on disk: Fetch from Cloudinary or upstream, stream to client, and save to disk
+    const targetUrl = resolveCloudinaryRedirect(filename);
+    if (targetUrl) {
+      fetch(targetUrl, { headers: { "User-Agent": "Mozilla/5.0" } })
+        .then(async (upRes) => {
+          if (upRes.ok) {
+            const cType = upRes.headers.get("content-type") || "image/jpeg";
+            const arr = await upRes.arrayBuffer();
+            const buf = Buffer.from(arr);
+            try {
+              if (!fs.existsSync(path.join(PUBLIC_DIR, "images"))) {
+                fs.mkdirSync(path.join(PUBLIC_DIR, "images"), { recursive: true });
+              }
+              fs.writeFileSync(targetPublic, buf);
+              if (fs.existsSync(path.join(DIST_DIR, "images"))) {
+                fs.writeFileSync(targetDist, buf);
+              }
+            } catch (_) {}
+            res.writeHead(200, {
+              "Content-Type": cType,
+              "Cache-Control": "public, max-age=86400",
+              "Access-Control-Allow-Origin": "*",
+              "X-Auto-Saved": "public/images",
+            });
+            res.end(buf);
+          } else {
+            // Upstream not 200, redirect to Cloudinary URL or fallback
+            res.writeHead(302, {
+              "Location": targetUrl,
+              "Cache-Control": "public, max-age=86400",
+              "Access-Control-Allow-Origin": "*",
+            });
+            res.end();
+          }
+        })
+        .catch(() => {
+          // If network failed, serve hero portrait fallback
+          const fallbackPortrait = path.join(PUBLIC_DIR, "hero-portrait.jpg");
+          if (fs.existsSync(fallbackPortrait)) {
+            res.writeHead(200, { "Content-Type": "image/jpeg", "Access-Control-Allow-Origin": "*" });
+            fs.createReadStream(fallbackPortrait).pipe(res);
+          } else {
+            res.writeHead(302, { "Location": targetUrl });
+            res.end();
+          }
+        });
+      return;
+    }
+  }
+
+  let filePath = path.join(DIST_DIR, cleanUrl);
+  let publicFallbackPath = path.join(PUBLIC_DIR, cleanUrl);
+
+  // Check if file exists in dist or public
+  let targetFile = null;
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    targetFile = filePath;
+  } else if (fs.existsSync(publicFallbackPath) && fs.statSync(publicFallbackPath).isFile()) {
+    targetFile = publicFallbackPath;
+  }
+
+  if (targetFile) {
+    const ext = path.extname(targetFile).toLowerCase();
+    const contentType = MIME_TYPES[ext] || "application/octet-stream";
+    const headers = {
+      "Content-Type": contentType,
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "SAMEORIGIN",
+      "X-Powered-By": "Next.js/16.2.0, Node.js",
+      "Server": "Node.js/22.14.0 (Next.js 16)",
+      "X-Nextjs-Version": "16.2.0",
+      "X-Framework": "Next.js 16.2.0",
+      "X-CMS": "Supabase CMS, Headless Next.js CMS",
+      "X-CDN-Delivery": "jsDelivr, cdnjs, Cloudflare",
+    };
+
+    if (cleanUrl.startsWith("/assets/")) {
+      headers["Cache-Control"] = "public, max-age=31536000, immutable";
+    } else {
+      headers["Cache-Control"] = "public, max-age=3600, must-revalidate";
+    }
+
+    res.writeHead(200, headers);
+    fs.createReadStream(targetFile).pipe(res);
+    return;
+  }
+
+  // SPA fallback: Serve index.html for all client-side routes
+  const indexPath = path.join(DIST_DIR, "index.html");
+  fs.readFile(indexPath, (readErr, content) => {
+    if (readErr) {
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("App not built yet. Run 'npm run build' first.");
+      return;
+    }
+    res.writeHead(200, {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "public, max-age=0, must-revalidate",
+      "X-Frame-Options": "SAMEORIGIN",
+      "X-Content-Type-Options": "nosniff",
+      "X-Powered-By": "Next.js/16.2.0, Node.js",
+      "Server": "Node.js/22.14.0 (Next.js 16)",
+      "X-Nextjs-Version": "16.2.0",
+      "X-Framework": "Next.js 16.2.0",
+      "X-CMS": "Supabase CMS, Headless Next.js CMS",
+      "X-CDN-Delivery": "jsDelivr, cdnjs, Cloudflare",
     });
+    res.end(content);
   });
 });
 
