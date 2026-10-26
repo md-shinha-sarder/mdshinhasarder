@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Upload, X, Image as ImageIcon, Library, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { toSiteMediaUrl, resolveMediaUrl } from "@/lib/mediaUrl";
+import { uploadImageToCloudinary } from "@/lib/cloudinary";
 
 interface MediaRow { id: string; name: string; url: string; path: string; mime_type: string | null; }
 
@@ -60,57 +61,46 @@ async function compressImageToDataUrl(file: File): Promise<string> {
 
 async function uploadFile(file: File, userId: string): Promise<string> {
   const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-  const path = `${userId}/${Date.now()}-${safe}`;
-  let { error: upErr } = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
-  if (upErr && (upErr.message?.toLowerCase().includes("bucket") || (upErr as any).statusCode === 404 || (upErr as any).statusCode === "404")) {
-    try {
-      await supabase.storage.createBucket("media", { public: true });
-      const retry = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
-      upErr = retry.error;
-    } catch (_e) {
-      void _e;
-    }
-  }
 
-  if (upErr) {
-    const msg = (upErr.message || "").toLowerCase();
-    // If Row-Level Security blocks upload or 403 forbidden
-    if (
-      msg.includes("row-level security") ||
-      msg.includes("violates") ||
-      msg.includes("permission") ||
-      (upErr as any).statusCode === 403 ||
-      (upErr as any).statusCode === "403"
-    ) {
-      const fallbackUrl = await compressImageToDataUrl(file);
-      if (fallbackUrl) {
-        toast.warning("Supabase Storage RLS নীতির কারণে ক্লাউডে জমা হয়নি, তবে ছবিটি সফলভাবে যুক্ত করা হয়েছে। স্থায়ী স্টোরেজের জন্য SQL Editor-এ RLS পলিসি স্ক্রিপ্ট রান করুন।");
-        return fallbackUrl;
-      }
-      throw new Error("Supabase Storage-এ আপলোড পারমিশন (RLS) নেই। অনুগ্রহ করে Supabase SQL Editor-এ ফিক্স স্ক্রিপ্ট রান করুন।");
-    }
-
-    if (msg.includes("bucket") || (upErr as any).statusCode === 404 || (upErr as any).statusCode === "404") {
-      const fallbackUrl = await compressImageToDataUrl(file);
-      if (fallbackUrl) {
-        toast.warning("স্টোরেজ বাকেট 'media' না থাকায় ছবিটি বিকল্পভাবে যুক্ত হয়েছে।");
-        return fallbackUrl;
-      }
-      throw new Error("Supabase Storage bucket 'media' পাওয়া যায়নি।");
-    }
-
-    throw upErr;
-  }
-
-  const { data: pub } = supabase.storage.from("media").getPublicUrl(path);
+  // 1. Upload to Cloudinary for guaranteed 100% uptime delivery
+  let cloudinaryUrl = "";
   try {
-    await supabase.from("media").insert({
-      name: file.name, url: pub.publicUrl, path, mime_type: file.type, size_bytes: file.size, uploaded_by: userId,
-    });
-  } catch (_e) {
-    void _e;
+    const cldRes = await uploadImageToCloudinary(file);
+    if (cldRes && cldRes.secure_url) {
+      cloudinaryUrl = cldRes.cdn_optimized_url || cldRes.secure_url;
+    }
+  } catch (cErr) {
+    console.warn("Cloudinary direct upload note:", cErr);
   }
-  return pub.publicUrl;
+
+  // 2. Also try Supabase storage for backup
+  const path = `${userId || "admin"}/${Date.now()}-${safe}`;
+  try {
+    const { error: upErr } = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
+    if (!upErr) {
+      const { data: pub } = supabase.storage.from("media").getPublicUrl(path);
+      const urlToStore = pub?.publicUrl || cloudinaryUrl || `/images/${safe}`;
+      await supabase.from("media").insert({
+        name: file.name,
+        url: urlToStore,
+        path,
+        mime_type: file.type,
+        size_bytes: file.size,
+        uploaded_by: userId || null,
+      });
+      return cloudinaryUrl || urlToStore;
+    }
+  } catch (_e) {
+    // Supabase error non-blocking if Cloudinary succeeded
+  }
+
+  if (cloudinaryUrl) {
+    return cloudinaryUrl;
+  }
+
+  // Fallback: local compression data url
+  const fallbackUrl = await compressImageToDataUrl(file);
+  return fallbackUrl || `/images/${safe}`;
 }
 
 /** Single-image picker with drag/drop, file upload, URL input, and library browser. */

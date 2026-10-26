@@ -14,8 +14,129 @@ export const CLOUDINARY_CONFIG = {
     (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_CLOUDINARY_API_KEY) ||
     (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_CLOUDINARY_API_KEY) ||
     "936238538312159",
+  apiSecret:
+    (typeof process !== "undefined" && process.env?.CLOUDINARY_API_SECRET) ||
+    (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_CLOUDINARY_API_SECRET) ||
+    "IgcHwgXierQw1vrKdZvLXaRjUcY",
   canonicalDomain: "https://mdshinhasarder.com",
 };
+
+export interface GeneratedImageLinks {
+  fileName: string;
+  domainUrl: string;
+  localPath: string;
+  cloudinaryCdnUrl: string;
+  cloudinaryAutoUrl: string;
+  cloudinaryFetchUrl: string;
+  markdownTag: string;
+  htmlTag: string;
+}
+
+export function generateAllImageLinks(nameOrUrl: string, title?: string): GeneratedImageLinks {
+  const cleanInput = (nameOrUrl || "").trim();
+  let baseName = cleanInput;
+  if (baseName.startsWith("http://") || baseName.startsWith("https://")) {
+    const u = new URL(baseName);
+    baseName = u.pathname.split("/").pop() || "photo.jpg";
+  } else if (baseName.startsWith("/")) {
+    baseName = baseName.split("/").pop() || "photo.jpg";
+  }
+
+  // Ensure reasonable extension if missing
+  if (!baseName.includes(".")) {
+    baseName = `${baseName}.jpg`;
+  }
+
+  const altTitle = title || baseName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+  const domainUrl = `https://mdshinhasarder.com/images/${baseName}`;
+  const localPath = `/images/${baseName}`;
+  const publicId = baseName.replace(/\.[^/.]+$/, "");
+  const cloudinaryCdnUrl = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/upload/${publicId}`;
+  const cloudinaryAutoUrl = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/upload/f_auto,q_auto/${publicId}`;
+  const cloudinaryFetchUrl = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/fetch/f_auto,q_auto/${domainUrl}`;
+
+  return {
+    fileName: baseName,
+    domainUrl,
+    localPath,
+    cloudinaryCdnUrl,
+    cloudinaryAutoUrl,
+    cloudinaryFetchUrl,
+    markdownTag: `![${altTitle}](${domainUrl})`,
+    htmlTag: `<img src="${domainUrl}" alt="${altTitle}" loading="lazy" />`,
+  };
+}
+
+async function computeSha1(str: string): Promise<string> {
+  if (typeof crypto !== "undefined" && crypto.subtle) {
+    const enc = new TextEncoder();
+    const hashBuf = await crypto.subtle.digest("SHA-1", enc.encode(str));
+    const hashArr = Array.from(new Uint8Array(hashBuf));
+    return hashArr.map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  return "";
+}
+
+export interface CloudinaryUploadResult {
+  asset_id: string;
+  public_id: string;
+  version: number;
+  format: string;
+  width: number;
+  height: number;
+  bytes: number;
+  url: string;
+  secure_url: string;
+  domain_url: string;
+  cdn_optimized_url: string;
+  fetch_url: string;
+}
+
+export async function uploadImageToCloudinary(
+  file: File | Blob,
+  customPublicId?: string,
+  folder?: string
+): Promise<CloudinaryUploadResult> {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const params: Record<string, string> = { timestamp: String(timestamp) };
+  if (folder) params.folder = folder;
+  if (customPublicId) params.public_id = customPublicId;
+
+  const sortedKeys = Object.keys(params).sort();
+  const strToSign = sortedKeys.map((k) => `${k}=${params[k]}`).join("&") + CLOUDINARY_CONFIG.apiSecret;
+  const signature = await computeSha1(strToSign);
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("api_key", CLOUDINARY_CONFIG.apiKey);
+  formData.append("timestamp", String(timestamp));
+  if (folder) formData.append("folder", folder);
+  if (customPublicId) formData.append("public_id", customPublicId);
+  if (signature) formData.append("signature", signature);
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Cloudinary upload failed (${res.status}): ${errText}`);
+  }
+
+  const data = await res.json();
+  const cleanFilename = `${(data.public_id || "image").split("/").pop()}.${data.format || "webp"}`;
+  const domain_url = `https://mdshinhasarder.com/images/${cleanFilename}`;
+  const cdn_optimized_url = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/upload/f_auto,q_auto/${data.public_id}`;
+  const fetch_url = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.cloudName}/image/fetch/f_auto,q_auto/${domain_url}`;
+
+  return {
+    ...data,
+    domain_url,
+    cdn_optimized_url,
+    fetch_url,
+  };
+}
 
 export interface CloudinaryTransformOptions {
   width?: number;
