@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Upload, Trash2, Copy, Rss, Image as ImageIcon, ShieldAlert, Check, HelpCircle } from "lucide-react";
+import { Upload, Trash2, Copy, Rss, Image as ImageIcon, ShieldAlert, Check, HelpCircle, Cloud } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { usePosts } from "@/hooks/usePosts";
@@ -205,6 +205,7 @@ const MediaAdmin = () => {
         <TabsList>
           <TabsTrigger value="library"><ImageIcon size={14} className="mr-1" /> Library ({items.length})</TabsTrigger>
           <TabsTrigger value="blogger"><Rss size={14} className="mr-1" /> Blogger ({bloggerImages.length})</TabsTrigger>
+          <TabsTrigger value="cloudinary"><Cloud size={14} className="mr-1" /> Cloudinary CDN (borle8go)</TabsTrigger>
         </TabsList>
 
         <TabsContent value="library" className="space-y-4">
@@ -249,7 +250,136 @@ const MediaAdmin = () => {
             {bloggerImages.length === 0 && <div className="col-span-full p-8 text-center text-muted-foreground">No Blogger photos yet.</div>}
           </div>
         </TabsContent>
+
+        <TabsContent value="cloudinary" className="space-y-4">
+          <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 p-5 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="font-semibold text-blue-300 flex items-center gap-2">
+                  <Cloud size={18} /> Cloudinary Media Architecture
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  High-speed media transformations with auto-format (f_auto) and auto-quality (q_auto).
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-mono bg-blue-950/60 border border-blue-800/80 px-3 py-1.5 rounded-lg text-blue-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Cloud: <b>borle8go</b></span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="bg-background/80 p-3 rounded-lg border border-border space-y-1">
+                <span className="text-muted-foreground">API Key:</span>
+                <p className="font-mono text-foreground font-semibold">936238538312159</p>
+              </div>
+              <div className="bg-background/80 p-3 rounded-lg border border-border space-y-1">
+                <span className="text-muted-foreground">Canonical Domain:</span>
+                <p className="font-mono text-foreground font-semibold">https://mdshinhasarder.com</p>
+              </div>
+              <div className="bg-background/80 p-3 rounded-lg border border-border space-y-1">
+                <span className="text-muted-foreground">Optimization Engine:</span>
+                <p className="font-mono text-emerald-400 font-semibold">f_auto,q_auto,w_500,c_auto</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold">Core Canonical Assets & Cloudinary Delivery Links</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="bg-gradient-card border border-border rounded-xl p-4 flex flex-col justify-between space-y-3">
+                <div className="space-y-1">
+                  <div className="font-medium text-xs text-foreground">Featured Cloudinary Sample</div>
+                  <div className="font-mono text-[11px] text-muted-foreground break-all">cld-sample-5</div>
+                </div>
+                <div className="aspect-square rounded-lg overflow-hidden bg-black/40 flex items-center justify-center">
+                  <img
+                    src="https://res.cloudinary.com/borle8go/image/upload/f_auto,q_auto,w_400/cld-sample-5"
+                    alt="Sample 5"
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.currentTarget.src = "/profile.webp"; }}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 text-xs"
+                    onClick={() => copy("https://res.cloudinary.com/borle8go/image/upload/f_auto,q_auto/cld-sample-5")}
+                  >
+                    <Copy size={12} className="mr-1" /> Copy CDN URL
+                  </Button>
+                </div>
+              </div>
+
+              <div className="bg-gradient-card border border-border rounded-xl p-4 flex flex-col justify-between space-y-3">
+                <div className="space-y-1">
+                  <div className="font-medium text-xs text-foreground">Official Profile Portrait</div>
+                  <div className="font-mono text-[11px] text-blue-400 break-all">https://mdshinhasarder.com/profile.webp</div>
+                </div>
+                <div className="aspect-square rounded-lg overflow-hidden bg-black/40 flex items-center justify-center">
+                  <img
+                    src="/profile.webp"
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 text-xs"
+                    onClick={() => copy("https://mdshinhasarder.com/profile.webp")}
+                  >
+                    <Copy size={12} className="mr-1" /> Domain Link
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 text-xs text-blue-400"
+                    onClick={() => copy("https://res.cloudinary.com/borle8go/image/fetch/f_auto,q_auto/https://mdshinhasarder.com/profile.webp")}
+                  >
+                    <Cloud size={12} className="mr-1" /> Cloudinary
+                  </Button>
+                </div>
+              </div>
+
+              <div className="bg-gradient-card border border-border rounded-xl p-4 flex flex-col justify-between space-y-3">
+                <div className="space-y-1">
+                  <div className="font-medium text-xs text-foreground">Official Site Logo & Favicon</div>
+                  <div className="font-mono text-[11px] text-blue-400 break-all">https://mdshinhasarder.com/site-logo.png</div>
+                </div>
+                <div className="aspect-square rounded-lg overflow-hidden bg-black/40 flex items-center justify-center">
+                  <img
+                    src="/site-logo.png"
+                    alt="Site Logo"
+                    className="w-32 h-32 object-contain"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 text-xs"
+                    onClick={() => copy("https://mdshinhasarder.com/site-logo.png")}
+                  >
+                    <Copy size={12} className="mr-1" /> Domain Link
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 text-xs text-blue-400"
+                    onClick={() => copy("https://res.cloudinary.com/borle8go/image/fetch/f_auto,q_auto/https://mdshinhasarder.com/site-logo.png")}
+                  >
+                    <Cloud size={12} className="mr-1" /> Cloudinary
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
       </Tabs>
+
     </div>
   );
 };

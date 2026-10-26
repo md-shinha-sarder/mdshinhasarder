@@ -16,12 +16,15 @@ import {
   Copy,
   Download,
   Image as ImageIcon,
+  Cloud,
+  Zap,
 } from "lucide-react";
 import { useEffect } from "react";
 import { usePosts, usePages } from "@/hooks/usePosts";
 import { DEFAULT_BOOKS as chaptraBooksData } from "@/hooks/useBooksData";
 import { DEFAULT_SONGS as songsData } from "@/hooks/useSongsData";
 import { toDomainImageUrl } from "@/lib/imageSeo";
+import { toCloudinaryImageUrl, CLOUDINARY_CONFIG } from "@/lib/cloudinary";
 import { getCachedAllPosts, getCachedAllPages, getStoredAdminPosts } from "@/lib/postSync";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -44,6 +47,7 @@ export const GalleryPage = () => {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const [copiedImgUrl, setCopiedImgUrl] = useState(false);
+  const [copiedCldUrl, setCopiedCldUrl] = useState(false);
 
   // Load uploaded media from database
   useEffect(() => {
@@ -328,6 +332,13 @@ export const GalleryPage = () => {
     setTimeout(() => setCopiedImgUrl(false), 2000);
   };
 
+  const copyCldUrl = (url: string) => {
+    const cldUrl = toCloudinaryImageUrl(url);
+    navigator.clipboard.writeText(cldUrl);
+    setCopiedCldUrl(true);
+    setTimeout(() => setCopiedCldUrl(false), 2000);
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 dark:bg-black dark:text-slate-100 selection:bg-blue-500/30 selection:text-blue-200 transition-colors duration-300">
       <Helmet>
@@ -487,8 +498,9 @@ export const GalleryPage = () => {
                     {filteredItems[lightboxIndex].caption}
                   </p>
 
-                  {/* Canonical Image URL on domain mdshinhasarder.com */}
+                  {/* Canonical Image URL on domain mdshinhasarder.com & Cloudinary CDN */}
                   <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
+                    {/* Domain Canonical URL */}
                     <a
                       href={filteredItems[lightboxIndex].canonicalUrl}
                       target="_blank"
@@ -497,7 +509,7 @@ export const GalleryPage = () => {
                       title="Direct Image URL on mdshinhasarder.com"
                     >
                       <ImageIcon size={12} className="text-sky-400" />
-                      <span className="max-w-[240px] sm:max-w-xs truncate">
+                      <span className="max-w-[200px] sm:max-w-xs truncate">
                         {filteredItems[lightboxIndex].canonicalUrl.replace("https://", "")}
                       </span>
                       <ExternalLink size={11} />
@@ -507,9 +519,33 @@ export const GalleryPage = () => {
                       type="button"
                       onClick={() => copyImageUrl(filteredItems[lightboxIndex].canonicalUrl)}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 text-[11px] font-medium text-neutral-300 hover:text-white transition-colors"
+                      title="Copy canonical mdshinhasarder.com URL"
                     >
                       {copiedImgUrl ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
-                      <span>{copiedImgUrl ? "Image URL Copied!" : "Copy Link"}</span>
+                      <span>{copiedImgUrl ? "Domain Copied!" : "Domain Link"}</span>
+                    </button>
+
+                    {/* Cloudinary CDN URL */}
+                    <a
+                      href={toCloudinaryImageUrl(filteredItems[lightboxIndex].canonicalUrl)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-900/40 bg-blue-950/40 hover:bg-blue-900/60 text-[11px] font-mono text-blue-300 hover:text-white transition-colors"
+                      title="Optimized Cloudinary Delivery URL (f_auto, q_auto)"
+                    >
+                      <Cloud size={12} className="text-cyan-400" />
+                      <span>Cloudinary CDN</span>
+                      <ExternalLink size={11} />
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => copyCldUrl(filteredItems[lightboxIndex].canonicalUrl)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-900/40 bg-blue-950/40 hover:bg-blue-900/60 text-[11px] font-medium text-blue-300 hover:text-white transition-colors"
+                      title="Copy auto-optimized Cloudinary CDN URL"
+                    >
+                      {copiedCldUrl ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                      <span>{copiedCldUrl ? "Cloudinary Copied!" : "Copy Cloudinary"}</span>
                     </button>
 
                     {filteredItems[lightboxIndex].sourceUrl && (

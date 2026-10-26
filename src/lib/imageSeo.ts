@@ -12,17 +12,24 @@ export function slugify(text?: string | null): string {
     .slice(0, 60);
 }
 
+import { toCloudinaryImageUrl, getCloudinaryFetchUrl, CLOUDINARY_CONFIG } from "./cloudinary";
+
 /**
  * Transforms any image URL to the canonical SEO format on domain https://mdshinhasarder.com/images/...
  * Pattern: https://mdshinhasarder.com/images/{captionSlug}.{imageFileName}.{ext}
  */
 export function toDomainImageUrl(src?: string | null, caption?: string | null): string {
-  if (!src) return `${SITE_DOMAIN}/images/md-shinha-sarder-official-portrait.profile.webp`;
+  if (!src) return `${SITE_DOMAIN}/profile.webp`;
 
   const trimmed = src.trim();
 
+  // If already profile.webp
+  if (trimmed.endsWith("/profile.webp") || trimmed === "profile.webp") {
+    return `${SITE_DOMAIN}/profile.webp`;
+  }
+
   // If already full canonical domain URL
-  if (trimmed.startsWith(`${SITE_DOMAIN}/images/`)) {
+  if (trimmed.startsWith(`${SITE_DOMAIN}/images/`) || trimmed.startsWith(`${SITE_DOMAIN}/`)) {
     return trimmed;
   }
 
@@ -42,6 +49,9 @@ export function toDomainImageUrl(src?: string | null, caption?: string | null): 
 
   return `${SITE_DOMAIN}/images/${cleanBase}.${ext}`;
 }
+
+export { toCloudinaryImageUrl, getCloudinaryFetchUrl, CLOUDINARY_CONFIG };
+
 
 export function buildAlt(title?: string | null, extra?: string | string[] | null): string {
   const t = (title || "").trim();
