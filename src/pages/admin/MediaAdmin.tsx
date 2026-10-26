@@ -23,9 +23,8 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { usePosts } from "@/hooks/usePosts";
-import { toSiteMediaUrl, resolveMediaUrl } from "@/lib/mediaUrl";
+import { toSiteMediaUrl } from "@/lib/mediaUrl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PhotoUploadBox, UploadResult } from "@/components/admin/PhotoUploadBox";
 import {
   CLOUDINARY_CONFIG,
   uploadImageToCloudinary,
@@ -89,12 +88,18 @@ const MediaAdmin = () => {
   const { user } = useAuth();
   const { posts } = usePosts();
   const [items, setItems] = useState<MediaItem[]>([]);
-  const [selectedTab, setSelectedTab] = useState("library");
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
   const [showFixGuide, setShowFixGuide] = useState(false);
   const [copiedSql, setCopiedSql] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  // Instant Link Generator state
+  const [inputNameOrUrl, setInputNameOrUrl] = useState("");
+  const [generatedLinks, setGeneratedLinks] = useState<GeneratedImageLinks | null>(() =>
+    generateAllImageLinks("profile.webp", "MD. Shinha Sarder Official Profile")
+  );
+  const [lastUploadedPreview, setLastUploadedPreview] = useState<string | null>(null);
 
   // Full-resolution modal viewer (Lightbox)
   const [modalImage, setModalImage] = useState<{
@@ -110,6 +115,7 @@ const MediaAdmin = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const fileRef = useRef<HTMLInputElement>(null);
+  const quickFileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     // 1. Load from Supabase if possible
@@ -126,37 +132,22 @@ const MediaAdmin = () => {
     // 2. Load from local cache fallback
     let localItems: MediaItem[] = [];
     try {
-      const raw1 = localStorage.getItem(LOCAL_STORAGE_KEY);
-      const raw2 = localStorage.getItem("shinha_media_items");
-      const list1 = raw1 ? JSON.parse(raw1) : [];
-      const list2 = raw2 ? JSON.parse(raw2) : [];
-      localItems = [...list2, ...list1];
+      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (raw) {
+        localItems = JSON.parse(raw);
+      }
     } catch (_e) {
       void _e;
     }
 
     // Combine uniquely by URL
     const map = new Map<string, MediaItem>();
-    for (const item of [...localItems, ...loadedFromDb]) {
+    for (const item of [...loadedFromDb, ...localItems]) {
       if (item.url && !map.has(item.url)) {
         map.set(item.url, item);
       }
     }
     setItems(Array.from(map.values()));
-  };
-
-  const handleUploadSuccess = (res: UploadResult) => {
-    const newItem: MediaItem = {
-      id: `upload-${Date.now()}`,
-      name: res.filename,
-      url: res.domainUrl,
-      path: res.filename,
-      mime_type: "image/jpeg",
-      size_bytes: null,
-      cloudinary_url: res.cdnUrl,
-    };
-    setItems((prev) => [newItem, ...prev.filter((x) => x.url !== newItem.url)]);
-    setSelectedTab("library");
   };
 
   useEffect(() => {
@@ -414,21 +405,333 @@ const MediaAdmin = () => {
         </div>
       )}
 
-      {/* Direct Photo Upload Box */}
-      <PhotoUploadBox
-        label="Photo Upload Box — Direct Domain Link Creator"
-        description="Upload any photo to immediately save it into /images/ folder and generate its direct https://mdshinhasarder.com domain link."
-        onUploadSuccess={handleUploadSuccess}
-      />
+      {/* Instant Link Creator Widget */}
+      <div className="rounded-2xl border border-blue-500/30 bg-gradient-to-br from-blue-950/40 via-background to-slate-950/60 p-5 sm:p-6 shadow-xl space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+              <Sparkles size={20} />
+            </div>
+            <div>
+              <h2 className="font-semibold text-base sm:text-lg text-foreground flex items-center gap-2">
+                Instant Photo Link Generator (/images/ Domain Links)
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Upload any photo or enter a name — immediately generate canonical domain and Cloudinary CDN links!
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-mono bg-blue-900/40 border border-blue-700/60 px-3 py-1.5 rounded-lg text-blue-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Active Cloud: <b>borle8go</b></span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* Left: Upload or Input */}
+          <div className="lg:col-span-5 space-y-4">
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDrag(true);
+              }}
+              onDragLeave={() => setDrag(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDrag(false);
+                upload(e.dataTransfer.files);
+              }}
+              onClick={() => quickFileRef.current?.click()}
+              className={`cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 ${
+                drag
+                  ? "border-blue-400 bg-blue-500/10 scale-[1.01]"
+                  : "border-blue-500/30 bg-blue-950/20 hover:border-blue-400/60 hover:bg-blue-950/30"
+              }`}
+            >
+              <input
+                ref={quickFileRef}
+                type="file"
+                multiple
+                accept="image/*"
+                hidden
+                onChange={(e) => upload(e.target.files)}
+              />
+              <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                <Upload size={22} className={busy ? "animate-bounce" : ""} />
+              </div>
+              <div className="text-sm font-semibold text-foreground">
+                {busy ? "Uploading photo..." : "Drop photos here or click to browse"}
+              </div>
+              <p className="text-xs text-muted-foreground max-w-xs">
+                Each uploaded photo gets its own unique domain URL and permanent Cloudinary CDN link.
+              </p>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border/80" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground font-semibold">Or Generate Link by Filename / Slug</span>
+              </div>
+            </div>
+
+            <form onSubmit={handleGenerateManualLinks} className="space-y-2">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. czajweotfpsqbp8nwb9n, site-logo.png, or paste URL"
+                  value={inputNameOrUrl}
+                  onChange={(e) => setInputNameOrUrl(e.target.value)}
+                  className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                />
+                <Button type="submit" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0 font-semibold">
+                  <LinkIcon size={14} className="mr-1" /> Generate Link
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-1.5 text-[11px] text-muted-foreground items-center">
+                <span>Quick Samples:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInputNameOrUrl("czajweotfpsqbp8nwb9n");
+                    setGeneratedLinks(generateAllImageLinks("czajweotfpsqbp8nwb9n", "User Uploaded Media czajweotfpsqbp8nwb9n"));
+                  }}
+                  className="text-emerald-400 hover:underline font-mono font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/30"
+                >
+                  czajweotfpsqbp8nwb9n (Uploaded Photo)
+                </button>
+                <span>·</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInputNameOrUrl("profile.webp");
+                    setGeneratedLinks(generateAllImageLinks("profile.webp", "Official Profile Portrait"));
+                  }}
+                  className="text-blue-400 hover:underline font-mono"
+                >
+                  profile.webp
+                </button>
+                <span>·</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInputNameOrUrl("site-logo.png");
+                    setGeneratedLinks(generateAllImageLinks("site-logo.png", "Official Site Logo"));
+                  }}
+                  className="text-blue-400 hover:underline font-mono"
+                >
+                  site-logo.png
+                </button>
+                <span>·</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInputNameOrUrl("hero-portrait.jpg");
+                    setGeneratedLinks(generateAllImageLinks("hero-portrait.jpg", "Author & Researcher"));
+                  }}
+                  className="text-blue-400 hover:underline font-mono"
+                >
+                  hero-portrait.jpg
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Right: Generated Output Card */}
+          <div className="lg:col-span-7 bg-background/90 border border-blue-500/20 rounded-xl p-4 sm:p-5 flex flex-col justify-between space-y-4">
+            {generatedLinks ? (
+              <div className="space-y-3.5">
+                <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-emerald-400" />
+                    <span className="text-xs font-semibold text-foreground uppercase tracking-wide">
+                      Generated Photo Delivery Links:
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono text-muted-foreground truncate max-w-[150px]">
+                    {generatedLinks.fileName}
+                  </span>
+                </div>
+
+                {/* 1. Official Website Link (mdshinhasarder.com domain) */}
+                <div className="space-y-1 bg-blue-950/40 border border-blue-500/40 rounded-xl p-3 shadow-inner">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-blue-300 flex items-center gap-1.5 text-xs sm:text-sm">
+                      <Sparkles size={14} className="text-yellow-400" />
+                      1. Canonical /images Domain Link (Permanent Official Link):
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono font-semibold">
+                      mdshinhasarder.com/images/ Link
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-slate-950 border border-blue-500/40 rounded-lg p-1.5 sm:p-2">
+                    <code className="text-xs sm:text-sm text-yellow-300 font-mono font-semibold truncate flex-1 select-all">
+                      {generatedLinks.websiteUrl || generatedLinks.domainMediaUrl}
+                    </code>
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2.5 text-xs shrink-0 border-blue-500/50 text-blue-300 hover:bg-blue-500/20"
+                      title="Open domain link"
+                    >
+                      <a href={generatedLinks.websiteUrl || generatedLinks.domainMediaUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink size={12} className="mr-1" /> Open
+                      </a>
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => copyText(generatedLinks.websiteUrl || generatedLinks.domainMediaUrl, "Domain Photo Link", "website")}
+                      className={`h-7 px-3 text-xs font-semibold shrink-0 transition-colors ${
+                        copiedKey === "website" ? "bg-emerald-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                      }`}
+                    >
+                      {copiedKey === "website" ? <Check size={12} className="mr-1" /> : <Copy size={12} className="mr-1" />}
+                      {copiedKey === "website" ? "Copied" : "Copy Domain Link"}
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-blue-200/90">
+                    Matches canonical site-logo.png and hero-portrait.jpg paths. Opens directly in all browsers and embeds seamlessly across your website.
+                  </p>
+                </div>
+
+                {/* 2. Localhost / Preview Host Link */}
+                {generatedLinks.localhostUrl && (
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-purple-400 flex items-center gap-1">
+                        2. Live Environment / Preview Link:
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-slate-950/70 border border-purple-500/30 rounded-lg p-1.5 sm:p-2">
+                      <code className="text-[11px] sm:text-xs text-purple-200 font-mono truncate flex-1 select-all">
+                        {generatedLinks.localhostUrl}
+                      </code>
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2.5 text-xs shrink-0 border-purple-500/40 text-purple-300 hover:bg-purple-500/10"
+                      >
+                        <a href={generatedLinks.localhostUrl} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink size={12} className="mr-1" /> Test
+                        </a>
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => copyText(generatedLinks.localhostUrl, "Localhost Link", "localhost")}
+                        className={`h-7 px-3 text-xs font-semibold shrink-0 transition-colors ${
+                          copiedKey === "localhost" ? "bg-emerald-600 text-white" : "bg-purple-600 hover:bg-purple-700 text-white"
+                        }`}
+                      >
+                        {copiedKey === "localhost" ? <Check size={12} className="mr-1" /> : <Copy size={12} className="mr-1" />}
+                        {copiedKey === "localhost" ? "Copied" : "Copy"}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Cloudinary Ultra-Fast CDN Link */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-emerald-400 flex items-center gap-1">
+                      3. Cloudinary CDN Link (Auto WebP/AVIF Direct Delivery):
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-slate-950/70 border border-emerald-500/30 rounded-lg p-1.5 sm:p-2">
+                    <code className="text-[11px] sm:text-xs text-emerald-200 font-mono truncate flex-1 select-all">
+                      {generatedLinks.cloudinaryAutoUrl}
+                    </code>
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2.5 text-xs shrink-0 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10"
+                    >
+                      <a href={generatedLinks.cloudinaryAutoUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink size={12} className="mr-1" /> Open
+                      </a>
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => copyText(generatedLinks.cloudinaryAutoUrl, "Cloudinary Link", "cld")}
+                      className={`h-7 px-3 text-xs font-semibold shrink-0 transition-colors ${
+                        copiedKey === "cld" ? "bg-emerald-600 text-white" : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                      }`}
+                    >
+                      {copiedKey === "cld" ? <Check size={12} className="mr-1" /> : <Copy size={12} className="mr-1" />}
+                      {copiedKey === "cld" ? "Copied" : "Copy"}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* 4. Cloudinary Fetch URL */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-slate-300 flex items-center gap-1">
+                      4. Cloudinary Fetch Proxy Link:
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-slate-950/70 border border-border rounded-lg p-1.5 sm:p-2">
+                    <code className="text-[11px] sm:text-xs text-slate-300 font-mono truncate flex-1 select-all">
+                      {generatedLinks.cloudinaryFetchUrl}
+                    </code>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => copyText(generatedLinks.cloudinaryFetchUrl, "Fetch Link", "fetch")}
+                      className={`h-7 px-3 text-xs shrink-0 ${copiedKey === "fetch" ? "border-emerald-500 text-emerald-400" : ""}`}
+                    >
+                      {copiedKey === "fetch" ? <Check size={12} className="mr-1" /> : <Copy size={12} className="mr-1" />}
+                      {copiedKey === "fetch" ? "Copied" : "Copy"}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* 5. HTML / Markdown Code snippet */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
+                  <div className="flex items-center justify-between bg-slate-950/50 border border-border/80 rounded-lg px-2.5 py-1.5">
+                    <span className="text-muted-foreground text-[11px]">HTML Tag:</span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => copyText(generatedLinks.htmlTag, "HTML Tag", "html")}
+                      className="h-6 px-2 text-[11px] text-blue-400 hover:text-blue-300"
+                    >
+                      {copiedKey === "html" ? "Copied" : "Copy HTML"}
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between bg-slate-950/50 border border-border/80 rounded-lg px-2.5 py-1.5">
+                    <span className="text-muted-foreground text-[11px]">Markdown Tag:</span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => copyText(generatedLinks.markdownTag, "Markdown Tag", "md")}
+                      className="h-6 px-2 text-[11px] text-blue-400 hover:text-blue-300"
+                    >
+                      {copiedKey === "md" ? "Copied" : "Copy Markdown"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground text-xs">
+                Upload a photo above or enter a filename to generate live delivery links.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Main Tabs */}
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
+      <Tabs defaultValue="public-images" className="space-y-4">
         <TabsList className="flex flex-wrap h-auto p-1 bg-secondary/60">
-          <TabsTrigger value="library" className="text-xs sm:text-sm py-1.5 font-medium">
-            <Upload size={14} className="mr-1.5 text-blue-400" /> My Uploaded Photos ({items.length})
-          </TabsTrigger>
           <TabsTrigger value="public-images" className="text-xs sm:text-sm py-1.5">
             <ImageIcon size={14} className="mr-1.5" /> Domain Photos (/images) ({CANONICAL_DOMAIN_IMAGES.length})
+          </TabsTrigger>
+          <TabsTrigger value="library" className="text-xs sm:text-sm py-1.5">
+            <Upload size={14} className="mr-1.5" /> My Uploads ({items.length})
           </TabsTrigger>
           <TabsTrigger value="blogger" className="text-xs sm:text-sm py-1.5">
             <Rss size={14} className="mr-1.5" /> Blogger Photos ({bloggerImages.length})
@@ -557,12 +860,7 @@ const MediaAdmin = () => {
         <TabsContent value="library" className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {items.map((m) => {
-              const fileName = m.name || m.path || "photo.jpg";
-              const cleanFileName = fileName.includes(".") ? fileName : `${fileName}.jpg`;
-              const fullDomainUrl = m.url.startsWith("http") && m.url.includes("/images/")
-                ? m.url
-                : `https://mdshinhasarder.com/images/${cleanFileName}`;
-              const localSrc = resolveMediaUrl(m.url);
+              const fullDomainUrl = toSiteMediaUrl(m.url);
               const isImage = !m.mime_type || m.mime_type.startsWith("image/");
               const isVideo = m.mime_type?.startsWith("video/");
 
@@ -571,7 +869,7 @@ const MediaAdmin = () => {
                   <div
                     onClick={() =>
                       setModalImage({
-                        url: localSrc,
+                        url: m.url,
                         title: m.name,
                         domainUrl: fullDomainUrl,
                         cloudinaryUrl: m.cloudinary_url || m.url,
@@ -582,9 +880,9 @@ const MediaAdmin = () => {
                     title="Click to view full resolution"
                   >
                     {isImage ? (
-                      <img src={localSrc} alt={m.name} className="max-w-full max-h-full object-contain" />
+                      <img src={m.url} alt={m.name} className="max-w-full max-h-full object-contain" />
                     ) : isVideo ? (
-                      <video src={localSrc} className="max-w-full max-h-full object-contain" />
+                      <video src={m.url} className="max-w-full max-h-full object-contain" />
                     ) : (
                       <div className="text-muted-foreground text-xs p-2 text-center">{m.mime_type}</div>
                     )}
@@ -597,30 +895,27 @@ const MediaAdmin = () => {
                     <div className="text-xs truncate font-medium" title={m.name}>
                       {m.name}
                     </div>
-                    <div className="text-[11px] font-mono text-cyan-400 truncate" title={fullDomainUrl}>
-                      {fullDomainUrl}
-                    </div>
-                    <div className="flex items-center gap-1.5 pt-1">
+                    <div className="flex items-center gap-1.5">
                       <Button
                         asChild
                         size="sm"
                         variant="outline"
                         className="h-7 px-2 text-xs border-border/80 hover:bg-secondary shrink-0"
-                        title="Open photo"
+                        title="Open domain link"
                       >
-                        <a href={localSrc} target="_blank" rel="noopener noreferrer">
+                        <a href={`https://mdshinhasarder.com/media/${m.path || m.name}`} target="_blank" rel="noopener noreferrer">
                           <ExternalLink size={11} className="mr-1" /> Open
                         </a>
                       </Button>
                       <Button
                         size="sm"
-                        onClick={() => copyText(fullDomainUrl, "Domain Link", `lib-${m.id}`)}
+                        onClick={() => copyText(`https://mdshinhasarder.com/media/${m.path || m.name}`, "Domain Link", `lib-${m.id}`)}
                         className={`flex-1 text-xs h-7 px-2 ${
                           copiedKey === `lib-${m.id}` ? "bg-emerald-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"
                         }`}
                       >
                         {copiedKey === `lib-${m.id}` ? <Check size={11} className="mr-1" /> : <Copy size={11} className="mr-1" />}
-                        Copy Link
+                        Domain Link
                       </Button>
                       <Button size="icon" variant="ghost" onClick={() => remove(m)} className="h-7 w-7 text-red-400 hover:bg-red-500/10">
                         <Trash2 size={13} />

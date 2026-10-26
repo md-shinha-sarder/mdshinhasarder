@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 import { postPath } from "@/lib/postUrl";
 import { syncAllPhotosToImagesFolder } from "@/lib/syncAllPhotos";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
-import { PhotoUploadBox } from "@/components/admin/PhotoUploadBox";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -151,11 +150,129 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Dedicated Photo Upload Box */}
-        <PhotoUploadBox
-          label="Instant Photo Upload Box — Domain Link Creator"
-          description="Upload any photo to directly save to /images/ folder and generate https://mdshinhasarder.com domain link."
-        />
+        {/* Quick Domain Image Link Creator */}
+        {(() => {
+          const rawName = (photoInput || "").trim();
+          const cleanSlug = rawName
+            ? rawName.toLowerCase().replace(/[^\w\s.-]/g, "").replace(/[\s_]+/g, "-")
+            : "photo-" + Date.now().toString(36).slice(-4);
+          const safeFilename = cleanSlug.includes(".") ? cleanSlug : `${cleanSlug}.jpg`;
+          const generatedDomainUrl = `https://mdshinhasarder.com/images/${safeFilename}`;
+
+          return (
+            <div className="bg-[#040817] border border-blue-500/25 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-200">
+                  <Sparkles size={14} className="text-amber-400" />
+                  <span>Instant Domain Image Link Generator</span>
+                </div>
+                <span className="text-[11px] text-cyan-400 font-mono">
+                  https://mdshinhasarder.com/images/{safeFilename}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+                <div className="md:col-span-6">
+                  <Input
+                    placeholder="Enter photo name, post slug, or paste external photo URL..."
+                    value={photoInput}
+                    onChange={(e) => setPhotoInput(e.target.value)}
+                    className="bg-[#070e24] border-blue-500/30 text-white text-xs h-9"
+                  />
+                </div>
+                <div className="md:col-span-6 flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedDomainUrl);
+                      setCopiedLink(true);
+                      toast.success(`Copied: ${generatedDomainUrl}`);
+                      setTimeout(() => setCopiedLink(false), 2000);
+                    }}
+                    className="border-blue-500/30 text-blue-300 hover:bg-blue-600/10 text-xs h-9"
+                  >
+                    {copiedLink ? <Check size={14} className="mr-1 text-emerald-400" /> : <Copy size={14} className="mr-1" />}
+                    {copiedLink ? "Copied" : "Copy Domain Link"}
+                  </Button>
+
+                  <label className="cursor-pointer px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition-colors flex items-center gap-1.5 h-9 shadow-md shadow-blue-600/20">
+                    <Upload size={14} />
+                    <span>{uploading ? "Saving..." : "Upload Photo to /images"}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={uploading}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploading(true);
+                        try {
+                          const rawExt = (file.name.split(".").pop() || "jpg").toLowerCase();
+                          const fileBase = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "-").toLowerCase() || "photo";
+                          const uniqueSafe = `${fileBase}-${Date.now().toString(36).slice(-4)}.${rawExt}`;
+                          const uniqueDomain = `https://mdshinhasarder.com/images/${uniqueSafe}`;
+
+                          await uploadImageToCloudinary(file, uniqueSafe.replace(/\.[^/.]+$/, ""));
+                          const reader = new FileReader();
+                          reader.onload = async () => {
+                            const b64 = (reader.result || "").toString().split(";base64,").pop();
+                            if (b64) {
+                              await fetch("/api/save-image", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ fileName: uniqueSafe, base64: b64 }),
+                              }).catch(() => {});
+                            }
+                          };
+                          reader.readAsDataURL(file);
+
+                          setPhotoInput(uniqueSafe);
+                          toast.success(`Photo uploaded with unique link: ${uniqueDomain}`);
+                        } catch (err: any) {
+                          toast.error(err?.message || "Failed to upload photo");
+                        } finally {
+                          setUploading(false);
+                        }
+                      }}
+                    />
+                  </label>
+
+                  {photoInput.startsWith("http") && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          const res = await fetch("/api/sync-photos", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              photos: [{ filename: safeFilename, url: photoInput.trim(), title: photoInput }],
+                            }),
+                          });
+                          if (res.ok) {
+                            toast.success(`Saved external photo to ${generatedDomainUrl}!`);
+                            setPhotoInput("");
+                          } else {
+                            toast.success(`Domain link ready: ${generatedDomainUrl}`);
+                          }
+                        } catch {
+                          toast.success(`Domain link ready: ${generatedDomainUrl}`);
+                        }
+                      }}
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-9"
+                    >
+                      <Globe size={13} className="mr-1" /> Save to Domain
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">

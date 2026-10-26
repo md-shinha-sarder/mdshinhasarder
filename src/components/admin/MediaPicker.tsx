@@ -60,84 +60,48 @@ async function compressImageToDataUrl(file: File): Promise<string> {
 }
 
 async function uploadFile(file: File, userId: string): Promise<string> {
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-  const baseClean = file.name
-    .replace(/\.[^/.]+$/, "")
-    .replace(/[^a-zA-Z0-9_-]/g, "-")
-    .toLowerCase() || "photo";
-  const uniqueSlug = `${baseClean}-${Date.now().toString(36).slice(-4)}`;
-  const safe = `${uniqueSlug}.${ext}`;
-  const domainUrl = `https://mdshinhasarder.com/images/${safe}`;
+  const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
 
-  // 1. Save directly to server /public/images/
+  // 1. Upload to Cloudinary for guaranteed 100% uptime delivery
+  let websiteLink = "";
   try {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const b64 = (reader.result || "").toString().split(";base64,").pop();
-      if (b64) {
-        fetch("/api/save-image", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fileName: safe, base64: b64, publicId: uniqueSlug }),
-        }).catch(() => {});
-      }
-    };
-    reader.readAsDataURL(file);
-  } catch (_saveErr) {
-    void _saveErr;
-  }
-
-  // 2. Upload to Cloudinary for guaranteed 100% uptime delivery
-  const websiteLink = domainUrl;
-  let cdnUrl = "";
-  try {
-    const cldRes = await uploadImageToCloudinary(file, uniqueSlug);
-    if (cldRes?.cdn_optimized_url) {
-      cdnUrl = cldRes.cdn_optimized_url;
+    const cldRes = await uploadImageToCloudinary(file);
+    if (cldRes && cldRes.public_id) {
+      // Official website domain link that auto-redirects to Cloudinary
+      websiteLink = cldRes.domain_url || `https://mdshinhasarder.com/images/${safe}`;
     }
   } catch (cErr) {
     console.warn("Cloudinary direct upload note:", cErr);
   }
 
-  // 3. Cache in localStorage so it appears everywhere across site
-  try {
-    const mediaItem = {
-      id: `local-${Date.now()}-${uniqueSlug}`,
-      name: file.name,
-      url: domainUrl,
-      localUrl: `/images/${safe}`,
-      path: safe,
-      mime_type: file.type,
-      size_bytes: file.size,
-      cloudinary_url: cdnUrl,
-    };
-    const raw = localStorage.getItem("shinha_media_items");
-    const list = raw ? JSON.parse(raw) : [];
-    localStorage.setItem("shinha_media_items", JSON.stringify([mediaItem, ...list.slice(0, 50)]));
-    localStorage.setItem("shinha_last_uploaded_photo", JSON.stringify(mediaItem));
-  } catch (_e) {
-    void _e;
-  }
-
-  // 4. Also try Supabase storage for backup
+  // 2. Also try Supabase storage for backup
   const path = `${userId || "admin"}/${Date.now()}-${safe}`;
   try {
     const { error: upErr } = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
     if (!upErr) {
+      const { data: pub } = supabase.storage.from("media").getPublicUrl(path);
+      const urlToStore = websiteLink || pub?.publicUrl || `/images/${safe}`;
       await supabase.from("media").insert({
         name: file.name,
-        url: domainUrl,
+        url: urlToStore,
         path,
         mime_type: file.type,
         size_bytes: file.size,
         uploaded_by: userId || null,
       });
+      return websiteLink || urlToStore;
     }
   } catch (_e) {
-    // Non-blocking
+    // Supabase error non-blocking if Cloudinary succeeded
   }
 
-  return domainUrl;
+  if (websiteLink) {
+    return websiteLink;
+  }
+
+  // Fallback: local compression data url
+  const fallbackUrl = await compressImageToDataUrl(file);
+  return fallbackUrl || `/images/${safe}`;
 }
 
 /** Single-image picker with drag/drop, file upload, URL input, and library browser. */
@@ -297,37 +261,8 @@ function MediaLibraryDialog({ open, onOpenChange, onSelect, onSelectMany, multi,
   useEffect(() => {
     if (!open) return;
     setPicked([]);
-    let localRows: MediaRow[] = [];
-    try {
-      const raw = localStorage.getItem("shinha_media_items");
-      if (raw) {
-        const list = JSON.parse(raw);
-        if (Array.isArray(list)) {
-          localRows = list.map((item: any) => ({
-            id: item.id || `local-${Math.random()}`,
-            name: item.name || "Photo",
-            url: item.localUrl || item.url,
-            path: item.path || "",
-            mime_type: item.mime_type || "image/jpeg",
-          }));
-        }
-      }
-    } catch (_e) {
-      void _e;
-    }
-
     supabase.from("media").select("*").order("created_at", { ascending: false }).limit(200)
-      .then(({ data }) => {
-        const sbRows = (data as MediaRow[]) || [];
-        const map = new Map<string, MediaRow>();
-        for (const r of [...localRows, ...sbRows]) {
-          if (r.url && !map.has(r.url)) map.set(r.url, r);
-        }
-        setItems(Array.from(map.values()));
-      })
-      .catch(() => {
-        setItems(localRows);
-      });
+      .then(({ data }) => setItems((data as MediaRow[]) || []));
   }, [open]);
 
   const filtered = items.filter((m) => {
@@ -352,7 +287,7 @@ function MediaLibraryDialog({ open, onOpenChange, onSelect, onSelectMany, multi,
                 onClick={() => multi ? toggle(url) : onSelect?.(url)}
                 className={`relative aspect-square rounded overflow-hidden border-2 transition ${isPicked ? "border-primary" : "border-border hover:border-primary/50"}`}>
                 {m.mime_type?.startsWith("image/")
-                  ? <img src={resolveMediaUrl(m.url)} alt={m.name} className="w-full h-full object-cover" />
+                  ? <img src={m.url} alt={m.name} className="w-full h-full object-cover" />
                   : <div className="w-full h-full flex items-center justify-center bg-secondary text-xs p-1 text-center">{m.name}</div>}
               </button>
             );
