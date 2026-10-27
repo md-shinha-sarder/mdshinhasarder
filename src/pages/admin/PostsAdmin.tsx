@@ -6,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Rss, ExternalLink, RefreshCw, Database, Copy, Check, Image as ImageIcon, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Rss, ExternalLink, RefreshCw, Database, Copy, Check, Image as ImageIcon, Search, Globe, Sparkles, FolderSync, Upload, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { MediaPicker } from "@/components/admin/MediaPicker";
+import { PhotoUploadBox } from "@/components/admin/PhotoUploadBox";
 import { resolveMediaUrl } from "@/lib/mediaUrl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePosts } from "@/hooks/usePosts";
@@ -22,6 +23,8 @@ import {
   getSupabaseSetupSql,
   type SyncedPost,
 } from "@/lib/postSync";
+import { syncAllPhotosToImagesFolder } from "@/lib/syncAllPhotos";
+import { uploadImageToCloudinary } from "@/lib/cloudinary";
 
 interface Post {
   id: string;
@@ -62,6 +65,29 @@ const PostsAdmin = () => {
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [syncingPhotos, setSyncingPhotos] = useState(false);
+  const [syncStatus, setSyncStatus] = useState("");
+  const [copiedDomainLink, setCopiedDomainLink] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [pastedUrl, setPastedUrl] = useState("");
+
+  const handleSyncAllPhotos = async () => {
+    setSyncingPhotos(true);
+    setSyncStatus("Starting photo synchronization...");
+    try {
+      const res = await syncAllPhotosToImagesFolder((msg) => {
+        setSyncStatus(msg);
+      });
+      toast.success(`Synced ${res.totalFound} photos to /images folder with domain links!`);
+      await load();
+      await refetchLivePosts().catch(() => {});
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to sync photos to domain");
+    } finally {
+      setSyncingPhotos(false);
+      setSyncStatus("");
+    }
+  };
 
   const load = async () => {
     // 1. Get stored admin posts
@@ -294,6 +320,16 @@ const PostsAdmin = () => {
           <Button
             variant="outline"
             size="sm"
+            onClick={handleSyncAllPhotos}
+            disabled={syncingPhotos}
+            className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-600/10"
+          >
+            <FolderSync size={15} className={`mr-1.5 text-emerald-400 ${syncingPhotos ? "animate-spin" : ""}`} />
+            {syncingPhotos ? "Syncing..." : "Sync Photos to /images"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={async () => {
               await load();
               await refetchLivePosts();
@@ -357,6 +393,47 @@ const PostsAdmin = () => {
                       onChange={(html) => setEditing({ ...editing, content: html })}
                     />
                   </div>
+                  {/* Dedicated Photo Upload Box */}
+                  <PhotoUploadBox
+                    label="Post Cover Photo Upload Box"
+                    description="Upload photo directly to /images/ folder — automatically generates domain link and applies as cover photo."
+                    onUploadSuccess={(res) => {
+                      setEditing({ ...editing, cover_url: res.domainUrl });
+                    }}
+                    onApply={(domainUrl) => {
+                      setEditing({ ...editing, cover_url: domainUrl });
+                    }}
+                    applyButtonLabel="Apply as Cover Photo"
+                  />
+
+                  <div>
+                    <Label className="text-slate-300">Cover Image URL *</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input
+                        value={editing.cover_url || ""}
+                        onChange={(e) => setEditing({ ...editing, cover_url: e.target.value })}
+                        placeholder="https://mdshinhasarder.com/images/..."
+                        className="bg-[#070e24] border-blue-500/30 text-white font-mono text-xs"
+                      />
+                    </div>
+                    {editing.cover_url && (
+                      <div className="mt-2 p-2.5 rounded-xl border border-blue-500/30 bg-[#04091a] flex items-center gap-3">
+                        <img
+                          src={resolveMediaUrl(editing.cover_url)}
+                          alt="Cover Preview"
+                          className="w-16 h-16 object-cover rounded-lg border border-border shrink-0"
+                          onError={(e) => {
+                            e.currentTarget.src = "/hero-portrait.jpg";
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-semibold text-emerald-400">Active Cover Photo (Live Preview)</div>
+                          <div className="text-[11px] font-mono text-cyan-300 truncate">{editing.cover_url}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <MediaPicker
                     label="Cover Image *"
                     value={resolveMediaUrl(editing.cover_url || "")}

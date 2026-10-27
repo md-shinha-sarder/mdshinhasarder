@@ -23,8 +23,9 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { usePosts } from "@/hooks/usePosts";
-import { toSiteMediaUrl } from "@/lib/mediaUrl";
+import { toSiteMediaUrl, resolveMediaUrl } from "@/lib/mediaUrl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PhotoUploadBox, UploadResult } from "@/components/admin/PhotoUploadBox";
 import {
   CLOUDINARY_CONFIG,
   uploadImageToCloudinary,
@@ -88,18 +89,12 @@ const MediaAdmin = () => {
   const { user } = useAuth();
   const { posts } = usePosts();
   const [items, setItems] = useState<MediaItem[]>([]);
+  const [selectedTab, setSelectedTab] = useState("library");
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
   const [showFixGuide, setShowFixGuide] = useState(false);
   const [copiedSql, setCopiedSql] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-
-  // Instant Link Generator state
-  const [inputNameOrUrl, setInputNameOrUrl] = useState("");
-  const [generatedLinks, setGeneratedLinks] = useState<GeneratedImageLinks | null>(() =>
-    generateAllImageLinks("profile.webp", "MD. Shinha Sarder Official Profile")
-  );
-  const [lastUploadedPreview, setLastUploadedPreview] = useState<string | null>(null);
 
   // Full-resolution modal viewer (Lightbox)
   const [modalImage, setModalImage] = useState<{
@@ -115,7 +110,6 @@ const MediaAdmin = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const fileRef = useRef<HTMLInputElement>(null);
-  const quickFileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     // 1. Load from Supabase if possible
@@ -132,22 +126,37 @@ const MediaAdmin = () => {
     // 2. Load from local cache fallback
     let localItems: MediaItem[] = [];
     try {
-      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (raw) {
-        localItems = JSON.parse(raw);
-      }
+      const raw1 = localStorage.getItem(LOCAL_STORAGE_KEY);
+      const raw2 = localStorage.getItem("shinha_media_items");
+      const list1 = raw1 ? JSON.parse(raw1) : [];
+      const list2 = raw2 ? JSON.parse(raw2) : [];
+      localItems = [...list2, ...list1];
     } catch (_e) {
       void _e;
     }
 
     // Combine uniquely by URL
     const map = new Map<string, MediaItem>();
-    for (const item of [...loadedFromDb, ...localItems]) {
+    for (const item of [...localItems, ...loadedFromDb]) {
       if (item.url && !map.has(item.url)) {
         map.set(item.url, item);
       }
     }
     setItems(Array.from(map.values()));
+  };
+
+  const handleUploadSuccess = (res: UploadResult) => {
+    const newItem: MediaItem = {
+      id: `upload-${Date.now()}`,
+      name: res.filename,
+      url: res.domainUrl,
+      path: res.filename,
+      mime_type: "image/jpeg",
+      size_bytes: null,
+      cloudinary_url: res.cdnUrl,
+    };
+    setItems((prev) => [newItem, ...prev.filter((x) => x.url !== newItem.url)]);
+    setSelectedTab("library");
   };
 
   useEffect(() => {
@@ -157,7 +166,7 @@ const MediaAdmin = () => {
   const copySql = () => {
     navigator.clipboard.writeText(STORAGE_FIX_SQL);
     setCopiedSql(true);
-    toast.success("SQL স্ক্রিপ্ট কপি হয়েছে! Supabase SQL Editor-এ পেস্ট করে Run করুন।");
+    toast.success("SQL script copied! Paste into Supabase SQL Editor and run.");
     setTimeout(() => setCopiedSql(false), 3000);
   };
 
@@ -167,7 +176,7 @@ const MediaAdmin = () => {
       setCopiedKey(key);
       setTimeout(() => setCopiedKey(null), 2500);
     }
-    toast.success(`${label} কপি হয়েছে!`);
+    toast.success(`${label} copied!`);
   };
 
   // High-reliability Upload: Cloudinary direct signed upload + Supabase sync
@@ -180,26 +189,30 @@ const MediaAdmin = () => {
 
       try {
         for (const file of Array.from(files)) {
-          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-          toast.info(`"${file.name}" আপলোড এবং লিংক তৈরি হচ্ছে...`);
+          const rawExt = (file.name.split(".").pop() || "jpg").toLowerCase();
+          const baseName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "-").toLowerCase() || "photo";
+          const uniqueSlug = `${baseName}-${Date.now().toString(36).slice(-4)}`;
+          const uniqueFileName = `${uniqueSlug}.${rawExt}`;
+
+          toast.info(`Uploading "${file.name}" and generating unique domain link...`);
 
           let cloudinaryRes: any = null;
           try {
-            cloudinaryRes = await uploadImageToCloudinary(file);
+            cloudinaryRes = await uploadImageToCloudinary(file, uniqueSlug);
           } catch (cErr: any) {
             console.warn("Cloudinary upload notice:", cErr);
           }
 
+          const publicIdentifier = cloudinaryRes?.public_id || uniqueSlug;
           const primaryUrl =
-            cloudinaryRes?.secure_url ||
             cloudinaryRes?.domain_url ||
-            `https://mdshinhasarder.com/images/${safeName}`;
+            `https://mdshinhasarder.com/images/${uniqueFileName}`;
 
           const mediaItem: MediaItem = {
             id: cloudinaryRes?.asset_id || `local-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
             name: file.name,
             url: primaryUrl,
-            path: safeName,
+            path: publicIdentifier,
             mime_type: file.type || "image/jpeg",
             size_bytes: file.size,
             cloudinary_url: cloudinaryRes?.cdn_optimized_url,
@@ -207,11 +220,34 @@ const MediaAdmin = () => {
 
           newUploadedItems.push(mediaItem);
 
-          // Update instant link preview for the last uploaded file
+          // Also save file directly to local /images/ folder for 0ms domain access
+          try {
+            const dataUrl = await new Promise<string>((resolve) => {
+              const r = new FileReader();
+              r.onload = () => resolve(String(r.result || ""));
+              r.onerror = () => resolve("");
+              r.readAsDataURL(file);
+            });
+            if (dataUrl) {
+              await fetch("/api/save-image", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  fileName: uniqueFileName,
+                  dataUrl,
+                  publicId: uniqueSlug,
+                }),
+              });
+            }
+          } catch (_saveErr) {
+            console.warn("Local save notice:", _saveErr);
+          }
+
+          // Update instant link preview with website domain link
           setLastUploadedPreview(primaryUrl);
           setGeneratedLinks(
             generateAllImageLinks(
-              safeName,
+              uniqueFileName,
               file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ")
             )
           );
@@ -219,7 +255,7 @@ const MediaAdmin = () => {
           // If user has Supabase auth, also attempt to save to Supabase
           if (user) {
             try {
-              const path = `${user.id}/${Date.now()}-${safeName}`;
+              const path = `${user.id}/${Date.now()}-${uniqueFileName}`;
               const { error: upErr } = await supabase.storage.from("media").upload(path, file, { contentType: file.type });
               if (!upErr) {
                 const { data: pub } = supabase.storage.from("media").getPublicUrl(path);
@@ -233,7 +269,7 @@ const MediaAdmin = () => {
                 });
               }
             } catch (_err) {
-              // Non-blocking: Cloudinary upload is already successful!
+              // Non-blocking
             }
           }
         }
@@ -249,9 +285,9 @@ const MediaAdmin = () => {
         }
 
         setItems((prev) => [...newUploadedItems, ...prev]);
-        toast.success(`সফলভাবে আপলোড সম্পন্ন হয়েছে! ফটো লিংক তৈরি হয়েছে।`);
+        toast.success(`Upload completed successfully! Unique photo link generated.`);
       } catch (e: any) {
-        toast.error(`আপলোড ত্রুটি: ${e.message || "অজানা সমস্যা"}`);
+        toast.error(`Upload error: ${e.message || "Unknown error"}`);
       } finally {
         setBusy(false);
         if (fileRef.current) fileRef.current.value = "";
@@ -264,12 +300,12 @@ const MediaAdmin = () => {
   const handleGenerateManualLinks = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!inputNameOrUrl.trim()) {
-      toast.error("অনুগ্রহ করে একটি ছবির নাম বা URL লিখুন (যেমন: profile.webp)");
+      toast.error("Please enter an image name or URL (e.g. profile.webp)");
       return;
     }
     const res = generateAllImageLinks(inputNameOrUrl.trim());
     setGeneratedLinks(res);
-    toast.success("লিংক তৈরি হয়েছে! নিচের বোতামে চাপ দিয়ে কপি করুন।");
+    toast.success("Domain links generated successfully! Click below to copy.");
   };
 
   const remove = async (m: MediaItem) => {
@@ -296,7 +332,7 @@ const MediaAdmin = () => {
     }
 
     setItems((prev) => prev.filter((x) => x.id !== m.id));
-    toast.success("মুছে ফেলা হয়েছে");
+    toast.success("Deleted successfully");
   };
 
   const bloggerImages = useMemo(() => {
@@ -335,7 +371,7 @@ const MediaAdmin = () => {
             </span>
           </h1>
           <p className="text-muted-foreground text-sm">
-            যেকোনো ফটো আপলোড করে সরাসরি <b>https://mdshinhasarder.com</b> ডোমেইন লিংক ও <b>Cloudinary</b> লিংক তৈরি করুন।
+            Upload any photo to automatically create direct <b>https://mdshinhasarder.com</b> domain links and <b>Cloudinary</b> CDN links.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -354,7 +390,7 @@ const MediaAdmin = () => {
             disabled={busy}
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm shadow-md"
           >
-            <Upload size={16} className="mr-1.5" /> {busy ? "আপলোড হচ্ছে..." : "নতুন ফটো আপলোড"}
+            <Upload size={16} className="mr-1.5" /> {busy ? "Uploading..." : "Upload New Photo"}
           </Button>
         </div>
       </div>
@@ -365,271 +401,34 @@ const MediaAdmin = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 font-semibold text-amber-300">
               <ShieldAlert size={18} />
-              <span>Supabase Storage RLS পারমিশন ফিক্স (1-Click Script)</span>
+              <span>Supabase Storage RLS Permissions Fix (1-Click Script)</span>
             </div>
             <Button size="sm" onClick={copySql} className="bg-amber-600 hover:bg-amber-700 text-white text-xs">
               {copiedSql ? <Check size={14} className="mr-1" /> : <Copy size={14} className="mr-1" />}
-              {copiedSql ? "কপি হয়েছে!" : "Copy SQL Script"}
+              {copiedSql ? "Copied!" : "Copy SQL Script"}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            ক্লাউডিনারি আপলোড স্বয়ংক্রিয়ভাবে কার্যকর রয়েছে। যদি Supabase ডাটাবেসেও ব্যাকআপ রাখতে চান তবে উপরের স্ক্রিপ্টটি কপি করে Supabase SQL Editor-এ রান করুন।
+            Cloudinary upload is fully active. If you also want to maintain backups in the Supabase database, copy and run the script above in your Supabase SQL Editor.
           </p>
         </div>
       )}
 
-      {/* Instant Link Creator Widget */}
-      <div className="rounded-2xl border border-blue-500/30 bg-gradient-to-br from-blue-950/40 via-background to-slate-950/60 p-5 sm:p-6 shadow-xl space-y-5">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
-              <Sparkles size={20} />
-            </div>
-            <div>
-              <h2 className="font-semibold text-base sm:text-lg text-foreground flex items-center gap-2">
-                ইনস্ট্যান্ট ফটো লিংক ক্রিয়েটর (Instant Photo Link Generator)
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                যেকোনো ফটো সিলেক্ট করুন অথবা নাম লিখুন — সাথে সাথে তৈরি হবে কপি করার উপযোগী ডোমেইন ও ক্লাউডিনারি লিংক!
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-mono bg-blue-900/40 border border-blue-700/60 px-3 py-1.5 rounded-lg text-blue-300">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Active Cloud: <b>borle8go</b></span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          {/* Left: Upload or Input */}
-          <div className="lg:col-span-5 space-y-4">
-            <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDrag(true);
-              }}
-              onDragLeave={() => setDrag(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDrag(false);
-                upload(e.dataTransfer.files);
-              }}
-              onClick={() => quickFileRef.current?.click()}
-              className={`cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-all flex flex-col items-center justify-center gap-2.5 ${
-                drag
-                  ? "border-blue-400 bg-blue-500/10 scale-[1.01]"
-                  : "border-blue-500/30 bg-blue-950/20 hover:border-blue-400/60 hover:bg-blue-950/30"
-              }`}
-            >
-              <input
-                ref={quickFileRef}
-                type="file"
-                multiple
-                accept="image/*"
-                hidden
-                onChange={(e) => upload(e.target.files)}
-              />
-              <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center">
-                <Upload size={22} className={busy ? "animate-bounce" : ""} />
-              </div>
-              <div className="text-sm font-semibold text-foreground">
-                {busy ? "আপলোড হচ্ছে..." : "কম্পিউটার বা মোবাইল থেকে ছবি ড্রপ করুন"}
-              </div>
-              <p className="text-xs text-muted-foreground max-w-xs">
-                ক্লিক করে ছবি পছন্দ করুন — ১ সেকেন্ডে ডোমেইন ও ক্লাউডিনারি লিংক তৈরি হয়ে যাবে!
-              </p>
-            </div>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border/80" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground font-semibold">অথবা ফাইলের নাম দিয়ে লিংক তৈরি করুন</span>
-              </div>
-            </div>
-
-            <form onSubmit={handleGenerateManualLinks} className="space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="যেমন: profile.webp বা my-photo.jpg"
-                  value={inputNameOrUrl}
-                  onChange={(e) => setInputNameOrUrl(e.target.value)}
-                  className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
-                />
-                <Button type="submit" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0">
-                  <LinkIcon size={14} className="mr-1" /> লিংক তৈরি করুন
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
-                <span>দ্রুত ট্রাই করুন:</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setInputNameOrUrl("profile.webp");
-                    setGeneratedLinks(generateAllImageLinks("profile.webp", "Official Profile Portrait"));
-                  }}
-                  className="text-blue-400 hover:underline font-mono"
-                >
-                  profile.webp
-                </button>
-                <span>·</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setInputNameOrUrl("site-logo.png");
-                    setGeneratedLinks(generateAllImageLinks("site-logo.png", "Official Site Logo"));
-                  }}
-                  className="text-blue-400 hover:underline font-mono"
-                >
-                  site-logo.png
-                </button>
-                <span>·</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setInputNameOrUrl("hero-portrait.jpg");
-                    setGeneratedLinks(generateAllImageLinks("hero-portrait.jpg", "Author & Researcher"));
-                  }}
-                  className="text-blue-400 hover:underline font-mono"
-                >
-                  hero-portrait.jpg
-                </button>
-              </div>
-            </form>
-          </div>
-
-          {/* Right: Generated Output Card */}
-          <div className="lg:col-span-7 bg-background/90 border border-blue-500/20 rounded-xl p-4 sm:p-5 flex flex-col justify-between space-y-4">
-            {generatedLinks ? (
-              <div className="space-y-3.5">
-                <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 size={16} className="text-emerald-400" />
-                    <span className="text-xs font-semibold text-foreground uppercase tracking-wide">
-                      তৈরি হওয়া লিংকসমূহ (Generated Direct Links):
-                    </span>
-                  </div>
-                  <span className="text-[11px] font-mono text-muted-foreground truncate max-w-[150px]">
-                    {generatedLinks.fileName}
-                  </span>
-                </div>
-
-                {/* 1. Canonical Domain Link */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-blue-400 flex items-center gap-1">
-                      ১. ডোমেইন লিংক (Canonical Domain URL - Google SEO Recommended):
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-slate-950/70 border border-blue-500/30 rounded-lg p-1.5 sm:p-2">
-                    <code className="text-[11px] sm:text-xs text-blue-200 font-mono truncate flex-1 select-all">
-                      {generatedLinks.domainUrl}
-                    </code>
-                    <Button
-                      size="sm"
-                      onClick={() => copyText(generatedLinks.domainUrl, "ডোমেইন লিংক", "domain")}
-                      className={`h-7 px-3 text-xs font-semibold shrink-0 transition-colors ${
-                        copiedKey === "domain" ? "bg-emerald-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"
-                      }`}
-                    >
-                      {copiedKey === "domain" ? <Check size={12} className="mr-1" /> : <Copy size={12} className="mr-1" />}
-                      {copiedKey === "domain" ? "Copied" : "Copy"}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* 2. Cloudinary Ultra-Fast CDN Link */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-emerald-400 flex items-center gap-1">
-                      ২. ক্লাউডিনারি ফাস্ট CDN লিংক (Cloudinary Auto WebP/AVIF Delivery):
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-slate-950/70 border border-emerald-500/30 rounded-lg p-1.5 sm:p-2">
-                    <code className="text-[11px] sm:text-xs text-emerald-200 font-mono truncate flex-1 select-all">
-                      {generatedLinks.cloudinaryAutoUrl}
-                    </code>
-                    <Button
-                      size="sm"
-                      onClick={() => copyText(generatedLinks.cloudinaryAutoUrl, "ক্লাউডিনারি লিংক", "cld")}
-                      className={`h-7 px-3 text-xs font-semibold shrink-0 transition-colors ${
-                        copiedKey === "cld" ? "bg-emerald-600 text-white" : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                      }`}
-                    >
-                      {copiedKey === "cld" ? <Check size={12} className="mr-1" /> : <Copy size={12} className="mr-1" />}
-                      {copiedKey === "cld" ? "Copied" : "Copy"}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* 3. Cloudinary Fetch URL */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium text-slate-300 flex items-center gap-1">
-                      ৩. ক্লাউডিনারি ফেচ প্রক্সি লিংক (Cloudinary Fetch Proxy):
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-slate-950/70 border border-border rounded-lg p-1.5 sm:p-2">
-                    <code className="text-[11px] sm:text-xs text-slate-300 font-mono truncate flex-1 select-all">
-                      {generatedLinks.cloudinaryFetchUrl}
-                    </code>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => copyText(generatedLinks.cloudinaryFetchUrl, "ফেচ লিংক", "fetch")}
-                      className={`h-7 px-3 text-xs shrink-0 ${copiedKey === "fetch" ? "border-emerald-500 text-emerald-400" : ""}`}
-                    >
-                      {copiedKey === "fetch" ? <Check size={12} className="mr-1" /> : <Copy size={12} className="mr-1" />}
-                      {copiedKey === "fetch" ? "Copied" : "Copy"}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* 4. HTML / Markdown Code snippet */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
-                  <div className="flex items-center justify-between bg-slate-950/50 border border-border/80 rounded-lg px-2.5 py-1.5">
-                    <span className="text-muted-foreground text-[11px]">HTML কোড:</span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => copyText(generatedLinks.htmlTag, "HTML কোড", "html")}
-                      className="h-6 px-2 text-[11px] text-blue-400 hover:text-blue-300"
-                    >
-                      {copiedKey === "html" ? "Copied" : "Copy HTML"}
-                    </Button>
-                  </div>
-                  <div className="flex items-center justify-between bg-slate-950/50 border border-border/80 rounded-lg px-2.5 py-1.5">
-                    <span className="text-muted-foreground text-[11px]">Markdown কোড:</span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => copyText(generatedLinks.markdownTag, "Markdown কোড", "md")}
-                      className="h-6 px-2 text-[11px] text-blue-400 hover:text-blue-300"
-                    >
-                      {copiedKey === "md" ? "Copied" : "Copy Markdown"}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground text-xs">
-                উপরে ছবি আপলোড করুন অথবা নাম লিখে <b>লিংক তৈরি করুন</b> বোতামে চাপুন।
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Direct Photo Upload Box */}
+      <PhotoUploadBox
+        label="Photo Upload Box — Direct Domain Link Creator"
+        description="Upload any photo to immediately save it into /images/ folder and generate its direct https://mdshinhasarder.com domain link."
+        onUploadSuccess={handleUploadSuccess}
+      />
 
       {/* Main Tabs */}
-      <Tabs defaultValue="public-images" className="space-y-4">
+      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
         <TabsList className="flex flex-wrap h-auto p-1 bg-secondary/60">
+          <TabsTrigger value="library" className="text-xs sm:text-sm py-1.5 font-medium">
+            <Upload size={14} className="mr-1.5 text-blue-400" /> My Uploaded Photos ({items.length})
+          </TabsTrigger>
           <TabsTrigger value="public-images" className="text-xs sm:text-sm py-1.5">
             <ImageIcon size={14} className="mr-1.5" /> Domain Photos (/images) ({CANONICAL_DOMAIN_IMAGES.length})
-          </TabsTrigger>
-          <TabsTrigger value="library" className="text-xs sm:text-sm py-1.5">
-            <Upload size={14} className="mr-1.5" /> My Uploads ({items.length})
           </TabsTrigger>
           <TabsTrigger value="blogger" className="text-xs sm:text-sm py-1.5">
             <Rss size={14} className="mr-1.5" /> Blogger Photos ({bloggerImages.length})
@@ -646,7 +445,7 @@ const MediaAdmin = () => {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="ছবি খুঁজুন (নাম বা টাইটেল)..."
+                placeholder="Search photos (filename or title)..."
                 value={imageSearch}
                 onChange={(e) => setImageSearch(e.target.value)}
                 className="w-full pl-9 pr-3 py-1.5 rounded-lg border border-border bg-background text-xs sm:text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -655,11 +454,11 @@ const MediaAdmin = () => {
 
             <div className="flex flex-wrap gap-1.5">
               {[
-                { id: "all", label: "সব ছবি" },
-                { id: "Identity & Profile", label: "প্রোফাইল ও লোগো" },
-                { id: "Books & Publications", label: "বইসমূহ" },
-                { id: "Music & Songs", label: "মিউজিক" },
-                { id: "Tech & Articles", label: "টেক ও পোস্ট" },
+                { id: "all", label: "All Photos" },
+                { id: "Identity & Profile", label: "Profile & Logos" },
+                { id: "Books & Publications", label: "Books & Publications" },
+                { id: "Music & Songs", label: "Music & Songs" },
+                { id: "Tech & Articles", label: "Tech & Articles" },
               ].map((c) => (
                 <button
                   key={c.id}
@@ -693,7 +492,7 @@ const MediaAdmin = () => {
                     })
                   }
                   className="relative aspect-square bg-slate-950/70 p-2 flex items-center justify-center cursor-pointer overflow-hidden"
-                  title="সম্পূর্ণ ছবি বড় করে দেখতে ক্লিক করুন"
+                  title="Click to view full resolution"
                 >
                   <img
                     src={img.localPath}
@@ -723,7 +522,7 @@ const MediaAdmin = () => {
                   <div className="flex gap-1.5 pt-1">
                     <Button
                       size="sm"
-                      onClick={() => copyText(img.domainUrl, "ডোমেইন লিংক", `d-${img.id}`)}
+                      onClick={() => copyText(img.domainUrl, "Domain Link", `d-${img.id}`)}
                       className={`flex-1 text-xs h-7 px-2 ${
                         copiedKey === `d-${img.id}` ? "bg-emerald-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"
                       }`}
@@ -734,7 +533,7 @@ const MediaAdmin = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => copyText(img.cloudinaryUrl, "ক্লাউডিনারি লিংক", `c-${img.id}`)}
+                      onClick={() => copyText(img.cloudinaryUrl, "Cloudinary Link", `c-${img.id}`)}
                       className={`text-xs h-7 px-2 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 ${
                         copiedKey === `c-${img.id}` ? "bg-emerald-600 text-white" : ""
                       }`}
@@ -748,7 +547,7 @@ const MediaAdmin = () => {
 
             {filteredDomainImages.length === 0 && (
               <div className="col-span-full p-8 text-center text-muted-foreground bg-gradient-card border border-border rounded-xl">
-                কোন ছবি পাওয়া যায়নি।
+                No photos found matching your search.
               </div>
             )}
           </div>
@@ -758,7 +557,12 @@ const MediaAdmin = () => {
         <TabsContent value="library" className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {items.map((m) => {
-              const fullDomainUrl = toSiteMediaUrl(m.url);
+              const fileName = m.name || m.path || "photo.jpg";
+              const cleanFileName = fileName.includes(".") ? fileName : `${fileName}.jpg`;
+              const fullDomainUrl = m.url.startsWith("http") && m.url.includes("/images/")
+                ? m.url
+                : `https://mdshinhasarder.com/images/${cleanFileName}`;
+              const localSrc = resolveMediaUrl(m.url);
               const isImage = !m.mime_type || m.mime_type.startsWith("image/");
               const isVideo = m.mime_type?.startsWith("video/");
 
@@ -767,7 +571,7 @@ const MediaAdmin = () => {
                   <div
                     onClick={() =>
                       setModalImage({
-                        url: m.url,
+                        url: localSrc,
                         title: m.name,
                         domainUrl: fullDomainUrl,
                         cloudinaryUrl: m.cloudinary_url || m.url,
@@ -775,12 +579,12 @@ const MediaAdmin = () => {
                       })
                     }
                     className="relative aspect-square bg-slate-950/70 p-2 flex items-center justify-center cursor-pointer overflow-hidden"
-                    title="সম্পূর্ণ ছবি বড় করে দেখতে ক্লিক করুন"
+                    title="Click to view full resolution"
                   >
                     {isImage ? (
-                      <img src={m.url} alt={m.name} className="max-w-full max-h-full object-contain" />
+                      <img src={localSrc} alt={m.name} className="max-w-full max-h-full object-contain" />
                     ) : isVideo ? (
-                      <video src={m.url} className="max-w-full max-h-full object-contain" />
+                      <video src={localSrc} className="max-w-full max-h-full object-contain" />
                     ) : (
                       <div className="text-muted-foreground text-xs p-2 text-center">{m.mime_type}</div>
                     )}
@@ -793,10 +597,24 @@ const MediaAdmin = () => {
                     <div className="text-xs truncate font-medium" title={m.name}>
                       {m.name}
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="text-[11px] font-mono text-cyan-400 truncate" title={fullDomainUrl}>
+                      {fullDomainUrl}
+                    </div>
+                    <div className="flex items-center gap-1.5 pt-1">
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2 text-xs border-border/80 hover:bg-secondary shrink-0"
+                        title="Open photo"
+                      >
+                        <a href={localSrc} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink size={11} className="mr-1" /> Open
+                        </a>
+                      </Button>
                       <Button
                         size="sm"
-                        onClick={() => copyText(fullDomainUrl, "ডোমেইন লিংক", `lib-${m.id}`)}
+                        onClick={() => copyText(fullDomainUrl, "Domain Link", `lib-${m.id}`)}
                         className={`flex-1 text-xs h-7 px-2 ${
                           copiedKey === `lib-${m.id}` ? "bg-emerald-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"
                         }`}
@@ -815,7 +633,7 @@ const MediaAdmin = () => {
 
             {items.length === 0 && (
               <div className="col-span-full p-8 text-center text-muted-foreground bg-gradient-card border border-border rounded-xl">
-                কোনো আপলোড করা ফটো নেই। উপরে ছবি ড্রপ করে সরাসরি লিংক তৈরি করুন।
+                No uploaded photos yet. Drop photos above to generate live domain links.
               </div>
             )}
           </div>
@@ -823,7 +641,7 @@ const MediaAdmin = () => {
 
         {/* Tab 3: Blogger Photos */}
         <TabsContent value="blogger">
-          <p className="text-xs text-muted-foreground mb-3">Blogger পোস্ট থেকে স্বয়ংক্রিয়ভাবে সংগৃহীত ছবিসমূহ। লিংক কপি করতে ক্লিক করুন।</p>
+          <p className="text-xs text-muted-foreground mb-3">Photos collected and auto-synced from Blogger posts. Click to copy URLs.</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {bloggerImages.map((b, i) => (
               <div key={i} className="group bg-gradient-card border border-border rounded-xl overflow-hidden flex flex-col justify-between">
@@ -845,7 +663,7 @@ const MediaAdmin = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => copyText(b.url, "Blogger ছবির লিংক", `blg-${i}`)}
+                    onClick={() => copyText(b.url, "Blogger Photo URL", `blg-${i}`)}
                     className="w-full h-7 text-xs"
                   >
                     {copiedKey === `blg-${i}` ? <Check size={11} className="mr-1 text-emerald-400" /> : <Copy size={11} className="mr-1" />}
@@ -854,7 +672,7 @@ const MediaAdmin = () => {
                 </div>
               </div>
             ))}
-            {bloggerImages.length === 0 && <div className="col-span-full p-8 text-center text-muted-foreground">কোন ব্লগার ফটো পাওয়া যায়নি।</div>}
+            {bloggerImages.length === 0 && <div className="col-span-full p-8 text-center text-muted-foreground">No Blogger photos found.</div>}
           </div>
         </TabsContent>
 
@@ -1035,7 +853,7 @@ const MediaAdmin = () => {
                   </code>
                   <Button
                     size="sm"
-                    onClick={() => copyText(modalImage.domainUrl!, "ডোমেইন লিংক")}
+                    onClick={() => copyText(modalImage.domainUrl!, "Domain Link")}
                     className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-7 shrink-0"
                   >
                     <Copy size={12} className="mr-1" /> Copy
@@ -1059,7 +877,7 @@ const MediaAdmin = () => {
                   </code>
                   <Button
                     size="sm"
-                    onClick={() => copyText(modalImage.cloudinaryUrl!, "ক্লাউডিনারি লিংক")}
+                    onClick={() => copyText(modalImage.cloudinaryUrl!, "Cloudinary Link")}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-7 shrink-0"
                   >
                     <Copy size={12} className="mr-1" /> Copy

@@ -48,6 +48,7 @@ export const CANONICAL_DOMAIN_IMAGES: DomainImageItem[] = [
   // Identity & Profile
   createItem("profile-portrait", "md-shinha-sarder-official-portrait.profile.webp", "MD. Shinha Sarder - Official Portrait", "Identity & Profile"),
   createItem("profile-clean", "profile.webp", "MD. Shinha Sarder Profile (Clean Canonical)", "Identity & Profile"),
+  createItem("uploaded-czajweotfpsqbp8nwb9n", "czajweotfpsqbp8nwb9n.jpg", "Uploaded Photo (czajweotfpsqbp8nwb9n.jpg)", "Identity & Profile"),
   createItem("hero-portrait", "hero-portrait.jpg", "MD. Shinha Sarder - Author & Researcher", "Identity & Profile"),
   createItem("founder-ceo", "md-shinha-sarder-executive-founder.profile-photo.webp", "MD. Shinha Sarder - Executive Founder", "Identity & Profile"),
   createItem("hero-bg", "hero-bg.jpg", "Creative Tech Studio Background", "Identity & Profile"),

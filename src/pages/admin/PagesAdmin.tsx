@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Pencil, Trash2, Rss, ExternalLink, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { MediaPicker, MediaMultiPicker } from "@/components/admin/MediaPicker";
-import { toSiteMediaUrl } from "@/lib/mediaUrl";
+import { PhotoUploadBox } from "@/components/admin/PhotoUploadBox";
+import { toSiteMediaUrl, resolveMediaUrl } from "@/lib/mediaUrl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePages } from "@/hooks/usePosts";
 import { postPath } from "@/lib/postUrl";
@@ -104,8 +105,51 @@ const PagesAdmin = () => {
                     <div><Label>Slug</Label><Input value={editing.slug} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} /></div>
                   </div>
                   <div><Label>Content</Label><Textarea rows={8} value={editing.content} onChange={(e) => setEditing({ ...editing, content: e.target.value })} /></div>
-                  <MediaPicker label="Cover Image" value={toSiteMediaUrl(editing.cover_url || "")} onChange={(url) => setEditing({ ...editing, cover_url: url })} />
-                  <MediaMultiPicker label="Page Photos & Videos" value={editing.images} onChange={(imgs) => setEditing({ ...editing, images: imgs })} />
+
+                  {/* Dedicated Photo Upload Box */}
+                  <PhotoUploadBox
+                    label="Page Photo Upload Box"
+                    description="Upload photo directly to /images/ folder — automatically generates domain link and applies to page cover."
+                    onUploadSuccess={(res) => {
+                      setEditing({
+                        ...editing,
+                        cover_url: res.domainUrl,
+                        images: [...(editing.images || []), res.domainUrl],
+                      });
+                    }}
+                    onApply={(domainUrl) => {
+                      setEditing({ ...editing, cover_url: domainUrl });
+                    }}
+                    applyButtonLabel="Set as Page Cover"
+                  />
+
+                  <div>
+                    <Label>Cover Image URL</Label>
+                    <Input
+                      value={editing.cover_url || ""}
+                      onChange={(e) => setEditing({ ...editing, cover_url: e.target.value })}
+                      placeholder="https://mdshinhasarder.com/images/..."
+                      className="font-mono text-xs mt-1"
+                    />
+                    {editing.cover_url && (
+                      <div className="mt-2 p-2 rounded-xl border border-blue-500/30 bg-secondary/30 flex items-center gap-3">
+                        <img
+                          src={resolveMediaUrl(editing.cover_url)}
+                          alt="Cover Preview"
+                          className="w-16 h-16 object-cover rounded-lg border border-border shrink-0"
+                          onError={(e) => {
+                            e.currentTarget.src = "/hero-portrait.jpg";
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-semibold text-emerald-400">Active Page Cover Photo (Live Preview)</div>
+                          <div className="text-[11px] font-mono text-muted-foreground truncate">{editing.cover_url}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <MediaMultiPicker label="Additional Page Photos & Videos" value={editing.images} onChange={(imgs) => setEditing({ ...editing, images: imgs })} />
                   <div><Label>SEO Title</Label><Input value={editing.seo_title || ""} onChange={(e) => setEditing({ ...editing, seo_title: e.target.value })} /></div>
                   <div><Label>SEO Description</Label><Textarea rows={2} value={editing.seo_description || ""} onChange={(e) => setEditing({ ...editing, seo_description: e.target.value })} /></div>
                   <div><Label>Status</Label>
@@ -114,13 +158,20 @@ const PagesAdmin = () => {
                       <SelectContent><SelectItem value="draft">Draft</SelectItem><SelectItem value="published">Published</SelectItem></SelectContent>
                     </Select>
                   </div>
-                  <Button onClick={save} className="w-full">Save</Button>
+                  <Button onClick={save} className="w-full">Save Page</Button>
                 </div>
               )}
             </DialogContent>
           </Dialog>
         </div>
       </div>
+
+      {/* Quick Photo Upload Box on Pages screen */}
+      <PhotoUploadBox
+        compact
+        label="Quick Photo Upload to /images/ for Pages"
+        description="Upload photos directly to /images/ folder — immediately creates official domain links for your pages."
+      />
       <Tabs defaultValue="blogger">
         <TabsList>
           <TabsTrigger value="blogger"><Rss size={14} className="mr-1" /> Blogger ({bloggerPages.length})</TabsTrigger>
