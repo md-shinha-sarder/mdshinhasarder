@@ -1,8 +1,8 @@
 /**
  * Universal Photo Sync Engine for MD. Shinha Sarder
- * Automatically synchronizes all photos from Blogger, Supabase posts,
- * custom pages, books, and songs directly to the /images/ folder on domain:
- * https://mdshinhasarder.com/images/[filename]
+ * Reliably synchronizes all photos from Blogger, Supabase posts,
+ * custom pages, books, and songs directly to the /images/ folder.
+ * Preserves clean working image sources and provides Clear All capabilities.
  */
 
 import {
@@ -10,11 +10,13 @@ import {
   getCachedAllPosts,
   getCachedAllPages,
   getStoredAdminPosts,
-  setStoredAdminPosts,
+  clearAllSyncData,
   type SyncedPost,
 } from "./postSync";
 import { supabase } from "@/integrations/supabase/client";
 import { CANONICAL_DOMAIN_IMAGES } from "./domainImages";
+
+export { clearAllSyncData };
 
 export interface SyncPhotoItem {
   filename: string;
@@ -22,6 +24,7 @@ export interface SyncPhotoItem {
   title: string;
   source: "blogger" | "admin" | "page" | "canonical";
   domainUrl: string;
+  localUrl: string;
 }
 
 export interface SyncResult {
@@ -59,14 +62,15 @@ export async function syncAllPhotosToImagesFolder(
 
   const photoMap = new Map<string, SyncPhotoItem>();
 
-  // 1. Collect from Canonical Domain Images
+  // 1. Collect from Canonical Domain Images (using verified local /images/ paths)
   CANONICAL_DOMAIN_IMAGES.forEach((item) => {
     photoMap.set(item.fileName, {
       filename: item.fileName,
-      url: item.cloudinaryUrl,
+      url: `/images/${item.fileName}`,
       title: item.title,
       source: "canonical",
       domainUrl: `https://mdshinhasarder.com/images/${item.fileName}`,
+      localUrl: `/images/${item.fileName}`,
     });
   });
 
@@ -88,6 +92,7 @@ export async function syncAllPhotosToImagesFolder(
         title: p.title,
         source: "blogger",
         domainUrl: `https://mdshinhasarder.com/images/${filename}`,
+        localUrl: `/images/${filename}`,
       });
     }
   });
@@ -110,6 +115,7 @@ export async function syncAllPhotosToImagesFolder(
         title: p.title,
         source: "page",
         domainUrl: `https://mdshinhasarder.com/images/${filename}`,
+        localUrl: `/images/${filename}`,
       });
     }
   });
@@ -125,6 +131,7 @@ export async function syncAllPhotosToImagesFolder(
         title: p.title,
         source: "admin",
         domainUrl: `https://mdshinhasarder.com/images/${filename}`,
+        localUrl: `/images/${filename}`,
       });
     }
   });
@@ -142,6 +149,7 @@ export async function syncAllPhotosToImagesFolder(
             title: p.title,
             source: "admin",
             domainUrl: `https://mdshinhasarder.com/images/${filename}`,
+            localUrl: `/images/${filename}`,
           });
         }
       });
@@ -151,7 +159,7 @@ export async function syncAllPhotosToImagesFolder(
   }
 
   const allPhotos = Array.from(photoMap.values());
-  onProgress?.(`Found ${allPhotos.length} total photos. Syncing to /images/ folder on domain...`, 20, 100);
+  onProgress?.(`Found ${allPhotos.length} total photos. Syncing to /images/ folder...`, 20, 100);
 
   // 6. Send to /api/sync-photos in batches of 25
   let syncedToServer = 0;
@@ -175,43 +183,22 @@ export async function syncAllPhotosToImagesFolder(
     onProgress?.(`Downloaded & verified ${Math.min(i + batchSize, allPhotos.length)} / ${allPhotos.length} photos`, pct, 100);
   }
 
-  // 7. Update stored admin posts so their cover_url points to the canonical domain image
-  let updatedPosts = 0;
-  const updatedAdminList = adminPosts.map((post) => {
-    if (post.image) {
-      const filename = generateDomainImageFilename(post.slug || post.title, post.image);
-      const domainUrl = `https://mdshinhasarder.com/images/${filename}`;
-      if (post.image !== domainUrl) {
-        updatedPosts++;
-        return { ...post, image: domainUrl, cover_url: domainUrl };
-      }
-    }
-    return post;
-  });
-  if (updatedPosts > 0) {
-    setStoredAdminPosts(updatedAdminList);
-  }
-
-  // 8. Cache the full domain photo dictionary in localStorage
+  // 7. Clear any stale broken domain image mappings from localStorage
   if (typeof window !== "undefined") {
     try {
-      const mappingDict: Record<string, string> = {};
-      allPhotos.forEach((p) => {
-        mappingDict[p.url] = p.domainUrl;
-      });
-      localStorage.setItem("mds_domain_image_mappings", JSON.stringify(mappingDict));
+      localStorage.removeItem("mds_domain_image_mappings");
       localStorage.setItem("mds_photos_last_synced", new Date().toISOString());
     } catch (_e) {
       // safe
     }
   }
 
-  onProgress?.(`All ${allPhotos.length} photos successfully synced to domain /images/ folder!`, 100, 100);
+  onProgress?.(`All ${allPhotos.length} photos successfully verified and synced to /images/ folder!`, 100, 100);
 
   return {
     totalFound: allPhotos.length,
     syncedToServer,
-    updatedPosts,
+    updatedPosts: 0,
     items: allPhotos,
   };
 }

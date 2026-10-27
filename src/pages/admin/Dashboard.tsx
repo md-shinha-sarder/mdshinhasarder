@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Newspaper, Image, Rss, Cpu, ArrowRight, Zap, FolderSync, Globe, Copy, Check, Sparkles, Upload, CheckCircle2 } from "lucide-react";
+import { FileText, Newspaper, Image, Rss, Cpu, ArrowRight, Zap, FolderSync, Globe, Copy, Check, Sparkles, Upload, CheckCircle2, Trash2 } from "lucide-react";
 import { usePosts, usePages } from "@/hooks/usePosts";
 import { Link } from "react-router-dom";
 import { postPath } from "@/lib/postUrl";
-import { syncAllPhotosToImagesFolder } from "@/lib/syncAllPhotos";
+import { syncAllPhotosToImagesFolder, clearAllSyncData } from "@/lib/syncAllPhotos";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import { PhotoUploadBox } from "@/components/admin/PhotoUploadBox";
 import { toast } from "sonner";
@@ -18,10 +18,27 @@ const Dashboard = () => {
 
   // Photo Sync & Domain Link Creator State
   const [syncing, setSyncing] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [syncProgress, setSyncProgress] = useState("");
   const [photoInput, setPhotoInput] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  const handleClearAll = async () => {
+    if (!window.confirm("Clear All: Purge all local photo cache, remove broken domain mappings, and reset all posts to clean Blogger photos?")) {
+      return;
+    }
+    setClearing(true);
+    try {
+      await clearAllSyncData();
+      await refetchPosts().catch(() => {});
+      toast.success("Successfully cleared all cache and restored clean Blogger photos!");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to clear cache");
+    } finally {
+      setClearing(false);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -111,15 +128,25 @@ const Dashboard = () => {
             </p>
           </div>
 
-          {/* Sync All Photos Button */}
+          {/* Sync All Photos & Clear All Buttons */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              onClick={handleClearAll}
+              disabled={clearing}
+              className="border-red-500/40 text-red-300 hover:bg-red-600/10 hover:border-red-500 font-medium flex items-center gap-2"
+              title="Purge all local cache, remove broken domain mappings, and restore clean Blogger photos"
+            >
+              <Trash2 size={16} className={`text-red-400 ${clearing ? "animate-spin" : ""}`} />
+              <span>{clearing ? "Clearing..." : "Clear All Cache"}</span>
+            </Button>
             <Button
               onClick={async () => {
                 setSyncing(true);
                 setSyncProgress("Collecting Blogger & website photos...");
                 try {
                   const res = await syncAllPhotosToImagesFolder((msg) => setSyncProgress(msg));
-                  toast.success(`Successfully synchronized ${res.totalFound} photos to /images folder with domain links!`);
+                  toast.success(`Successfully synchronized ${res.totalFound} photos to /images folder!`);
                   await refetchPosts().catch(() => {});
                 } catch (err: any) {
                   toast.error(err?.message || "Failed to sync photos");

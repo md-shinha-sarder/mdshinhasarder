@@ -19,6 +19,7 @@ import {
   X,
   FileCode,
   CheckCircle2,
+  FolderSync,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,6 +34,7 @@ import {
   GeneratedImageLinks,
 } from "@/lib/cloudinary";
 import { CANONICAL_DOMAIN_IMAGES, DomainImageItem } from "@/lib/domainImages";
+import { syncAllPhotosToImagesFolder, clearAllSyncData } from "@/lib/syncAllPhotos";
 
 const STORAGE_FIX_SQL = `-- 1. Ensure storage bucket 'media' exists and is public
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -91,10 +93,41 @@ const MediaAdmin = () => {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [selectedTab, setSelectedTab] = useState("library");
   const [busy, setBusy] = useState(false);
+  const [syncingPhotos, setSyncingPhotos] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [drag, setDrag] = useState(false);
   const [showFixGuide, setShowFixGuide] = useState(false);
   const [copiedSql, setCopiedSql] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const handleClearAll = async () => {
+    if (!window.confirm("Clear All: Purge all local photo cache, remove broken domain mappings, and restore clean Blogger photos?")) {
+      return;
+    }
+    setClearing(true);
+    try {
+      await clearAllSyncData();
+      await load();
+      toast.success("Successfully cleared all cache and restored clean Blogger photos!");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to clear cache");
+    } finally {
+      setClearing(false);
+    }
+  };
+
+  const handleSyncAllPhotos = async () => {
+    setSyncingPhotos(true);
+    try {
+      const res = await syncAllPhotosToImagesFolder();
+      toast.success(`Synced ${res.totalFound} photos to /images folder!`);
+      await load();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to sync photos");
+    } finally {
+      setSyncingPhotos(false);
+    }
+  };
 
   // Full-resolution modal viewer (Lightbox)
   const [modalImage, setModalImage] = useState<{
@@ -374,7 +407,30 @@ const MediaAdmin = () => {
             Upload any photo to automatically create direct <b>https://mdshinhasarder.com</b> domain links and <b>Cloudinary</b> CDN links.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleClearAll}
+            disabled={clearing}
+            className="text-xs border-red-500/40 text-red-300 hover:bg-red-600/10 hover:border-red-500"
+            title="Purge all local photo cache, remove broken domain mappings, and restore clean Blogger photos"
+          >
+            <Trash2 size={14} className={`mr-1.5 text-red-400 ${clearing ? "animate-spin" : ""}`} />
+            {clearing ? "Clearing..." : "Clear All Cache"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleSyncAllPhotos}
+            disabled={syncingPhotos}
+            className="text-xs border-emerald-500/40 text-emerald-300 hover:bg-emerald-600/10"
+          >
+            <FolderSync size={14} className={`mr-1.5 text-emerald-400 ${syncingPhotos ? "animate-spin" : ""}`} />
+            {syncingPhotos ? "Syncing..." : "Sync All Photos"}
+          </Button>
           <Button
             type="button"
             variant="outline"

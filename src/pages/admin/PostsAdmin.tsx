@@ -23,7 +23,7 @@ import {
   getSupabaseSetupSql,
   type SyncedPost,
 } from "@/lib/postSync";
-import { syncAllPhotosToImagesFolder } from "@/lib/syncAllPhotos";
+import { syncAllPhotosToImagesFolder, clearAllSyncData } from "@/lib/syncAllPhotos";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
 
 interface Post {
@@ -66,10 +66,28 @@ const PostsAdmin = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [syncingPhotos, setSyncingPhotos] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [syncStatus, setSyncStatus] = useState("");
   const [copiedDomainLink, setCopiedDomainLink] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [pastedUrl, setPastedUrl] = useState("");
+
+  const handleClearAll = async () => {
+    if (!window.confirm("Clear All: Purge all local cache, remove broken photo mappings, and restore clean original Blogger photos?")) {
+      return;
+    }
+    setClearing(true);
+    try {
+      await clearAllSyncData();
+      await load();
+      await refetchLivePosts();
+      toast.success("Successfully cleared all cache and restored clean Blogger photos!");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to clear cache");
+    } finally {
+      setClearing(false);
+    }
+  };
 
   const handleSyncAllPhotos = async () => {
     setSyncingPhotos(true);
@@ -78,7 +96,7 @@ const PostsAdmin = () => {
       const res = await syncAllPhotosToImagesFolder((msg) => {
         setSyncStatus(msg);
       });
-      toast.success(`Synced ${res.totalFound} photos to /images folder with domain links!`);
+      toast.success(`Synced ${res.totalFound} photos to /images folder!`);
       await load();
       await refetchLivePosts().catch(() => {});
     } catch (err: any) {
@@ -316,6 +334,17 @@ const PostsAdmin = () => {
             className="border-blue-500/30 text-blue-300 hover:bg-blue-600/10"
           >
             <Database size={15} className="mr-1.5 text-blue-400" /> DB Setup SQL
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClearAll}
+            disabled={clearing}
+            className="border-red-500/40 text-red-300 hover:bg-red-600/10 hover:border-red-500"
+            title="Clear all photo mappings, purge cache, and restore clean original Blogger photos"
+          >
+            <Trash2 size={15} className={`mr-1.5 text-red-400 ${clearing ? "animate-spin" : ""}`} />
+            {clearing ? "Clearing..." : "Clear All"}
           </Button>
           <Button
             variant="outline"

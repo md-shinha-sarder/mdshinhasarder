@@ -94,22 +94,9 @@ export function normalizePost(raw: any, defaultSource: "admin" | "supabase" | "b
   let image: string | null = null;
   if (rawImg) {
     const rawStr = String(rawImg).trim();
-    if (typeof window !== "undefined") {
-      try {
-        const mappings = localStorage.getItem("mds_domain_image_mappings");
-        if (mappings) {
-          const dict = JSON.parse(mappings);
-          if (dict[rawStr]) {
-            image = dict[rawStr];
-          }
-        }
-      } catch (_e) {
-        void _e;
-      }
-    }
-    if (!image) {
-      image = toFullResolutionImageUrl(resolveMediaUrl(rawStr));
-    }
+    // Resolves /images/ paths, Blogger full-res links, and canonical images safely
+    const resolved = resolveMediaUrl(rawStr);
+    image = toFullResolutionImageUrl(resolved);
   }
   const excerpt = String(raw.excerpt || "").trim();
   const content = String(raw.content || "").trim();
@@ -516,6 +503,78 @@ export async function deleteAdminPost(idOrSlug: string): Promise<{ success: bool
   }
 
   return { success: true, syncedToCloud };
+}
+
+/**
+ * Completely purges all local storage caches, sync registries,
+ * and resets all posts & pages back to their clean source data.
+ */
+export async function clearAllSyncData(): Promise<{ success: boolean; clearedCount: number }> {
+  const keysToPurge = [
+    "mds_domain_image_mappings",
+    "mds_admin_posts_v2",
+    "mds_all_posts_cache_v2",
+    "mds_all_pages_cache_v2",
+    "shinha_media_items",
+    "shinha_media_registry",
+    "md_shinha_uploaded_media",
+    "mds_photos_last_synced",
+    "mds_admin_posts",
+    "mds_all_posts_cache",
+  ];
+
+  let clearedCount = 0;
+  if (typeof window !== "undefined") {
+    keysToPurge.forEach((k) => {
+      try {
+        if (localStorage.getItem(k) !== null) {
+          localStorage.removeItem(k);
+          clearedCount++;
+        }
+        sessionStorage.removeItem(k);
+      } catch (_e) {
+        // ignore
+      }
+    });
+  }
+
+  // Clear server sync registry & caches if server endpoint is available
+  try {
+    await fetch("/api/clear-all", { method: "POST" });
+  } catch (_e) {
+    // non-blocking
+  }
+
+  // Refetch static clean posts
+  try {
+    const res = await fetch("/posts-sync.json?t=" + Date.now());
+    if (res.ok) {
+      const posts = await res.json();
+      if (Array.isArray(posts) && posts.length > 0) {
+        const cleanPosts = posts.map((p: any) => normalizePost(p, "blogger"));
+        setCachedAllPosts(cleanPosts);
+        broadcastPostsUpdate(cleanPosts);
+      }
+    }
+  } catch (_e) {
+    // non-blocking
+  }
+
+  // Refetch static clean pages
+  try {
+    const res = await fetch("/pages-sync.json?t=" + Date.now());
+    if (res.ok) {
+      const pages = await res.json();
+      if (Array.isArray(pages) && pages.length > 0) {
+        const cleanPages = pages.map((p: any) => normalizePost(p, "blogger"));
+        setCachedAllPages(cleanPages);
+      }
+    }
+  } catch (_e) {
+    // non-blocking
+  }
+
+  return { success: true, clearedCount };
 }
 
 /**

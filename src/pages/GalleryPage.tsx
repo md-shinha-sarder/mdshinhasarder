@@ -25,6 +25,7 @@ import { DEFAULT_BOOKS as chaptraBooksData } from "@/hooks/useBooksData";
 import { DEFAULT_SONGS as songsData } from "@/hooks/useSongsData";
 import { toDomainImageUrl } from "@/lib/imageSeo";
 import { toCloudinaryImageUrl, CLOUDINARY_CONFIG } from "@/lib/cloudinary";
+import { resolveMediaUrl } from "@/lib/mediaUrl";
 import { getCachedAllPosts, getCachedAllPages, getStoredAdminPosts } from "@/lib/postSync";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -87,7 +88,7 @@ export const GalleryPage = () => {
       sourceUrl?: string
     ) => {
       if (!src || src.trim() === "") return;
-      const cleanSrc = upgradeUrl(src.trim());
+      const cleanSrc = resolveMediaUrl(upgradeUrl(src.trim()));
       const token = extractToken(cleanSrc);
       if (seen.has(cleanSrc) || seenTokens.has(token)) return;
       seen.add(cleanSrc);
@@ -108,37 +109,37 @@ export const GalleryPage = () => {
 
     // 1. Official Verified Portraits & Studio Assets
     addPhoto(
-      "https://mdshinhasarder.com/images/md-shinha-sarder-official-portrait.profile.png",
+      "/images/md-shinha-sarder-official-portrait.profile.png",
       "Official Portrait — MD. Shinha Sarder",
       "Portraits",
       "Official verified portrait of MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World."
     );
     addPhoto(
-      "https://mdshinhasarder.com/images/site-logo.png",
+      "/images/site-logo.png",
       "Official Brand Emblem & Site Logo",
       "Site Media",
       "Official brand insignia and profile emblem of MD. Shinha Sarder."
     );
     addPhoto(
-      "https://mdshinhasarder.com/images/md-shinha-sarder-official-portrait.profile.webp",
+      "/images/md-shinha-sarder-official-portrait.profile.webp",
       "Official Portrait (WebP) — MD. Shinha Sarder",
       "Portraits",
       "High-definition portrait photograph of MD. Shinha Sarder."
     );
     addPhoto(
-      "https://mdshinhasarder.com/images/md-shinha-sarder-author-researcher.hero-portrait.jpg",
+      "/images/md-shinha-sarder-author-researcher.hero-portrait.jpg",
       "Editorial Portrait — ICT Author & Researcher",
       "Portraits",
       "Editorial portrait of MD. Shinha Sarder captured during academic monograph publishing."
     );
     addPhoto(
-      "https://mdshinhasarder.com/images/md-shinha-sarder-creative-tech-studio.hero-bg.jpg",
+      "/images/md-shinha-sarder-creative-tech-studio.hero-bg.jpg",
       "Creative Technology Studio & Workspace",
       "Portraits",
       "Digital development studio and high-tech workspace of MD. Shinha Sarder."
     );
     addPhoto(
-      "https://mdshinhasarder.com/images/md-shinha-sarder-executive-founder.profile-photo.webp",
+      "/images/md-shinha-sarder-executive-founder.profile-photo.webp",
       "Executive & Founder Portrait",
       "Portraits",
       "Executive portrait of MD. Shinha Sarder, leader of Biostar TV World and IT Tech BD."

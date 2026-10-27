@@ -68,6 +68,23 @@ function dynamicImageSitemapPlugin() {
           return;
         }
 
+        // Vite dev middleware for /api/clear-all
+        if (url === "/api/clear-all" && req.method === "POST") {
+          try {
+            const fs = await import("fs");
+            const path = await import("path");
+            const regPath = path.resolve(process.cwd(), "public", "media-registry.json");
+            fs.writeFileSync(regPath, JSON.stringify([], null, 2), "utf-8");
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.end(JSON.stringify({ success: true, message: "Sync registry cleared" }));
+          } catch (e: any) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.end(JSON.stringify({ success: false, error: e.message }));
+          }
+          return;
+        }
+
         // Vite dev middleware for /api/sync-photos
         if (url === "/api/sync-photos" && req.method === "POST") {
           let body = "";
@@ -97,14 +114,16 @@ function dynamicImageSitemapPlugin() {
 
                 let downloaded = false;
                 if (!fs.existsSync(targetPublic) || fs.statSync(targetPublic).size < 100) {
-                  try {
-                    const fetchRes = await fetch(item.url, { headers: { "User-Agent": "Mozilla/5.0" } });
-                    if (fetchRes.ok) {
-                      const arrBuf = await fetchRes.arrayBuffer();
-                      fs.writeFileSync(targetPublic, Buffer.from(arrBuf));
-                      downloaded = true;
-                    }
-                  } catch (_e) { void _e; }
+                  if (item.url && (item.url.startsWith("http://") || item.url.startsWith("https://"))) {
+                    try {
+                      const fetchRes = await fetch(item.url, { headers: { "User-Agent": "Mozilla/5.0" } });
+                      if (fetchRes.ok) {
+                        const arrBuf = await fetchRes.arrayBuffer();
+                        fs.writeFileSync(targetPublic, Buffer.from(arrBuf));
+                        downloaded = true;
+                      }
+                    } catch (_e) { void _e; }
+                  }
                 } else {
                   downloaded = true;
                 }

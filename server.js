@@ -179,6 +179,23 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Clear All sync registry & caches
+  if (req.url === "/api/clear-all" && req.method === "POST") {
+    try {
+      const regPath = path.join(PUBLIC_DIR, "media-registry.json");
+      fs.writeFileSync(regPath, JSON.stringify([], null, 2), "utf-8");
+      if (fs.existsSync(DIST_DIR)) {
+        fs.writeFileSync(path.join(DIST_DIR, "media-registry.json"), JSON.stringify([], null, 2), "utf-8");
+      }
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ success: true, message: "Sync registry cleared" }));
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ success: false, error: err.message }));
+    }
+    return;
+  }
+
   // Batch Sync Photos from Blogger / External to public/images/ folder
   if (req.url === "/api/sync-photos" && req.method === "POST") {
     let body = "";
@@ -211,17 +228,19 @@ const server = http.createServer((req, res) => {
           let downloaded = false;
           // Check if already on disk
           if (!fs.existsSync(targetPublic) || fs.statSync(targetPublic).size < 100) {
-            try {
-              const fetchRes = await fetch(item.url, { headers: { "User-Agent": "Mozilla/5.0" } });
-              if (fetchRes.ok) {
-                const arrBuf = await fetchRes.arrayBuffer();
-                const buf = Buffer.from(arrBuf);
-                fs.writeFileSync(targetPublic, buf);
-                if (fs.existsSync(distImagesDir)) fs.writeFileSync(targetDist, buf);
-                downloaded = true;
+            if (item.url && (item.url.startsWith("http://") || item.url.startsWith("https://"))) {
+              try {
+                const fetchRes = await fetch(item.url, { headers: { "User-Agent": "Mozilla/5.0" } });
+                if (fetchRes.ok) {
+                  const arrBuf = await fetchRes.arrayBuffer();
+                  const buf = Buffer.from(arrBuf);
+                  fs.writeFileSync(targetPublic, buf);
+                  if (fs.existsSync(distImagesDir)) fs.writeFileSync(targetDist, buf);
+                  downloaded = true;
+                }
+              } catch (_err) {
+                // skip download error gracefully
               }
-            } catch (_err) {
-              // skip download error gracefully
             }
           } else {
             downloaded = true;
