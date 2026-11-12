@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Calendar, Facebook, Twitter, Linkedin, Link as LinkIcon, MessageCircle, Compass, Home, BookOpen, Music, FileText, ZoomIn, Maximize2, ExternalLink, X } from "lucide-react";
+import { ArrowLeft, Calendar, Facebook, Twitter, Linkedin, Link as LinkIcon, MessageCircle, Compass, Home, BookOpen, Music, FileText, ZoomIn, Maximize2, ExternalLink, X, BadgeCheck } from "lucide-react";
+import { FaFacebookF, FaXTwitter, FaYoutube, FaSpotify, FaGithub, FaInstagram } from "react-icons/fa6";
 import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";
 import FooterSection from "@/components/FooterSection";
@@ -387,11 +388,42 @@ const PostDetailContent = () => {
                 publisher: {
                   "@type": "Organization",
                   name: "MD. Shinha Sarder",
-                  logo: { "@type": "ImageObject", url: "https://mdshinhasarder.com/favicon.ico" },
+                  logo: {
+                    "@type": "ImageObject",
+                    url: "https://mdshinhasarder.com/images/site-logo.png",
+                    width: 1200,
+                    height: 1200,
+                  },
                 },
                 isPartOf: { "@type": "Product", productID: "CAowrcq9DA:openaccess" },
                 isAccessibleForFree: true,
                 keywords: postTags.join(", "),
+              })}
+            </script>
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                itemListElement: [
+                  {
+                    "@type": "ListItem",
+                    position: 1,
+                    name: "Home",
+                    item: "https://mdshinhasarder.com/",
+                  },
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: "Blog",
+                    item: "https://mdshinhasarder.com/posts",
+                  },
+                  {
+                    "@type": "ListItem",
+                    position: 3,
+                    name: post.title,
+                    item: canonical,
+                  },
+                ],
               })}
             </script>
             {videoIds.map((vid) => (
@@ -440,12 +472,27 @@ const PostDetailContent = () => {
 
         <article className="pt-32 pb-16">
           <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
-            <Link
-              to="/#blog"
-              className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-blue-400 mb-8 transition-colors"
-            >
-              <ArrowLeft size={16} /> Back to posts
-            </Link>
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+              <Link
+                to="/#blog"
+                className="inline-flex items-center gap-2 text-xs sm:text-sm text-slate-500 hover:text-blue-600 transition-colors"
+              >
+                <ArrowLeft size={15} /> Back to posts
+              </Link>
+
+              {/* Codify Breadcrumb Navigation */}
+              <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
+                <span>/</span>
+                <Link to="/posts" className="hover:text-blue-600 transition-colors">Blog</Link>
+                {postTags.length > 0 && (
+                  <>
+                    <span>/</span>
+                    <span className="text-blue-600 font-semibold">{postTags[0]}</span>
+                  </>
+                )}
+              </nav>
+            </div>
 
             {loading && !post && (
               <div className="space-y-4">
@@ -576,6 +623,34 @@ const PostDetailContent = () => {
                     >
                       <LinkIcon size={16} />
                     </button>
+                  </div>
+                </div>
+
+                {/* CODIFY BLOGGER AUTHOR BOX (.about-author) */}
+                <div className="mt-10 p-6 rounded-2xl bg-slate-50 border border-slate-200 dark:bg-[#0c183a]/80 dark:border-blue-900/40 flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left shadow-xs">
+                  <img
+                    src="/profile.webp"
+                    alt="MD. Shinha Sarder"
+                    className="w-16 h-16 rounded-full object-cover border-2 border-blue-500/40 shrink-0 shadow-sm"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-center sm:justify-start gap-1.5 mb-1">
+                      <h4 className="font-bold text-base text-slate-900 dark:text-white">MD. Shinha Sarder</h4>
+                      <BadgeCheck size={16} className="text-blue-500 fill-blue-500/20" />
+                    </div>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold mb-2">
+                      Founder &amp; CEO • Entrepreneur • Musical Artist
+                    </p>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-3">
+                      MD. Shinha Sarder is the Founder &amp; CEO of IT Tech BD and Biostar TV World. Student at Northern University of Business &amp; Technology Khulna, active content creator, and technology monograph author.
+                    </p>
+                    <div className="flex items-center justify-center sm:justify-start gap-2">
+                      <a href="https://www.facebook.com/md.shinha.sarder" target="_blank" rel="noreferrer" title="Facebook" className="w-7 h-7 rounded-full bg-[#1877f2] text-white flex items-center justify-center text-xs hover:scale-110 transition-transform"><FaFacebookF size={12} /></a>
+                      <a href="https://x.com/mdshinhasarder" target="_blank" rel="noreferrer" title="X / Twitter" className="w-7 h-7 rounded-full bg-black text-white flex items-center justify-center text-xs hover:scale-110 transition-transform"><FaXTwitter size={12} /></a>
+                      <a href="https://www.youtube.com/@MD-Shinha-Sarder" target="_blank" rel="noreferrer" title="YouTube" className="w-7 h-7 rounded-full bg-[#ff0000] text-white flex items-center justify-center text-xs hover:scale-110 transition-transform"><FaYoutube size={12} /></a>
+                      <a href="https://open.spotify.com/artist/mdshinhasarder" target="_blank" rel="noreferrer" title="Spotify" className="w-7 h-7 rounded-full bg-[#1db954] text-white flex items-center justify-center text-xs hover:scale-110 transition-transform"><FaSpotify size={12} /></a>
+                      <a href="https://github.com/md-shinha-sarder" target="_blank" rel="noreferrer" title="GitHub" className="w-7 h-7 rounded-full bg-[#24292e] text-white flex items-center justify-center text-xs hover:scale-110 transition-transform"><FaGithub size={12} /></a>
+                    </div>
                   </div>
                 </div>
 

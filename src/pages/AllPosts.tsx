@@ -64,13 +64,22 @@ const AllPostsContent = () => {
       <SiteBackground />
       <div className="relative z-10">
         <Helmet>
-          <title>Blog - MD. Shinha Sarder</title>
+          <title>Blog - MD. Shinha Sarder | Official Articles &amp; Updates</title>
           <meta
             name="description"
-            content="Articles, technology insights, and updates published by MD. Shinha Sarder."
+            content="Read articles, technology insights, creative writing, and research updates published by MD. Shinha Sarder."
           />
-          <meta property="og:title" content="Blog - MD. Shinha Sarder" />
-          <link rel="canonical" href={typeof window !== "undefined" ? window.location.href : ""} />
+          <link rel="canonical" href="https://mdshinhasarder.com/posts" />
+          <meta property="og:title" content="Blog - MD. Shinha Sarder | Official Articles" />
+          <meta property="og:description" content="Read articles, technology insights, creative writing, and research updates published by MD. Shinha Sarder." />
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content="https://mdshinhasarder.com/posts" />
+          <meta property="og:image" content="https://mdshinhasarder.com/profile.webp" />
+          <meta property="og:site_name" content="MD. Shinha Sarder" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="Blog - MD. Shinha Sarder" />
+          <meta name="twitter:description" content="Read articles, technology insights, creative writing, and research updates published by MD. Shinha Sarder." />
+          <meta name="twitter:image" content="https://mdshinhasarder.com/profile.webp" />
         </Helmet>
         <Navbar />
         <section className="pt-24 pb-16">

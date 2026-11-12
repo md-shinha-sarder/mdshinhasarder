@@ -62,71 +62,86 @@ async function load(type: "posts" | "pages", force = false): Promise<BlogPost[]>
     let remotePosts: BlogPost[] = [];
     let liveBloggerPosts: BlogPost[] = [];
 
-    // 1. Try static sync file immediately for rapid offline-first render
+    // Parallel fast fetch of static, Supabase DB, and live Blogger feed
     const syncFile = type === "posts" ? "/posts-sync.json" : "/pages-sync.json";
-    if (typeof window !== "undefined") {
+
+    const fetchStatic = async () => {
+      if (typeof window === "undefined") return [];
       try {
         const res = await fetch(syncFile);
         if (res.ok) {
           const staticData = await res.json();
           if (Array.isArray(staticData) && staticData.length > 0) {
-            remotePosts = staticData.map((p) => normalizePost(p, "blogger"));
+            return staticData.map((p) => normalizePost(p, "blogger"));
           }
         }
-      } catch {
-        // ignore
+      } catch (_err) {
+        void _err;
       }
-    }
+      return [];
+    };
 
-    // 2. Try Supabase DB
-    try {
-      const table = type === "posts" ? "posts" : "pages";
-      const select =
-        type === "posts"
-          ? "id, slug, title, excerpt, content, cover_url, tags, seo_title, seo_description, status, published_at, created_at, updated_at"
-          : "id, slug, title, content, seo_title, seo_description, status, created_at, updated_at";
+    const fetchSupabase = async () => {
+      try {
+        const table = type === "posts" ? "posts" : "pages";
+        const select =
+          type === "posts"
+            ? "id, slug, title, excerpt, content, cover_url, tags, seo_title, seo_description, status, published_at, created_at, updated_at"
+            : "id, slug, title, content, seo_title, seo_description, status, created_at, updated_at";
 
-      const { data, error } = await (supabase.from as any)(table)
-        .select(select)
-        .eq("status", "published")
-        .order(type === "posts" ? "published_at" : "created_at", { ascending: false });
+        const { data, error } = await (supabase.from as any)(table)
+          .select(select)
+          .eq("status", "published")
+          .order(type === "posts" ? "published_at" : "created_at", { ascending: false });
 
-      if (!error && data && data.length > 0) {
-        dbPosts = data.map((item: any) =>
-          normalizePost(
-            {
-              id: item.id,
-              title: item.title,
-              slug: item.slug,
-              url: "",
-              image: item.cover_url ?? null,
-              excerpt: item.excerpt || item.seo_description || item.title,
-              content: item.content || "",
-              published: item.published_at || item.created_at,
-              updated: item.updated_at || item.published_at || item.created_at,
-              tags: item.tags || [],
-              seo_title: item.seo_title || null,
-              seo_description: item.seo_description || null,
-              status: "published",
-              synced_to_cloud: true,
-            },
-            "supabase"
-          )
-        );
+        if (!error && data && data.length > 0) {
+          return data.map((item: any) =>
+            normalizePost(
+              {
+                id: item.id,
+                title: item.title,
+                slug: item.slug,
+                url: "",
+                image: item.cover_url ?? null,
+                excerpt: item.excerpt || item.seo_description || item.title,
+                content: item.content || "",
+                published: item.published_at || item.created_at,
+                updated: item.updated_at || item.published_at || item.created_at,
+                tags: item.tags || [],
+                seo_title: item.seo_title || null,
+                seo_description: item.seo_description || null,
+                status: "published",
+                synced_to_cloud: true,
+              },
+              "supabase"
+            )
+          );
+        }
+      } catch (_err) {
+        void _err;
       }
-    } catch {
-      // Supabase table not created yet or connection error
-    }
+      return [];
+    };
 
-    // 3. Try direct live Blogger Feed Auto-Sync (shinhaauthor.blogspot.com)
-    try {
-      const live = await fetchLiveBloggerFeed(type);
-      if (live && live.length > 0) {
-        liveBloggerPosts = live;
+    const fetchLive = async () => {
+      try {
+        const live = await fetchLiveBloggerFeed(type);
+        if (live && live.length > 0) return live;
+      } catch (_err) {
+        void _err;
       }
-    } catch {
-      // ignore
-    }
+      return [];
+    };
+
+    const [staticRes, dbRes, liveRes] = await Promise.allSettled([
+      fetchStatic(),
+      fetchSupabase(),
+      fetchLive(),
+    ]);
+
+    if (staticRes.status === "fulfilled") remotePosts = staticRes.value;
+    if (dbRes.status === "fulfilled") dbPosts = dbRes.value;
+    if (liveRes.status === "fulfilled") liveBloggerPosts = liveRes.value;
 
     // 4. Merge & Deduplicate
     // Priority: Admin custom/edited posts > Supabase DB posts > Live Blogger Posts > Static Cache

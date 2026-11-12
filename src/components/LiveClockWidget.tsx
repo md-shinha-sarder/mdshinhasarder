@@ -1,59 +1,123 @@
 import { useEffect, useState } from "react";
-import { Radio, Clock, Calendar, Globe } from "lucide-react";
+import { Radio } from "lucide-react";
+
+// Bengali month transliterations and calculations
+const BENGALI_MONTHS = [
+  "Boishakh",
+  "Joishtho",
+  "Asharh",
+  "Shrabon",
+  "Bhadro",
+  "Ashwin",
+  "Kartik",
+  "Agrahayan",
+  "Poush",
+  "Magh",
+  "Falgun",
+  "Choitro",
+];
+
+const SEASONS = [
+  "Summer (Grishto)",
+  "Monsoon (Borsha)",
+  "Autumn (Shorot)",
+  "Late Autumn (Hemanta)",
+  "Winter (Sheet)",
+  "Spring (Boshonto)",
+];
+
+function getBengaliDateEnglish(date: Date) {
+  // Approximate standard revised calendar for Bangladesh
+  const day = date.getDate();
+  const month = date.getMonth(); // 0-indexed (0=Jan)
+  const year = date.getFullYear();
+
+  // Bengali New Year starts on April 14
+  let bYear = year - 593;
+  let bMonth = 0;
+  let bDay = 1;
+
+  // Month days mapping (Revised BD calendar: first 5 months have 31 days, rest 30 days, Falgun 29 or 30 in leap year)
+  if (month < 3 || (month === 3 && day < 14)) {
+    bYear = year - 594;
+  }
+
+  // Simplified calculation for display
+  const startOfBoishakh = new Date(year, 3, 14); // Apr 14
+  let diffDays = Math.floor((date.getTime() - startOfBoishakh.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) {
+    const prevStart = new Date(year - 1, 3, 14);
+    diffDays = Math.floor((date.getTime() - prevStart.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  const monthLengths = [31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29, 30];
+  let accumulated = 0;
+  for (let m = 0; m < 12; m++) {
+    if (diffDays < accumulated + monthLengths[m]) {
+      bMonth = m;
+      bDay = diffDays - accumulated + 1;
+      break;
+    }
+    accumulated += monthLengths[m];
+  }
+
+  const seasonIndex = Math.floor(bMonth / 2) % 6;
+  return `${bDay} ${BENGALI_MONTHS[bMonth]} ${bYear} BS • ${SEASONS[seasonIndex]}`;
+}
 
 export const LiveClockWidget = () => {
   const [timeStr, setTimeStr] = useState("--:--:-- PM");
   const [dayName, setDayName] = useState("Today");
-  const [fullEN, setFullEN] = useState("Loading…");
-  const [dhakaDate, setDhakaDate] = useState("Dhaka (BST, UTC+6)");
-  const [utcTime, setUtcTime] = useState("--:--:-- UTC");
+  const [bengaliDate, setBengaliDate] = useState("Loading...");
+  const [englishDate, setEnglishDate] = useState("Loading...");
+  const [hijriDate, setHijriDate] = useState("Loading...");
 
   useEffect(() => {
     function update() {
       const now = new Date();
 
-      // Dhaka Time (BST, UTC+6)
-      const dhakaFormatter = new Intl.DateTimeFormat("en-US", {
+      // Dhaka Time Clock
+      const timeFormatter = new Intl.DateTimeFormat("en-US", {
         timeZone: "Asia/Dhaka",
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
         hour12: true,
       });
-      setTimeStr(dhakaFormatter.format(now));
+      setTimeStr(timeFormatter.format(now));
 
+      // Day Name
       const dayFormatter = new Intl.DateTimeFormat("en-US", {
         timeZone: "Asia/Dhaka",
         weekday: "long",
       });
-      setDayName(dayFormatter.format(now));
+      const dName = dayFormatter.format(now);
+      setDayName(dName);
 
-      const dateFormatter = new Intl.DateTimeFormat("en-GB", {
+      // English Date (Day + Date)
+      const enFormatter = new Intl.DateTimeFormat("en-GB", {
         timeZone: "Asia/Dhaka",
         weekday: "long",
         day: "numeric",
         month: "long",
         year: "numeric",
       });
-      setFullEN(dateFormatter.format(now));
+      setEnglishDate(enFormatter.format(now));
 
-      const dhakaBrief = new Intl.DateTimeFormat("en-US", {
-        timeZone: "Asia/Dhaka",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-      setDhakaDate(`${dhakaBrief.format(now)} • Asia/Dhaka`);
+      // Bengali Date in English transliteration
+      setBengaliDate(getBengaliDateEnglish(now));
 
-      // UTC Time
-      const utcFormatter = new Intl.DateTimeFormat("en-US", {
-        timeZone: "UTC",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      });
-      setUtcTime(`${utcFormatter.format(now)} UTC`);
+      // Hijri Date in English
+      try {
+        const hijriFormatter = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+        setHijriDate(`${hijriFormatter.format(now)} AH`);
+      } catch {
+        setHijriDate("Islamic Calendar Date");
+      }
     }
 
     update();
@@ -62,85 +126,65 @@ export const LiveClockWidget = () => {
   }, []);
 
   return (
-    <div className="w-full max-w-4xl mx-auto my-6 px-4">
-      <div
-        id="ahrw-live-widget"
-        className="rounded-2xl overflow-hidden border border-slate-200 dark:border-blue-900/40 bg-white dark:bg-slate-900/90 shadow-xl transition-colors duration-300"
-      >
-        {/* Top Header */}
-        <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-3 text-white bg-gradient-to-r from-purple-700 via-indigo-600 to-emerald-600 dark:from-purple-900 dark:via-blue-900 dark:to-emerald-800">
+    <div className="w-full my-6 font-['Poppins','Karla',sans-serif]">
+      {/* Container matching .ahrw in XML */}
+      <div className="rounded-[18px] overflow-hidden border border-black/[0.08] bg-white shadow-[0_12px_34px_rgba(0,0,0,0.10)]">
+        {/* Top Header matching .ahrw-top */}
+        <div className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-[#5e26cd] via-[#050796] to-[#0a4275] text-white">
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md border border-white/25">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md border border-white/25">
               <span className="w-2 h-2 rounded-full bg-red-400 animate-ping" />
-              <Radio className="w-3 h-3" />
+              <Radio className="w-3.5 h-3.5" />
               Live
             </span>
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white drop-shadow-sm">
+            <div className="text-xl sm:text-2xl font-bold tracking-tight text-white">
               Today — {dayName}
-            </h2>
+            </div>
           </div>
-          <div className="font-mono text-2xl md:text-3xl font-bold tracking-wider text-white drop-shadow-sm">
+          <div className="font-mono text-2xl sm:text-3xl font-bold tracking-wider text-white">
             {timeStr}
           </div>
         </div>
 
-        {/* 3 Grid Cards */}
-        <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-3 bg-gradient-to-b from-purple-50/50 via-slate-50 to-white dark:from-slate-900/50 dark:via-slate-900/80 dark:to-slate-950">
-          {/* Bangladesh Standard Time Card */}
-          <div className="relative overflow-hidden rounded-xl p-3.5 bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-sm hover:shadow-md transition-all">
-            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-amber-500 to-orange-500" />
-            <div className="pl-2 flex items-baseline justify-between gap-2">
-              <span className="font-bold text-sm text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" /> BST Timezone
-              </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">UTC+6</span>
+        {/* 3 Grid Cards matching .ahrw-grid */}
+        <div className="p-4 sm:p-5 grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#f8fafc]">
+          {/* Card 1: Bengali (in English) */}
+          <div className="bg-white p-4 rounded-xl border border-[#e2e8f0] shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-[#0a4275] text-sm">Bengali Calendar</span>
+              <span className="text-xs text-[#64748b]">Day + Date (English)</span>
             </div>
-            <div className="pl-2 mt-2 font-bold text-slate-800 dark:text-slate-100 text-base leading-snug">
-              {timeStr}
-            </div>
-            <div className="pl-2 mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {dhakaDate}
+            <div className="font-semibold text-sm text-[#1e2a38] mt-1 leading-snug">
+              {bengaliDate}
             </div>
           </div>
 
-          {/* International Calendar Card */}
-          <div className="relative overflow-hidden rounded-xl p-3.5 bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-sm hover:shadow-md transition-all">
-            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-500 to-cyan-500" />
-            <div className="pl-2 flex items-baseline justify-between gap-2">
-              <span className="font-bold text-sm text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5" /> Full Date
-              </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Gregorian</span>
+          {/* Card 2: English (Gregorian) */}
+          <div className="bg-white p-4 rounded-xl border border-[#e2e8f0] shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-[#2563eb] text-sm">English Calendar</span>
+              <span className="text-xs text-[#64748b]">Day + Date</span>
             </div>
-            <div className="pl-2 mt-2 font-bold text-slate-800 dark:text-slate-100 text-base leading-snug">
-              {fullEN}
-            </div>
-            <div className="pl-2 mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Official Standard Format
+            <div className="font-semibold text-sm text-[#1e2a38] mt-1 leading-snug">
+              {englishDate}
             </div>
           </div>
 
-          {/* UTC Global Reference Card */}
-          <div className="relative overflow-hidden rounded-xl p-3.5 bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-sm hover:shadow-md transition-all">
-            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-emerald-500 to-teal-500" />
-            <div className="pl-2 flex items-baseline justify-between gap-2">
-              <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5" /> Global Time
-              </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">UTC / GMT</span>
+          {/* Card 3: Hijri (Islamic) */}
+          <div className="bg-white p-4 rounded-xl border border-[#e2e8f0] shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-[#059669] text-sm">Hijri Calendar</span>
+              <span className="text-xs text-[#64748b]">Islamic Era</span>
             </div>
-            <div className="pl-2 mt-2 font-bold text-slate-800 dark:text-slate-100 text-base leading-snug font-mono">
-              {utcTime}
-            </div>
-            <div className="pl-2 mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Coordinated Universal Time
+            <div className="font-semibold text-sm text-[#1e2a38] mt-1 leading-snug">
+              {hijriDate}
             </div>
           </div>
         </div>
 
-        <div className="px-5 py-2.5 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800/60 flex flex-wrap items-center justify-between gap-2">
-          <span>Live Synchronized Time • High Precision Digital Clock</span>
-          <span className="text-[11px] font-mono opacity-80">UTC+6 Bangladesh Standard Time (BST)</span>
+        {/* Note in English matching .ahrw-note */}
+        <div className="px-5 py-3 text-xs text-[#64748b] bg-white border-t border-[#f1f5f9] text-center sm:text-left">
+          Note: Bengali date is calculated according to the standard revised calendar (approximate).
         </div>
       </div>
     </div>

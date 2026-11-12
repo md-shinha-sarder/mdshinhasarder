@@ -47,7 +47,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const applySession = async (s: Session | null) => {
       if (!mounted) return;
-      setLoading(true);
       setSession(s);
       setUser(s?.user ?? null);
       if (!s?.user) {
@@ -55,7 +54,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
         return;
       }
-      const admin = await checkAdmin(s.user).catch(() => false);
+      // Instant fast check for admin email
+      const email = (s.user.email || "").toLowerCase().trim();
+      const isQuickAdmin = ADMIN_EMAILS.includes(email);
+      if (isQuickAdmin) {
+        setIsAdmin(true);
+        setLoading(false);
+      }
+      const admin = await checkAdmin(s.user).catch(() => isQuickAdmin);
       if (!mounted) return;
       setIsAdmin(admin);
       setLoading(false);
@@ -64,15 +70,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       void applySession(s);
     });
+
     supabase.auth.getSession().then(async ({ data }) => {
       if (data.session?.user) {
-        const { data: verified, error } = await supabase.auth.getUser();
-        if (error || !verified.user) {
-          await supabase.auth.signOut();
-          await applySession(null);
-          return;
-        }
-        await applySession({ ...data.session, user: verified.user });
+        await applySession(data.session);
+        // Background verify without blocking render
+        supabase.auth.getUser().then(({ data: verified, error }) => {
+          if (error || !verified.user) {
+            supabase.auth.signOut();
+            applySession(null);
+          }
+        }).catch(() => {});
       } else {
         await applySession(null);
       }

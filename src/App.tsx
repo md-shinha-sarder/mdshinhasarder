@@ -35,6 +35,8 @@ import TechVersionAdmin from "./pages/admin/TechVersionAdmin.tsx";
 import SongsAdmin from "./pages/admin/SongsAdmin.tsx";
 import BooksAdmin from "./pages/admin/BooksAdmin.tsx";
 import ProfileAdmin from "./pages/admin/ProfileAdmin.tsx";
+import CommentsAdmin from "./pages/admin/CommentsAdmin.tsx";
+import EarningsAdmin from "./pages/admin/EarningsAdmin.tsx";
 import MediaRedirect from "./pages/MediaRedirect.tsx";
 
 const queryClient = new QueryClient({
@@ -106,20 +108,27 @@ const AppRoutes = () => {
 
         <Route path="/auth" element={<Auth />} />
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="songs" element={<SongsAdmin />} />
-          <Route path="books" element={<BooksAdmin />} />
-          <Route path="profile-data" element={<ProfileAdmin />} />
-          <Route path="tech-version" element={<TechVersionAdmin />} />
-          <Route path="pages" element={<PagesAdmin />} />
-          <Route path="page" element={<PagesAdmin />} />
+          <Route index element={<PostsAdmin />} />
           <Route path="posts" element={<PostsAdmin />} />
           <Route path="post" element={<PostsAdmin />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="stats" element={<Dashboard />} />
+          <Route path="comments" element={<CommentsAdmin />} />
+          <Route path="earnings" element={<EarningsAdmin />} />
+          <Route path="pages" element={<PagesAdmin />} />
+          <Route path="page" element={<PagesAdmin />} />
+          <Route path="profile-data" element={<ProfileAdmin />} />
+          <Route path="layout" element={<ProfileAdmin />} />
+          <Route path="theme" element={<ThemeAdmin />} />
+          <Route path="seo" element={<SeoAdmin />} />
+          <Route path="settings" element={<SeoAdmin />} />
+          <Route path="tech-version" element={<TechVersionAdmin />} />
+          <Route path="reading-list" element={<TechVersionAdmin />} />
+          <Route path="songs" element={<SongsAdmin />} />
+          <Route path="music" element={<SongsAdmin />} />
+          <Route path="books" element={<BooksAdmin />} />
           <Route path="media" element={<MediaAdmin />} />
           <Route path="news-check" element={<NewsCheckAdmin />} />
-          <Route path="seo" element={<SeoAdmin />} />
-          <Route path="theme" element={<ThemeAdmin />} />
           <Route path="*" element={<Dashboard />} />
         </Route>
         <Route path="*" element={<NotFound />} />
