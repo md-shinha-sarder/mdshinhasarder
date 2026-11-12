@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Cloudinary Gallery - MD. Shinha Sarder",
     description: "Official portfolio, high-resolution media gallery, and Cloudinary CDN assets of MD. Shinha Sarder.",
-    images: ["https://mdshinhasarder.com/images/md-shinha-sarder-official-portrait.profile.webp"],
+    images: ["https://mdshinhasarder.com/profile.webp"],
   },
 };
 

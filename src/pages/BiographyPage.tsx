@@ -33,7 +33,7 @@ export const BiographyPage = () => {
           content="Biography of MD. Shinha Sarder, Founder & CEO of IT Tech BD and Biostar TV World. Entrepreneur, author, researcher, and musical artist."
         />
         <meta property="og:title" content="Biography - MD. Shinha Sarder" />
-        <meta property="og:image" content="https://mdshinhasarder.com/images/md-shinha-sarder-official-portrait.profile.png" />
+        <meta property="og:image" content="https://mdshinhasarder.com/profile.webp" />
         <link rel="canonical" href="https://www.mdshinhasarder.com/p/biography.html" />
       </Helmet>
 

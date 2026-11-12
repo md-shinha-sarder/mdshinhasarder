@@ -109,6 +109,12 @@ export const GalleryPage = () => {
 
     // 1. Official Verified Portraits & Studio Assets
     addPhoto(
+      "/profile.webp",
+      "Official Main Profile — MD. Shinha Sarder",
+      "Portraits",
+      "Official primary verified profile portrait of MD. Shinha Sarder."
+    );
+    addPhoto(
       "/images/md-shinha-sarder-official-portrait.profile.png",
       "Official Portrait — MD. Shinha Sarder",
       "Portraits",
@@ -372,7 +378,7 @@ export const GalleryPage = () => {
           content="Visual gallery and official photo media archive of MD. Shinha Sarder."
         />
         <meta property="og:title" content="Gallery - MD. Shinha Sarder" />
-        <meta property="og:image" content="https://mdshinhasarder.com/images/md-shinha-sarder-official-portrait.profile.webp" />
+        <meta property="og:image" content="https://mdshinhasarder.com/profile.webp" />
         <link rel="canonical" href="https://www.mdshinhasarder.com/p/gallery.html" />
       </Helmet>
 

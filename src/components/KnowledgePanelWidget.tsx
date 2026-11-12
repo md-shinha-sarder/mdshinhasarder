@@ -72,7 +72,7 @@ export const KnowledgePanelWidget = () => {
     };
   }, [activeTab]);
 
-  const avatarUrl = "/images/md-shinha-sarder-profile-header.webp";
+  const avatarUrl = "/profile.webp";
 
   const socials = [
     { name: "YouTube", href: profile.youtubeChannel || OFFICIAL_YOUTUBE_CHANNEL, icon: Youtube, color: "hover:text-red-400" },

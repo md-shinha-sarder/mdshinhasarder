@@ -38,11 +38,11 @@ const HeroSection = () => {
                 <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500 rounded-full opacity-35 blur-xl animate-pulse" />
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-sky-500 rounded-full opacity-70 p-[2px]" />
                 <img
-                  src="/images/md-shinha-sarder-profile-header.webp"
+                  src="/profile.webp"
                   onError={(e) => {
                     const target = e.currentTarget;
-                    if (target.src !== window.location.origin + (profilePhoto || "/profile.webp")) {
-                      target.src = profilePhoto || "/profile.webp";
+                    if (target.src !== window.location.origin + "/images/md-shinha-sarder-profile-header.webp") {
+                      target.src = "/images/md-shinha-sarder-profile-header.webp";
                     }
                   }}
                   alt="MD. Shinha Sarder portrait"
