@@ -55,12 +55,13 @@ export const useSiteSettings = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase
-      .from("site_settings_public" as any)
-      .select("id, site_title, site_tagline, logo_url, favicon_url, primary_color, background_color, font_heading, font_body, seo_title, seo_description, seo_keywords, social_facebook, social_twitter, social_youtube, social_github, social_website, updated_at")
-      .eq("id", 1)
-      .maybeSingle()
-      .then(({ data }) => {
+    void (async () => {
+      try {
+        const { data } = await supabase
+          .from("site_settings_public" as any)
+          .select("id, site_title, site_tagline, logo_url, favicon_url, primary_color, background_color, font_heading, font_body, seo_title, seo_description, seo_keywords, social_facebook, social_twitter, social_youtube, social_github, social_website, updated_at")
+          .eq("id", 1)
+          .maybeSingle();
         if (data) {
           const raw = data as unknown as SiteSettings;
           setSettings({
@@ -69,11 +70,12 @@ export const useSiteSettings = () => {
             seo_title: sanitizeTitle(raw.seo_title || DEFAULT_SETTINGS.seo_title),
           });
         }
+      } catch {
+        // fallback to default settings
+      } finally {
         setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+      }
+    })();
   }, []);
 
   useEffect(() => {

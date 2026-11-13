@@ -337,18 +337,23 @@ function MediaLibraryDialog({ open, onOpenChange, onSelect, onSelectMany, multi,
       void _e;
     }
 
-    supabase.from("media").select("*").order("created_at", { ascending: false }).limit(200)
-      .then(({ data }) => {
+    void (async () => {
+      try {
+        const { data } = await supabase
+          .from("media")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(200);
         const sbRows = (data as MediaRow[]) || [];
         const map = new Map<string, MediaRow>();
         for (const r of [...localRows, ...sbRows]) {
           if (r.url && !map.has(r.url)) map.set(r.url, r);
         }
         setItems(Array.from(map.values()));
-      })
-      .catch(() => {
+      } catch {
         setItems(localRows);
-      });
+      }
+    })();
   }, [open]);
 
   const filtered = items.filter((m) => {

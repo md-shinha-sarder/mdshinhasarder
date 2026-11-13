@@ -337,7 +337,12 @@ export const AdminLayout = () => {
               <img
                 src="/images/site-logo.png"
                 onError={(e) => {
-                  e.currentTarget.src = "/profile.webp";
+                  if (!e.currentTarget.dataset.triedFallback) {
+                    e.currentTarget.dataset.triedFallback = "1";
+                    e.currentTarget.src = "/site-logo.png";
+                  } else {
+                    e.currentTarget.style.display = "none";
+                  }
                 }}
                 alt="MD. Shinha Sarder Site Logo"
                 className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-orange-500/40 shadow-xs shrink-0 transition-transform group-hover:scale-105"
@@ -562,7 +567,12 @@ export const AdminLayout = () => {
                   <img
                     src="/images/site-logo.png"
                     onError={(e) => {
-                      e.currentTarget.src = "/profile.webp";
+                      if (!e.currentTarget.dataset.triedFallback) {
+                        e.currentTarget.dataset.triedFallback = "1";
+                        e.currentTarget.src = "/site-logo.png";
+                      } else {
+                        e.currentTarget.style.display = "none";
+                      }
                     }}
                     alt="MD. Shinha Sarder Site Logo"
                     className="w-8 h-8 rounded-full object-cover border border-orange-500/40 shadow-xs"

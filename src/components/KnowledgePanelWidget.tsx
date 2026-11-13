@@ -527,7 +527,7 @@ export const KnowledgePanelWidget = () => {
                 <div key={pub.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
                   <h4 className="font-semibold text-slate-900 dark:text-white text-sm">{pub.title}</h4>
                   <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{pub.authors} · {pub.year}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{pub.venue}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{pub.publisher}</p>
                 </div>
               ))}
             </div>

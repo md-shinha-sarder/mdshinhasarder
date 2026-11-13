@@ -28,6 +28,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePages } from "@/hooks/usePosts";
 import { Link } from "react-router-dom";
 import { TipTapEditor } from "@/components/editor/TipTapEditor";
+import {
+  saveAdminPage,
+  deleteAdminPage,
+  getStoredAdminPages,
+  getDeletedPostKeys,
+  subscribeToPostsUpdates,
+} from "@/lib/postSync";
 
 interface Page {
   id: string;
@@ -63,19 +70,47 @@ export const PagesAdmin = () => {
   const [viewMode, setViewMode] = useState<"compose" | "html">("compose");
 
   const load = async () => {
+    const localPages: Page[] = getStoredAdminPages().map((p) => ({
+      id: p.id,
+      slug: p.slug,
+      title: p.title,
+      content: p.content,
+      cover_url: resolveMediaUrl(p.image),
+      images: [],
+      seo_title: p.seo_title || "",
+      seo_description: p.seo_description || "",
+      status: p.status,
+    }));
+
+    let dbPages: Page[] = [];
     try {
       const { data } = await supabase
         .from("pages")
         .select("*")
         .order("created_at", { ascending: false });
-      setItems(((data as any[]) || []).map((p) => ({ ...p, images: p.images || [] })));
+      dbPages = ((data as any[]) || []).map((p) => ({
+        ...p,
+        images: p.images || [],
+      }));
     } catch {
       // Table may not exist yet
     }
+
+    const deleted = getDeletedPostKeys();
+    const map = new Map<string, Page>();
+    dbPages.forEach((p) => {
+      if (!deleted.has((p.slug || p.id).toLowerCase())) map.set(p.slug, p);
+    });
+    localPages.forEach((p) => {
+      if (!deleted.has((p.slug || p.id).toLowerCase())) map.set(p.slug, p);
+    });
+    setItems(Array.from(map.values()));
   };
 
   useEffect(() => {
     load();
+    const unsub = subscribeToPostsUpdates(() => load());
+    return () => unsub();
   }, []);
 
   // Lock body scroll when full-screen device window is open
@@ -128,7 +163,8 @@ export const PagesAdmin = () => {
 
     setSaving(true);
     try {
-      const payload = {
+      const res = await saveAdminPage({
+        id: editing.id || undefined,
         slug: finalSlug,
         title: editing.title.trim(),
         content: editing.content || "",
@@ -137,19 +173,12 @@ export const PagesAdmin = () => {
         seo_title: editing.seo_title || null,
         seo_description: editing.seo_description || null,
         status: editing.status,
-      };
+      });
 
-      const { error } = editing.id
-        ? await supabase.from("pages").update(payload).eq("id", editing.id)
-        : await supabase.from("pages").insert(payload);
-
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success("Page saved and published successfully!");
-        setOpen(false);
-        load();
-      }
+      toast.success(res.message || "Page saved and published live!");
+      setOpen(false);
+      await load();
+      void refetchPages().catch(() => {});
     } catch (err: any) {
       toast.error(err?.message || "Failed to save page");
     } finally {
@@ -157,16 +186,13 @@ export const PagesAdmin = () => {
     }
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this page?")) return;
+  const remove = async (page: Page) => {
+    if (!confirm(`Are you sure you want to delete "${page.title}"?`)) return;
     try {
-      const { error } = await supabase.from("pages").delete().eq("id", id);
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success("Page deleted");
-        load();
-      }
+      await deleteAdminPage(page.id, page.slug);
+      toast.success("Page deleted");
+      await load();
+      void refetchPages().catch(() => {});
     } catch (err: any) {
       toast.error(err?.message || "Failed to delete page");
     }
@@ -299,7 +325,7 @@ export const PagesAdmin = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => remove(p.id)}
+                      onClick={() => remove(p)}
                       className="p-1.5 text-[#5f6368] hover:text-[#d93025] hover:bg-[#fce8e6] rounded-full transition-colors"
                       title="Delete"
                     >
@@ -365,6 +391,27 @@ export const PagesAdmin = () => {
                     >
                       <ExternalLink size={15} />
                     </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditing({
+                          id: p.id,
+                          slug: p.slug,
+                          title: p.title,
+                          content: p.content,
+                          cover_url: resolveMediaUrl(p.image),
+                          images: [],
+                          seo_title: p.seo_title || "",
+                          seo_description: p.seo_description || "",
+                          status: p.status || "published",
+                        });
+                        setOpen(true);
+                      }}
+                      className="p-1.5 text-[#5f6368] hover:text-[#1a73e8] hover:bg-[#f1f3f4] rounded-full transition-colors"
+                      title="Edit page"
+                    >
+                      <Pencil size={15} />
+                    </button>
                   </div>
                 </div>
               ))

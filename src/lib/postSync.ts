@@ -15,6 +15,7 @@ export interface SyncedPost {
   slug: string;
   url: string;
   image: string | null;
+  cover_url?: string | null;
   excerpt: string;
   content: string;
   published: string;
@@ -25,10 +26,13 @@ export interface SyncedPost {
   status: "published" | "draft";
   source?: "admin" | "supabase" | "blogger";
   synced_to_cloud?: boolean;
+  views?: number;
 }
 
 const STORAGE_ADMIN_POSTS = "mds_admin_posts_v2";
 const STORAGE_CACHED_ALL_POSTS = "mds_all_posts_cache_v2";
+const STORAGE_ADMIN_PAGES = "mds_admin_pages_v1";
+const STORAGE_DELETED_KEYS = "mds_deleted_post_keys_v1";
 const SYNC_CHANNEL_NAME = "mds_posts_sync_channel";
 const SYNC_EVENT_NAME = "mds:posts:sync";
 
@@ -153,6 +157,78 @@ export function setStoredAdminPosts(posts: SyncedPost[]): void {
 const STORAGE_CACHED_ALL_PAGES = "mds_all_pages_cache_v2";
 
 /**
+ * Deletion blocklist so deleted Blogger/Supabase/static posts never reappear.
+ */
+export function getDeletedPostKeys(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(STORAGE_DELETED_KEYS);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return new Set();
+    return new Set(arr.map((k) => String(k || "").toLowerCase().trim()).filter(Boolean));
+  } catch {
+    return new Set();
+  }
+}
+
+export function addDeletedPostKeys(keys: string[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    const current = getDeletedPostKeys();
+    keys.forEach((k) => {
+      const clean = String(k || "").toLowerCase().trim();
+      if (clean) current.add(clean);
+    });
+    localStorage.setItem(STORAGE_DELETED_KEYS, JSON.stringify(Array.from(current)));
+  } catch {
+    // ignore
+  }
+}
+
+export function removeDeletedPostKeys(keys: string[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    const current = getDeletedPostKeys();
+    let changed = false;
+    keys.forEach((k) => {
+      const clean = String(k || "").toLowerCase().trim();
+      if (clean && current.delete(clean)) changed = true;
+    });
+    if (changed) {
+      localStorage.setItem(STORAGE_DELETED_KEYS, JSON.stringify(Array.from(current)));
+    }
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Retrieves custom pages created or updated by Admin in local storage.
+ */
+export function getStoredAdminPages(): SyncedPost[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_ADMIN_PAGES);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((p) => normalizePost(p, "admin"));
+  } catch {
+    return [];
+  }
+}
+
+export function setStoredAdminPages(pages: SyncedPost[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STORAGE_ADMIN_PAGES, JSON.stringify(pages));
+  } catch {
+    // ignore
+  }
+}
+
+/**
  * Retrieves the cached unified post list from local storage for instant 0ms rendering.
  */
 export function getCachedAllPosts(): SyncedPost[] {
@@ -235,7 +311,7 @@ export function fetchLiveBloggerFeed(type: "posts" | "pages"): Promise<SyncedPos
     const timeout = setTimeout(() => {
       cleanup();
       resolve([]);
-    }, 8000);
+    }, 3500);
 
     (window as any)[callbackName] = (data: any) => {
       clearTimeout(timeout);
@@ -330,15 +406,12 @@ export function fetchLiveBloggerFeed(type: "posts" | "pages"): Promise<SyncedPos
 /**
  * Broadcasts an update event across the current window and all other browser tabs.
  */
-export function broadcastPostsUpdate(posts?: SyncedPost[]): void {
+export function broadcastPostsUpdate(posts?: SyncedPost[], reset = false): void {
   if (typeof window === "undefined") return;
   try {
-    // Dispatch in current tab
-    window.dispatchEvent(new CustomEvent(SYNC_EVENT_NAME, { detail: { posts } }));
-
-    // Dispatch across tabs
+    window.dispatchEvent(new CustomEvent(SYNC_EVENT_NAME, { detail: { posts, reset } }));
     if (broadcastChannel) {
-      broadcastChannel.postMessage({ type: "POSTS_UPDATED", timestamp: Date.now() });
+      broadcastChannel.postMessage({ type: "POSTS_UPDATED", reset, timestamp: Date.now() });
     }
   } catch (e) {
     console.warn("[PostSync] Broadcast failed:", e);
@@ -348,18 +421,29 @@ export function broadcastPostsUpdate(posts?: SyncedPost[]): void {
 /**
  * Subscribes to live synchronization updates across tabs and local components.
  */
-export function subscribeToPostsUpdates(onUpdate: () => void): () => void {
+export function subscribeToPostsUpdates(
+  onUpdate: (detail?: { posts?: SyncedPost[]; reset?: boolean }) => void
+): () => void {
   if (typeof window === "undefined") return () => {};
 
-  const handleCustomEvent = () => onUpdate();
+  const handleCustomEvent = (e: Event) => {
+    const detail = (e as CustomEvent)?.detail as { posts?: SyncedPost[]; reset?: boolean } | undefined;
+    onUpdate(detail);
+  };
   const handleStorageEvent = (e: StorageEvent) => {
-    if (e.key === STORAGE_ADMIN_POSTS || e.key === STORAGE_CACHED_ALL_POSTS) {
-      onUpdate();
+    if (
+      e.key === STORAGE_ADMIN_POSTS ||
+      e.key === STORAGE_CACHED_ALL_POSTS ||
+      e.key === STORAGE_ADMIN_PAGES ||
+      e.key === STORAGE_CACHED_ALL_PAGES ||
+      e.key === STORAGE_DELETED_KEYS
+    ) {
+      onUpdate({ reset: e.newValue === null });
     }
   };
   const handleChannelMessage = (event: MessageEvent) => {
     if (event.data?.type === "POSTS_UPDATED") {
-      onUpdate();
+      onUpdate({ reset: Boolean(event.data?.reset) });
     }
   };
 
@@ -380,17 +464,14 @@ export function subscribeToPostsUpdates(onUpdate: () => void): () => void {
 
 /**
  * Saves a post from the Admin Panel:
- * 1. Persists immediately into Admin local synced store (instant UI reflect).
- * 2. Broadcasts cross-tab real-time event.
- * 3. Attempts to save to Supabase public.posts table.
+ * 1. Persists immediately into Admin local synced store + public cache (0ms live UI reflection).
+ * 2. Broadcasts cross-tab real-time event right away.
+ * 3. Persists to Supabase public.posts table without stalling the UI.
  */
 export async function saveAdminPost(
   postInput: Partial<SyncedPost> & { title: string; content: string }
 ): Promise<{ success: boolean; post: SyncedPost; syncedToCloud: boolean; message: string }> {
   const currentAdminPosts = getStoredAdminPosts();
-
-  const isEditing = Boolean(postInput.id && currentAdminPosts.some((p) => p.id === postInput.id));
-  const id = postInput.id || "post-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7);
 
   const title = postInput.title.trim();
   let slug = (postInput.slug || "").trim().toLowerCase();
@@ -398,8 +479,17 @@ export async function saveAdminPost(
     slug = title
       .toLowerCase()
       .replace(/[^\w\s-]/g, "")
-      .replace(/[\s_-]+/g, "-");
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
   }
+
+  const existingMatch = currentAdminPosts.find(
+    (p) => (postInput.id && p.id === postInput.id) || (slug && p.slug === slug)
+  );
+  const id = postInput.id || existingMatch?.id || "post-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7);
+
+  // Unblock slug & id in case this post had been deleted earlier
+  removeDeletedPostKeys([id, slug]);
 
   const now = new Date().toISOString();
   const normalized: SyncedPost = normalizePost(
@@ -408,7 +498,7 @@ export async function saveAdminPost(
       id,
       slug,
       title,
-      published: postInput.published || (postInput.status === "published" ? now : now),
+      published: postInput.published || existingMatch?.published || now,
       updated: now,
       source: "admin",
       synced_to_cloud: false,
@@ -416,27 +506,30 @@ export async function saveAdminPost(
     "admin"
   );
 
-  // 1. Immediately store in admin posts
-  const updatedAdminPosts = isEditing
-    ? currentAdminPosts.map((p) => (p.id === id ? normalized : p))
-    : [normalized, ...currentAdminPosts.filter((p) => p.slug !== slug)];
-
+  // 1. Immediately store in admin posts (newest first)
+  const updatedAdminPosts = [
+    normalized,
+    ...currentAdminPosts.filter((p) => p.id !== id && p.slug !== slug),
+  ];
   setStoredAdminPosts(updatedAdminPosts);
 
-  // Update cached all posts immediately
-  const currentCached = getCachedAllPosts();
-  const mergedCached = [
-    normalized,
-    ...currentCached.filter((p) => p.id !== id && p.slug !== slug),
-  ];
+  // 2. Update public cached posts immediately: include ONLY if published, remove if draft
+  const currentCached = getCachedAllPosts().filter(
+    (p) => p.id !== id && p.slug !== slug && !getDeletedPostKeys().has((p.slug || p.id).toLowerCase())
+  );
+  const mergedCached =
+    normalized.status === "published" ? [normalized, ...currentCached] : currentCached;
   setCachedAllPosts(mergedCached);
 
-  // Broadcast to all open pages
+  // 3. Broadcast immediately to all open components & tabs
   broadcastPostsUpdate(mergedCached);
 
-  // 2. Attempt Supabase persistence
+  // 4. Attempt Supabase persistence cleanly (best-effort with fast timeout fallback)
   let syncedToCloud = false;
-  let message = "Post published and immediately live across the site!";
+  let message =
+    normalized.status === "published"
+      ? "Post published and live immediately across the site!"
+      : "Post saved as Draft (hidden from public site).";
 
   try {
     const payload = {
@@ -459,18 +552,16 @@ export async function saveAdminPost(
     if (!error) {
       syncedToCloud = true;
       normalized.synced_to_cloud = true;
-      // Mark as cloud synced
       const finalAdminPosts = getStoredAdminPosts().map((p) =>
         p.id === id ? { ...p, synced_to_cloud: true } : p
       );
       setStoredAdminPosts(finalAdminPosts);
-      message = "Post saved to Supabase database and synchronized live!";
-    } else {
-      console.warn("[PostSync] Supabase sync notice:", error.message);
-      message = "Post live locally & cross-tabs! (Supabase sync waiting for 'posts' table schema)";
+      if (normalized.status === "published") {
+        message = "Post published and synced live to database & site!";
+      }
     }
   } catch (err: any) {
-    console.warn("[PostSync] Cloud sync failed, continuing locally:", err);
+    console.warn("[PostSync] Cloud sync skipped, saved locally:", err?.message || err);
   }
 
   return {
@@ -482,27 +573,249 @@ export async function saveAdminPost(
 }
 
 /**
- * Deletes a post from Admin local store and Supabase.
+ * Deletes a post from Admin local store, adds to deletion blocklist, and removes from Supabase.
  */
-export async function deleteAdminPost(idOrSlug: string): Promise<{ success: boolean; syncedToCloud: boolean }> {
+export async function deleteAdminPost(
+  idOrSlug: string,
+  extraSlug?: string
+): Promise<{ success: boolean; syncedToCloud: boolean }> {
+  const keys = [idOrSlug, extraSlug].filter((k): k is string => Boolean(k && k.trim()));
+  const lowerKeys = new Set(keys.map((k) => k.toLowerCase().trim()));
+
+  addDeletedPostKeys(keys);
+
   const current = getStoredAdminPosts();
-  const filtered = current.filter((p) => p.id !== idOrSlug && p.slug !== idOrSlug);
+  const filtered = current.filter(
+    (p) => !lowerKeys.has((p.id || "").toLowerCase()) && !lowerKeys.has((p.slug || "").toLowerCase())
+  );
   setStoredAdminPosts(filtered);
 
-  // Update all posts cache
-  const cached = getCachedAllPosts().filter((p) => p.id !== idOrSlug && p.slug !== idOrSlug);
+  const cached = getCachedAllPosts().filter(
+    (p) => !lowerKeys.has((p.id || "").toLowerCase()) && !lowerKeys.has((p.slug || "").toLowerCase())
+  );
   setCachedAllPosts(cached);
   broadcastPostsUpdate(cached);
 
   let syncedToCloud = false;
   try {
-    const { error } = await supabase.from("posts").delete().or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
-    if (!error) syncedToCloud = true;
+    const cleanId = idOrSlug.trim();
+    const { error: err1 } = await supabase.from("posts").delete().eq("id", cleanId);
+    const cleanSlug = (extraSlug || idOrSlug).trim();
+    const { error: err2 } = await supabase.from("posts").delete().eq("slug", cleanSlug);
+    if (!err1 || !err2) syncedToCloud = true;
   } catch {
     // ignore
   }
 
   return { success: true, syncedToCloud };
+}
+
+/**
+ * Bulk updates post status (published/draft) for Manage Mode in Admin.
+ */
+export async function bulkUpdateAdminPosts(
+  postsList: Array<Partial<SyncedPost> & { title: string; content: string }>,
+  status: "published" | "draft"
+): Promise<void> {
+  const currentAdmin = getStoredAdminPosts();
+  const now = new Date().toISOString();
+  const deleted = getDeletedPostKeys();
+
+  const updatedMap = new Map<string, SyncedPost>();
+  currentAdmin.forEach((p) => updatedMap.set((p.slug || p.id).toLowerCase(), p));
+
+  for (const raw of postsList) {
+    const slug = (raw.slug || raw.id || "").toLowerCase().trim();
+    if (!slug) continue;
+    removeDeletedPostKeys([raw.id || "", slug]);
+    const normalized = normalizePost(
+      {
+        ...raw,
+        status,
+        published: raw.published || now,
+        updated: now,
+        source: "admin",
+      },
+      "admin"
+    );
+    updatedMap.set(slug, normalized);
+  }
+
+  const nextAdmin = Array.from(updatedMap.values());
+  setStoredAdminPosts(nextAdmin);
+
+  const nextPublic = getCachedAllPosts().filter((p) => {
+    const s = (p.slug || p.id).toLowerCase();
+    if (deleted.has(s)) return false;
+    const override = updatedMap.get(s);
+    if (override && override.status === "draft") return false;
+    return true;
+  });
+
+  for (const p of nextAdmin) {
+    if (p.status === "published" && !nextPublic.some((c) => c.slug === p.slug || c.id === p.id)) {
+      nextPublic.unshift(p);
+    }
+  }
+
+  setCachedAllPosts(nextPublic);
+  broadcastPostsUpdate(nextPublic);
+
+  // Best-effort Supabase sync in parallel
+  await Promise.allSettled(
+    postsList.map((raw) => {
+      const slug = (raw.slug || raw.id || "").toLowerCase().trim();
+      if (!slug) return Promise.resolve();
+      return supabase.from("posts").upsert(
+        {
+          id: raw.id || slug,
+          slug,
+          title: raw.title,
+          excerpt: raw.excerpt || "",
+          content: raw.content || "",
+          cover_url: raw.image || null,
+          tags: raw.tags || [],
+          status,
+          published_at: status === "published" ? raw.published || now : null,
+          updated_at: now,
+        },
+        { onConflict: "slug" }
+      );
+    })
+  );
+}
+
+/**
+ * Bulk deletes posts for Manage Mode in Admin.
+ */
+export async function bulkDeleteAdminPosts(
+  postsList: Array<{ id: string; slug: string }>
+): Promise<void> {
+  const keysToDelete: string[] = [];
+  postsList.forEach((p) => {
+    if (p.id) keysToDelete.push(p.id);
+    if (p.slug) keysToDelete.push(p.slug);
+  });
+  addDeletedPostKeys(keysToDelete);
+  const lowerSet = new Set(keysToDelete.map((k) => k.toLowerCase()));
+
+  const filteredAdmin = getStoredAdminPosts().filter(
+    (p) => !lowerSet.has((p.id || "").toLowerCase()) && !lowerSet.has((p.slug || "").toLowerCase())
+  );
+  setStoredAdminPosts(filteredAdmin);
+
+  const filteredCache = getCachedAllPosts().filter(
+    (p) => !lowerSet.has((p.id || "").toLowerCase()) && !lowerSet.has((p.slug || "").toLowerCase())
+  );
+  setCachedAllPosts(filteredCache);
+  broadcastPostsUpdate(filteredCache);
+
+  await Promise.allSettled(
+    postsList.map((p) =>
+      Promise.all([
+        supabase.from("posts").delete().eq("id", p.id),
+        supabase.from("posts").delete().eq("slug", p.slug),
+      ])
+    )
+  );
+}
+
+/**
+ * Saves or updates a Page from Admin (persists locally immediately + syncs to Supabase).
+ */
+export async function saveAdminPage(pageInput: {
+  id?: string;
+  slug: string;
+  title: string;
+  content: string;
+  cover_url?: string | null;
+  images?: string[];
+  seo_title?: string | null;
+  seo_description?: string | null;
+  status: string;
+}): Promise<{ success: boolean; page: SyncedPost; syncedToCloud: boolean; message: string }> {
+  const current = getStoredAdminPages();
+  const slug = pageInput.slug.trim().toLowerCase();
+  const id = pageInput.id || "page-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6);
+  const now = new Date().toISOString();
+
+  removeDeletedPostKeys([id, slug]);
+
+  const normalized = normalizePost(
+    {
+      ...pageInput,
+      id,
+      slug,
+      image: pageInput.cover_url || null,
+      status: pageInput.status === "draft" ? "draft" : "published",
+      published: now,
+      updated: now,
+      source: "admin",
+    },
+    "admin"
+  );
+
+  const nextAdmin = [normalized, ...current.filter((p) => p.id !== id && p.slug !== slug)];
+  setStoredAdminPages(nextAdmin);
+
+  const currentCached = getCachedAllPages().filter((p) => p.id !== id && p.slug !== slug);
+  const nextCached = normalized.status === "published" ? [normalized, ...currentCached] : currentCached;
+  setCachedAllPages(nextCached);
+  broadcastPostsUpdate();
+
+  let syncedToCloud = false;
+  let message = "Page saved and published live across the site!";
+
+  try {
+    const payload = {
+      slug,
+      title: pageInput.title.trim(),
+      content: pageInput.content || "",
+      cover_url: pageInput.cover_url || null,
+      images: pageInput.images || [],
+      seo_title: pageInput.seo_title || null,
+      seo_description: pageInput.seo_description || null,
+      status: pageInput.status,
+    };
+
+    const { error } = pageInput.id && !pageInput.id.startsWith("page-")
+      ? await supabase.from("pages").update(payload).eq("id", pageInput.id)
+      : await supabase.from("pages").upsert(payload, { onConflict: "slug" });
+
+    if (!error) {
+      syncedToCloud = true;
+      message = "Page saved to database and live on site!";
+    }
+  } catch {
+    // local storage persists cleanly
+  }
+
+  return { success: true, page: normalized, syncedToCloud, message };
+}
+
+export async function deleteAdminPage(idOrSlug: string, extraSlug?: string): Promise<void> {
+  const keys = [idOrSlug, extraSlug].filter((k): k is string => Boolean(k && k.trim()));
+  addDeletedPostKeys(keys);
+  const lower = new Set(keys.map((k) => k.toLowerCase()));
+
+  setStoredAdminPages(
+    getStoredAdminPages().filter(
+      (p) => !lower.has((p.id || "").toLowerCase()) && !lower.has((p.slug || "").toLowerCase())
+    )
+  );
+  setCachedAllPages(
+    getCachedAllPages().filter(
+      (p) => !lower.has((p.id || "").toLowerCase()) && !lower.has((p.slug || "").toLowerCase())
+    )
+  );
+  broadcastPostsUpdate();
+
+  try {
+    await supabase.from("pages").delete().eq("id", idOrSlug);
+    if (extraSlug) await supabase.from("pages").delete().eq("slug", extraSlug);
+  } catch {
+    // ignore
+  }
 }
 
 /**
@@ -513,6 +826,8 @@ export async function clearAllSyncData(): Promise<{ success: boolean; clearedCou
   const keysToPurge = [
     "mds_domain_image_mappings",
     "mds_admin_posts_v2",
+    "mds_admin_pages_v1",
+    "mds_deleted_post_keys_v1",
     "mds_all_posts_cache_v2",
     "mds_all_pages_cache_v2",
     "shinha_media_items",
@@ -538,6 +853,9 @@ export async function clearAllSyncData(): Promise<{ success: boolean; clearedCou
     });
   }
 
+  // Immediately invalidate in-memory caches across hooks/tabs
+  broadcastPostsUpdate(undefined, true);
+
   // Clear server sync registry & caches if server endpoint is available
   try {
     await fetch("/api/clear-all", { method: "POST" });
@@ -545,15 +863,16 @@ export async function clearAllSyncData(): Promise<{ success: boolean; clearedCou
     // non-blocking
   }
 
+  let cleanPostsLoaded: SyncedPost[] | undefined;
+
   // Refetch static clean posts
   try {
     const res = await fetch("/posts-sync.json?t=" + Date.now());
     if (res.ok) {
       const posts = await res.json();
       if (Array.isArray(posts) && posts.length > 0) {
-        const cleanPosts = posts.map((p: any) => normalizePost(p, "blogger"));
-        setCachedAllPosts(cleanPosts);
-        broadcastPostsUpdate(cleanPosts);
+        cleanPostsLoaded = posts.map((p: any) => normalizePost(p, "blogger"));
+        setCachedAllPosts(cleanPostsLoaded);
       }
     }
   } catch (_e) {
@@ -573,6 +892,8 @@ export async function clearAllSyncData(): Promise<{ success: boolean; clearedCou
   } catch (_e) {
     // non-blocking
   }
+
+  broadcastPostsUpdate(cleanPostsLoaded, true);
 
   return { success: true, clearedCount };
 }

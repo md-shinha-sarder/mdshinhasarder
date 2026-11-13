@@ -58,7 +58,7 @@ const NewsCheckAdmin = () => {
     let pass = 0, warn = 0, fail = 0;
     posts.forEach((p) => check(p).forEach((c) => c.ok ? pass++ : c.warn ? warn++ : fail++));
     return { pass, warn, fail };
-  }, [posts, auditedAt]);
+  }, [posts]);
 
   const ping = async (url?: string) => {
     setBusy(url || "all");

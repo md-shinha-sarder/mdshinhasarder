@@ -83,12 +83,13 @@ const SeoAdmin = () => {
   };
 
   useEffect(() => {
-    supabase
-      .from("site_settings")
-      .select("*")
-      .eq("id", 1)
-      .maybeSingle()
-      .then(({ data }) => {
+    void (async () => {
+      try {
+        const { data } = await supabase
+          .from("site_settings")
+          .select("*")
+          .eq("id", 1)
+          .maybeSingle();
         if (data) {
           setS({
             ...DEFAULT_SEO,
@@ -96,25 +97,29 @@ const SeoAdmin = () => {
             seo_title: sanitizeTitle(data.seo_title || DEFAULT_SEO.seo_title),
           });
         }
+      } catch {
+        // fallback to default SEO
+      } finally {
         setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+      }
+    })();
 
-    (supabase.from as any)("site_contact")
-      .select("contact_email, contact_phone")
-      .eq("id", 1)
-      .maybeSingle()
-      .then(({ data }: any) => {
+    void (async () => {
+      try {
+        const { data }: any = await (supabase.from as any)("site_contact")
+          .select("contact_email, contact_phone")
+          .eq("id", 1)
+          .maybeSingle();
         if (data) {
           setContact({
             contact_email: data.contact_email || "shinhasarder2343@gmail.com",
             contact_phone: data.contact_phone || "",
           });
         }
-      })
-      .catch(() => {});
+      } catch {
+        // non-blocking
+      }
+    })();
   }, []);
 
   const save = async () => {

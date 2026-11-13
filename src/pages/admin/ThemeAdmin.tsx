@@ -34,18 +34,20 @@ const ThemeAdmin = () => {
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    supabase
-      .from("site_settings")
-      .select("*")
-      .eq("id", 1)
-      .maybeSingle()
-      .then(({ data }) => {
+    void (async () => {
+      try {
+        const { data } = await supabase
+          .from("site_settings")
+          .select("*")
+          .eq("id", 1)
+          .maybeSingle();
         if (data) setS({ ...DEFAULT_THEME, ...data });
+      } catch {
+        // fallback to default theme
+      } finally {
         setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+      }
+    })();
   }, []);
 
   const save = async () => {

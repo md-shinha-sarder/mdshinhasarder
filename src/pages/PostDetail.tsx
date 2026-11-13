@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Calendar, Facebook, Twitter, Linkedin, Link as LinkIcon, MessageCircle, Compass, Home, BookOpen, Music, FileText, ZoomIn, Maximize2, ExternalLink, X, BadgeCheck } from "lucide-react";
+import { ArrowLeft, Calendar, Facebook, Twitter, Linkedin, Link as LinkIcon, MessageCircle, Compass, Home, BookOpen, Music, FileText, ZoomIn, Maximize2, ExternalLink, X, BadgeCheck, Sparkles } from "lucide-react";
 import { FaFacebookF, FaXTwitter, FaYoutube, FaSpotify, FaGithub, FaInstagram } from "react-icons/fa6";
 import Navbar from "@/components/Navbar";
 import SiteBackground from "@/components/SiteBackground";

@@ -3,10 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   normalizePost,
   getStoredAdminPosts,
+  getStoredAdminPages,
   getCachedAllPosts,
   setCachedAllPosts,
   getCachedAllPages,
   setCachedAllPages,
+  getDeletedPostKeys,
   fetchLiveBloggerFeed,
   subscribeToPostsUpdates,
   type SyncedPost,
@@ -14,22 +16,91 @@ import {
 
 export type BlogPost = SyncedPost;
 
-const memoryCache: Record<string, BlogPost[]> = {
+const memoryCache: Record<"posts" | "pages", BlogPost[]> = {
   posts: typeof window !== "undefined" ? getCachedAllPosts() : [],
   pages: typeof window !== "undefined" ? getCachedAllPages() : [],
 };
 
-const inflight: Record<string, Promise<BlogPost[]>> = {};
-const subscribers: Record<string, Set<(posts: BlogPost[]) => void>> = {
+const hasFetchedRemote: Record<"posts" | "pages", boolean> = {
+  posts: false,
+  pages: false,
+};
+
+const inflight: Record<string, Promise<BlogPost[]> | undefined> = {};
+const subscribers: Record<"posts" | "pages", Set<(posts: BlogPost[]) => void>> = {
   posts: new Set(),
   pages: new Set(),
 };
+
+function sortByNewest(list: BlogPost[]): BlogPost[] {
+  return [...list].sort((a, b) => {
+    const tA = a.published ? Date.parse(a.published) : 0;
+    const tB = b.published ? Date.parse(b.published) : 0;
+    return (Number.isFinite(tB) ? tB : 0) - (Number.isFinite(tA) ? tA : 0);
+  });
+}
+
+function mergePublicTiers(
+  type: "posts" | "pages",
+  adminItems: BlogPost[],
+  dbItems: BlogPost[],
+  liveItems: BlogPost[],
+  staticItems: BlogPost[]
+): BlogPost[] {
+  const deleted = getDeletedPostKeys();
+  const seenSlugs = new Set<string>();
+  const seenIds = new Set<string>();
+  const seenTitles = new Set<string>();
+  const merged: BlogPost[] = [];
+
+  const isDeleted = (p: BlogPost) => {
+    const s = (p.slug || "").toLowerCase().trim();
+    const id = (p.id || "").toLowerCase().trim();
+    return (s && deleted.has(s)) || (id && deleted.has(id));
+  };
+
+  const trackSeen = (p: BlogPost) => {
+    const slugKey = (p.slug || "").toLowerCase().trim();
+    const idKey = (p.id || "").toLowerCase().trim();
+    const titleKey = (p.title || "").toLowerCase().trim();
+    if (slugKey) seenSlugs.add(slugKey);
+    if (idKey) seenIds.add(idKey);
+    if (titleKey) seenTitles.add(titleKey);
+  };
+
+  const addIfUnique = (p: BlogPost) => {
+    if (isDeleted(p)) return;
+    if (p.status === "draft") {
+      // Reserve slug/id so draft overrides lower-tier published copies
+      trackSeen(p);
+      return;
+    }
+    const slugKey = (p.slug || "").toLowerCase().trim();
+    const idKey = (p.id || "").toLowerCase().trim();
+    const titleKey = (p.title || "").toLowerCase().trim();
+
+    if (slugKey && seenSlugs.has(slugKey)) return;
+    if (idKey && seenIds.has(idKey)) return;
+    if (titleKey && seenTitles.has(titleKey)) return;
+
+    trackSeen(p);
+    merged.push(p);
+  };
+
+  // Priority order: Admin custom/edited > Supabase DB > Live Blogger Feed > Static JSON
+  adminItems.forEach(addIfUnique);
+  dbItems.forEach(addIfUnique);
+  liveItems.forEach(addIfUnique);
+  staticItems.forEach(addIfUnique);
+
+  return type === "posts" ? sortByNewest(merged) : merged;
+}
 
 function notify(type: "posts" | "pages", data: BlogPost[]) {
   memoryCache[type] = data;
   if (type === "posts") {
     setCachedAllPosts(data);
-  } else if (type === "pages") {
+  } else {
     setCachedAllPages(data);
   }
   subscribers[type]?.forEach((callback) => {
@@ -41,28 +112,33 @@ function notify(type: "posts" | "pages", data: BlogPost[]) {
   });
 }
 
+function computeInstantSyncState(type: "posts" | "pages"): BlogPost[] {
+  const adminItems = type === "posts" ? getStoredAdminPosts() : getStoredAdminPages();
+  const cachedItems = type === "posts" ? getCachedAllPosts() : getCachedAllPages();
+  const currentMem = memoryCache[type] || [];
+  const base = cachedItems.length > 0 ? cachedItems : currentMem;
+  return mergePublicTiers(type, adminItems, [], [], base);
+}
+
 /**
- * Loads posts or pages from all tiers:
- * 1. Admin local synced storage (highest priority)
- * 2. Supabase DB table `posts` / `pages` (if exists and reachable)
- * 3. Static `/posts-sync.json` or `/pages-sync.json` cache
- * 4. Live direct Blogger feed auto-sync (shinhaauthor.blogspot.com)
+ * Loads posts or pages progressively across all tiers:
+ * Phase 1 (instant ~5-20ms): Admin local + Static `/posts-sync.json` / `/pages-sync.json`
+ * Phase 2 (background): Supabase DB + Live Blogger JSONP (timeout 3.5s)
  */
 async function load(type: "posts" | "pages", force = false): Promise<BlogPost[]> {
-  if (!force && memoryCache[type] && memoryCache[type].length > 0) {
+  if (!force && hasFetchedRemote[type] && memoryCache[type] && memoryCache[type].length > 0) {
     return memoryCache[type];
   }
   if (!force && inflight[type]) {
-    return inflight[type];
+    return inflight[type]!;
   }
 
   inflight[type] = (async () => {
-    const adminPosts = type === "posts" ? getStoredAdminPosts() : [];
-    let dbPosts: BlogPost[] = [];
-    let remotePosts: BlogPost[] = [];
-    let liveBloggerPosts: BlogPost[] = [];
+    const adminItems = type === "posts" ? getStoredAdminPosts() : getStoredAdminPages();
+    let dbItems: BlogPost[] = [];
+    let staticItems: BlogPost[] = [];
+    let liveItems: BlogPost[] = [];
 
-    // Parallel fast fetch of static, Supabase DB, and live Blogger feed
     const syncFile = type === "posts" ? "/posts-sync.json" : "/pages-sync.json";
 
     const fetchStatic = async () => {
@@ -87,7 +163,7 @@ async function load(type: "posts" | "pages", force = false): Promise<BlogPost[]>
         const select =
           type === "posts"
             ? "id, slug, title, excerpt, content, cover_url, tags, seo_title, seo_description, status, published_at, created_at, updated_at"
-            : "id, slug, title, content, seo_title, seo_description, status, created_at, updated_at";
+            : "id, slug, title, content, cover_url, images, seo_title, seo_description, status, created_at, updated_at";
 
         const { data, error } = await (supabase.from as any)(table)
           .select(select)
@@ -133,56 +209,39 @@ async function load(type: "posts" | "pages", force = false): Promise<BlogPost[]>
       return [];
     };
 
-    const [staticRes, dbRes, liveRes] = await Promise.allSettled([
-      fetchStatic(),
-      fetchSupabase(),
-      fetchLive(),
-    ]);
+    // Start all 3 sources in parallel
+    const staticPromise = fetchStatic();
+    const dbPromise = fetchSupabase();
+    const livePromise = fetchLive();
 
-    if (staticRes.status === "fulfilled") remotePosts = staticRes.value;
-    if (dbRes.status === "fulfilled") dbPosts = dbRes.value;
-    if (liveRes.status === "fulfilled") liveBloggerPosts = liveRes.value;
+    // Phase 1: Emit immediately as soon as local static JSON finishes (~10ms)
+    try {
+      staticItems = await staticPromise;
+      const latestAdmin1 = type === "posts" ? getStoredAdminPosts() : getStoredAdminPages();
+      const fastMerged = mergePublicTiers(type, latestAdmin1, [], [], staticItems);
+      if (fastMerged.length > 0) {
+        notify(type, fastMerged);
+      }
+    } catch {
+      // continue to phase 2
+    }
 
-    // 4. Merge & Deduplicate
-    // Priority: Admin custom/edited posts > Supabase DB posts > Live Blogger Posts > Static Cache
-    const seenSlugs = new Set<string>();
-    const seenIds = new Set<string>();
-    const seenTitles = new Set<string>();
-    const merged: BlogPost[] = [];
+    // Phase 2: Merge Supabase + Live Blogger JSONP when they settle
+    const [dbRes, liveRes] = await Promise.allSettled([dbPromise, livePromise]);
+    if (dbRes.status === "fulfilled") dbItems = dbRes.value;
+    if (liveRes.status === "fulfilled") liveItems = liveRes.value;
 
-    const addPost = (p: BlogPost) => {
-      const slugKey = (p.slug || "").toLowerCase().trim();
-      const idKey = (p.id || "").toLowerCase().trim();
-      const titleKey = (p.title || "").toLowerCase().trim();
+    const latestAdmin2 = type === "posts" ? getStoredAdminPosts() : getStoredAdminPages();
+    const merged = mergePublicTiers(type, latestAdmin2, dbItems, liveItems, staticItems);
+    const result = merged.length > 0 ? merged : computeInstantSyncState(type);
 
-      if (slugKey && seenSlugs.has(slugKey)) return;
-      if (idKey && seenIds.has(idKey)) return;
-      if (titleKey && seenTitles.has(titleKey)) return;
-
-      if (slugKey) seenSlugs.add(slugKey);
-      if (idKey) seenIds.add(idKey);
-      if (titleKey) seenTitles.add(titleKey);
-      merged.push(p);
-    };
-
-    // Admin posts first (only published ones for public view)
-    adminPosts.filter((p) => p.status === "published").forEach(addPost);
-    // Then Supabase database posts
-    dbPosts.forEach(addPost);
-    // Then Live Blogger auto-synced posts
-    liveBloggerPosts.forEach(addPost);
-    // Then Static Cached posts
-    remotePosts.forEach(addPost);
-
-    // If still empty, fall back to memory cache
-    const result = merged.length > 0 ? merged : memoryCache[type] || [];
-
+    hasFetchedRemote[type] = true;
     notify(type, result);
     return result;
   })();
 
   try {
-    return await inflight[type];
+    return await inflight[type]!;
   } finally {
     delete inflight[type];
   }
@@ -190,16 +249,11 @@ async function load(type: "posts" | "pages", force = false): Promise<BlogPost[]>
 
 export const usePosts = () => {
   const [posts, setPosts] = useState<BlogPost[]>(() => {
-    if (memoryCache.posts && memoryCache.posts.length > 0) {
-      return memoryCache.posts;
-    }
     if (typeof window !== "undefined") {
-      const cached = getCachedAllPosts();
-      if (cached.length > 0) return cached;
-      const admin = getStoredAdminPosts().filter((p) => p.status === "published");
-      if (admin.length > 0) return admin;
+      const instant = computeInstantSyncState("posts");
+      if (instant.length > 0) return instant;
     }
-    return [];
+    return memoryCache.posts || [];
   });
 
   const [loading, setLoading] = useState<boolean>(posts.length === 0);
@@ -207,19 +261,24 @@ export const usePosts = () => {
   useEffect(() => {
     const handleUpdate = (updated: BlogPost[]) => {
       setPosts(updated);
+      setLoading(false);
     };
 
     subscribers.posts.add(handleUpdate);
 
-    // Listen to cross-tab & local sync events
-    const unsubscribeSync = subscribeToPostsUpdates(() => {
-      const admin = getStoredAdminPosts().filter((p) => p.status === "published");
-      const current = memoryCache.posts || [];
-      const merged = [...admin, ...current.filter((c) => !admin.some((a) => a.slug === c.slug || a.id === c.id))];
-      setPosts(merged);
+    // 0ms immediate update whenever Admin publishes, drafts, edits, deletes, or clears cache
+    const unsubscribeSync = subscribeToPostsUpdates((detail) => {
+      if (detail?.reset) {
+        memoryCache.posts = [];
+        hasFetchedRemote.posts = false;
+      }
+      const instant = computeInstantSyncState("posts");
+      memoryCache.posts = instant;
+      setPosts(instant);
+      setLoading(false);
     });
 
-    // Background fetch to ensure newest content
+    // Always kick off background refresh on mount until remote tiers are synced
     load("posts")
       .then((p) => {
         setPosts(p);
@@ -236,13 +295,15 @@ export const usePosts = () => {
   }, []);
 
   const refetch = useCallback(async () => {
-    setLoading(true);
+    hasFetchedRemote.posts = false;
     try {
       const p = await load("posts", true);
       setPosts(p);
-      return p;
-    } finally {
       setLoading(false);
+      return p;
+    } catch {
+      setLoading(false);
+      return computeInstantSyncState("posts");
     }
   }, []);
 
@@ -251,23 +312,32 @@ export const usePosts = () => {
 
 export const usePages = () => {
   const [pages, setPages] = useState<BlogPost[]>(() => {
-    if (memoryCache.pages && memoryCache.pages.length > 0) {
-      return memoryCache.pages;
-    }
     if (typeof window !== "undefined") {
-      const cached = getCachedAllPages();
-      if (cached.length > 0) return cached;
+      const instant = computeInstantSyncState("pages");
+      if (instant.length > 0) return instant;
     }
-    return [];
+    return memoryCache.pages || [];
   });
   const [loading, setLoading] = useState<boolean>(pages.length === 0);
 
   useEffect(() => {
     const handleUpdate = (updated: BlogPost[]) => {
       setPages(updated);
+      setLoading(false);
     };
 
     subscribers.pages.add(handleUpdate);
+
+    const unsubscribeSync = subscribeToPostsUpdates((detail) => {
+      if (detail?.reset) {
+        memoryCache.pages = [];
+        hasFetchedRemote.pages = false;
+      }
+      const instant = computeInstantSyncState("pages");
+      memoryCache.pages = instant;
+      setPages(instant);
+      setLoading(false);
+    });
 
     load("pages")
       .then((p) => {
@@ -280,17 +350,20 @@ export const usePages = () => {
 
     return () => {
       subscribers.pages.delete(handleUpdate);
+      unsubscribeSync();
     };
   }, []);
 
   const refetch = useCallback(async () => {
-    setLoading(true);
+    hasFetchedRemote.pages = false;
     try {
       const p = await load("pages", true);
       setPages(p);
-      return p;
-    } finally {
       setLoading(false);
+      return p;
+    } catch {
+      setLoading(false);
+      return computeInstantSyncState("pages");
     }
   }, []);
 

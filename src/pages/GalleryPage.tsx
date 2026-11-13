@@ -53,15 +53,16 @@ export const GalleryPage = () => {
 
   // Load uploaded media from database
   useEffect(() => {
-    supabase
-      .from("media")
-      .select("id, name, url")
-      .then(({ data }) => {
+    void (async () => {
+      try {
+        const { data } = await supabase.from("media").select("id, name, url");
         if (data && Array.isArray(data) && data.length > 0) {
           setDbMedia(data);
         }
-      })
-      .catch(() => {});
+      } catch {
+        // non-blocking
+      }
+    })();
   }, []);
 
   // Automatically aggregate photos from ALL posts, ALL pages, all books, songs, portraits, and uploaded site media

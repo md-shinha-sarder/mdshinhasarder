@@ -36,6 +36,10 @@ import {
   saveAdminPost,
   deleteAdminPost,
   getStoredAdminPosts,
+  getDeletedPostKeys,
+  bulkUpdateAdminPosts,
+  bulkDeleteAdminPosts,
+  subscribeToPostsUpdates,
   getSupabaseSetupSql,
 } from "@/lib/postSync";
 
@@ -198,15 +202,27 @@ const PostsAdmin = () => {
 
   useEffect(() => {
     load();
+    const unsubscribe = subscribeToPostsUpdates(() => {
+      load();
+    });
+    return () => unsubscribe();
   }, []);
 
-  // Combined list of ALL posts (Admin + Blogger feed)
+  // Combined list of ALL posts (Admin + Supabase + Blogger feed), filtered & sorted newest-first
   const combinedPosts = useMemo(() => {
+    const deleted = getDeletedPostKeys();
     const seen = new Set<string>();
     const list: Post[] = [];
 
+    const isDeleted = (p: { id?: string; slug?: string }) => {
+      const s = (p.slug || "").toLowerCase().trim();
+      const id = (p.id || "").toLowerCase().trim();
+      return (s && deleted.has(s)) || (id && deleted.has(id));
+    };
+
     // Admin / Supabase posts first
     for (const p of items) {
+      if (isDeleted(p)) continue;
       const key = (p.slug || p.id).toLowerCase();
       if (!seen.has(key)) {
         seen.add(key);
@@ -214,9 +230,10 @@ const PostsAdmin = () => {
       }
     }
 
-    // Blogger posts
+    // Blogger & static feed posts
     for (let i = 0; i < bloggerPosts.length; i++) {
       const p = bloggerPosts[i];
+      if (isDeleted(p)) continue;
       const key = (p.slug || p.id).toLowerCase();
       if (!seen.has(key)) {
         seen.add(key);
@@ -230,8 +247,8 @@ const PostsAdmin = () => {
           tags: p.tags || [],
           seo_title: p.seo_title || null,
           seo_description: p.seo_description || null,
-          status: "published",
-          source: "blogger",
+          status: p.status === "draft" ? "draft" : "published",
+          source: p.source || "blogger",
           published: p.published,
           views: (p as any).views ?? getViewsCount(p, i),
           comments_count: 0,
@@ -239,8 +256,19 @@ const PostsAdmin = () => {
       }
     }
 
-    return list;
+    return list.sort((a, b) => {
+      const tA = a.published ? Date.parse(a.published) : 0;
+      const tB = b.published ? Date.parse(b.published) : 0;
+      return (Number.isFinite(tB) ? tB : 0) - (Number.isFinite(tA) ? tA : 0);
+    });
   }, [items, bloggerPosts]);
+
+  // Unique tags available across all posts
+  const availableTags = useMemo(() => {
+    const set = new Set<string>(["Song", "Latest", "Technology", "News"]);
+    combinedPosts.forEach((p) => (p.tags || []).forEach((t) => t && set.add(t)));
+    return Array.from(set);
+  }, [combinedPosts]);
 
   // Filtered by selected category and search
   const displayedPosts = useMemo(() => {
@@ -310,6 +338,10 @@ const PostsAdmin = () => {
         .filter(Boolean);
 
       const resolvedCover = resolveMediaUrl(editing.cover_url);
+      const isNewPost = !editing.id;
+      const publishTimestamp = isNewPost
+        ? new Date().toISOString()
+        : editing.published || new Date().toISOString();
 
       const res = await saveAdminPost({
         id: editing.id || undefined,
@@ -322,12 +354,13 @@ const PostsAdmin = () => {
         seo_title: editing.seo_title || null,
         seo_description: editing.seo_description || null,
         status: editing.status,
+        published: publishTimestamp,
       });
 
-      toast.success(res.message || "Post saved and published successfully!");
+      toast.success(res.message || "Post saved and published live!");
       setOpen(false);
       await load();
-      await refetchLivePosts().catch(() => {});
+      void refetchLivePosts().catch(() => {});
     } catch (err: any) {
       toast.error(err?.message || "Failed to save post");
     } finally {
@@ -335,17 +368,56 @@ const PostsAdmin = () => {
     }
   };
 
-  const remove = async (id: string, e?: React.MouseEvent) => {
+  const remove = async (post: Post, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this post?")) return;
+    if (!confirm(`Are you sure you want to delete "${post.title}"?`)) return;
     try {
-      await deleteAdminPost(id);
-      toast.success("Post deleted");
+      await deleteAdminPost(post.id, post.slug);
+      setSelectedPosts((prev) => {
+        const next = new Set(prev);
+        next.delete(post.id);
+        return next;
+      });
+      toast.success("Post deleted cleanly across Admin & website");
       await load();
-      await refetchLivePosts().catch(() => {});
+      void refetchLivePosts().catch(() => {});
     } catch (err: any) {
       toast.error(err?.message || "Failed to delete post");
     }
+  };
+
+  const handleBulkStatus = async (status: "published" | "draft") => {
+    const selected = combinedPosts.filter((p) => selectedPosts.has(p.id));
+    if (selected.length === 0) return;
+    await bulkUpdateAdminPosts(
+      selected.map((p) => ({
+        id: p.id,
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt || "",
+        content: p.content || "",
+        image: p.cover_url,
+        tags: p.tags,
+        published: p.published,
+        status,
+      })),
+      status
+    );
+    toast.success(
+      `${selected.length} post(s) set to ${status === "published" ? "Published (Live)" : "Draft"}!`
+    );
+    setSelectedPosts(new Set());
+    await load();
+  };
+
+  const handleBulkDelete = async () => {
+    const selected = combinedPosts.filter((p) => selectedPosts.has(p.id));
+    if (selected.length === 0) return;
+    if (!confirm(`Delete ${selected.length} selected post(s) permanently?`)) return;
+    await bulkDeleteAdminPosts(selected.map((p) => ({ id: p.id, slug: p.slug })));
+    toast.success(`${selected.length} post(s) deleted cleanly.`);
+    setSelectedPosts(new Set());
+    await load();
   };
 
   const copySql = () => {
@@ -368,34 +440,41 @@ const PostsAdmin = () => {
 
   return (
     <div className="space-y-4 font-sans select-none">
-      {/* Top Action Bar (SQL setup, Sync photos, Refresh) */}
+      {/* Top Action Bar (Filter, Manage, Sync, SQL setup, New Post) */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-[#dadce0]">
         <div className="flex items-center gap-2">
-          {/* Filter Dropdown matching "All (62) ▼" in Blogger */}
           <div className="relative inline-block text-left">
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="h-9 px-3 bg-white border border-transparent hover:bg-[#f1f3f4] text-[#202124] text-sm font-semibold rounded-lg shadow-none focus:ring-0 gap-2">
                 <SelectValue placeholder={`All (${combinedPosts.length})`} />
               </SelectTrigger>
-              <SelectContent className="bg-white border border-[#dadce0] text-[#202124] shadow-lg">
+              <SelectContent className="bg-white border border-[#dadce0] text-[#202124] shadow-lg max-h-72">
                 <SelectItem value="all">All ({combinedPosts.length})</SelectItem>
-                <SelectItem value="published">Published ({combinedPosts.filter(p => p.status === "published").length})</SelectItem>
-                <SelectItem value="draft">Drafts ({combinedPosts.filter(p => p.status === "draft").length})</SelectItem>
-                <SelectItem value="song">Song</SelectItem>
-                <SelectItem value="latest">Latest</SelectItem>
-                <SelectItem value="technology">Technology</SelectItem>
-                <SelectItem value="news">News</SelectItem>
+                <SelectItem value="published">
+                  Published ({combinedPosts.filter((p) => p.status === "published").length})
+                </SelectItem>
+                <SelectItem value="draft">
+                  Drafts ({combinedPosts.filter((p) => p.status === "draft").length})
+                </SelectItem>
+                {availableTags.map((tag) => (
+                  <SelectItem key={tag} value={tag.toLowerCase()}>
+                    {tag}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         </div>
 
         {/* Right actions: MANAGE + Sync + New Post */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setManageMode(!manageMode)}
+            onClick={() => {
+              setManageMode(!manageMode);
+              if (manageMode) setSelectedPosts(new Set());
+            }}
             className={`text-xs font-semibold tracking-wider uppercase px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors ${
               manageMode ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124]"
             }`}
@@ -440,6 +519,61 @@ const PostsAdmin = () => {
           </Button>
         </div>
       </div>
+
+      {/* Manage Mode Bulk Toolbar */}
+      {manageMode && (
+        <div className="flex flex-wrap items-center justify-between gap-2 bg-[#f8fbff] border border-[#d2e3fc] rounded-xl px-4 py-2.5 text-xs">
+          <div className="flex items-center gap-3">
+            <span className="font-semibold text-[#1a73e8]">
+              {selectedPosts.size} selected
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedPosts(new Set(displayedPosts.map((p) => p.id)))}
+              className="text-[#5f6368] hover:text-[#1a73e8] font-medium underline"
+            >
+              Select All ({displayedPosts.length})
+            </button>
+            {selectedPosts.size > 0 && (
+              <button
+                type="button"
+                onClick={() => setSelectedPosts(new Set())}
+                className="text-[#5f6368] hover:text-[#202124] font-medium underline"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {selectedPosts.size > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                size="sm"
+                onClick={() => handleBulkStatus("published")}
+                className="h-7 text-xs bg-[#1e8e3e] hover:bg-[#137333] text-white px-3"
+              >
+                Publish Selected
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleBulkStatus("draft")}
+                className="h-7 text-xs border-[#dadce0] text-[#3c4043] hover:bg-[#f1f3f4] px-3"
+              >
+                Revert to Draft
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleBulkDelete}
+                className="h-7 text-xs border-red-200 text-[#d93025] hover:bg-[#fce8e6] px-3"
+              >
+                Delete Selected
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* SQL Setup Modal */}
       <Dialog open={sqlOpen} onOpenChange={setSqlOpen}>
@@ -539,10 +673,14 @@ const PostsAdmin = () => {
                       {p.title}
                     </h3>
 
-                    {/* Sub row: Published date & tag pills */}
+                    {/* Sub row: Status + Published date & tag pills */}
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <span className="text-xs text-[#5f6368] font-normal">
-                        Published • {dateStr}
+                      <span
+                        className={`text-xs font-normal ${
+                          p.status === "draft" ? "text-[#e37400] font-semibold" : "text-[#5f6368]"
+                        }`}
+                      >
+                        {p.status === "draft" ? "Draft" : "Published"} • {dateStr}
                       </span>
 
                       {/* Tag pill chips matching image.png */}
@@ -622,7 +760,7 @@ const PostsAdmin = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={(e) => remove(p.id, e)}
+                      onClick={(e) => remove(p, e)}
                       className="p-1.5 text-[#5f6368] hover:text-[#d93025] hover:bg-[#fce8e6] rounded-full transition-colors"
                       title="Delete"
                     >

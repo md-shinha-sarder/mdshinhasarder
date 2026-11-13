@@ -16,7 +16,7 @@ import {
   Share2,
   Check,
 } from "lucide-react";
-import { useSongsData, DEEZER_ARTIST_COVER, OFFICIAL_YOUTUBE_CHANNEL } from "@/hooks/useSongsData";
+import { useSongsData, DEEZER_ARTIST_COVER, OFFICIAL_YOUTUBE_CHANNEL, type Song } from "@/hooks/useSongsData";
 
 export default function SongsPage() {
   const { songs } = useSongsData();

@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { X, ZoomIn, Images, ArrowRight } from "lucide-react";
 import { usePosts, usePages } from "@/hooks/usePosts";
-import { buildAlt } from "@/lib/imageSeo";
+import { buildAlt, toFullResolutionImageUrl } from "@/lib/imageSeo";
 import profilePhoto from "@/assets/profile-photo.webp";
 
 const defaultGalleryPhotos = [
