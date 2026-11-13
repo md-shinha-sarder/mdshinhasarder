@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { usePosts } from "@/hooks/usePosts";
 import { postPath } from "@/lib/postUrl";
 import { buildAlt, toFullResolutionImageUrl } from "@/lib/imageSeo";
-import { resolveMediaUrl } from "@/lib/mediaUrl";
+import { resolveMediaUrl, handleUploadedImageError } from "@/lib/mediaUrl";
 
 const fmt = (d?: string | null) => {
   if (!d) return "";
@@ -62,9 +62,7 @@ const BlogSection = () => {
                         loading="lazy"
                         decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        onError={(e) => {
-                          e.currentTarget.src = "/hero-portrait.jpg";
-                        }}
+                        onError={(e) => handleUploadedImageError(e.currentTarget, p.image)}
                       />
                     </div>
                   ) : (

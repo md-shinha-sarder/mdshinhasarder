@@ -23,7 +23,7 @@ import {
 import { toast } from "sonner";
 import { MediaMultiPicker } from "@/components/admin/MediaPicker";
 import { PhotoUploadBox } from "@/components/admin/PhotoUploadBox";
-import { resolveMediaUrl } from "@/lib/mediaUrl";
+import { resolveMediaUrl, handleUploadedImageError } from "@/lib/mediaUrl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePages } from "@/hooks/usePosts";
 import { Link } from "react-router-dom";
@@ -256,9 +256,7 @@ export const PagesAdmin = () => {
                           src={resolveMediaUrl(p.cover_url)}
                           alt={p.title}
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = "/profile.webp";
-                          }}
+                          onError={(e) => handleUploadedImageError(e.currentTarget, p.cover_url)}
                         />
                       ) : (
                         <FileText size={20} className="text-[#5f6368]" />
@@ -337,9 +335,7 @@ export const PagesAdmin = () => {
                           src={resolveMediaUrl(p.image)}
                           alt={p.title}
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = "/profile.webp";
-                          }}
+                          onError={(e) => handleUploadedImageError(e.currentTarget, p.image)}
                         />
                       ) : (
                         <FileText size={20} className="text-[#5f6368]" />
@@ -377,16 +373,16 @@ export const PagesAdmin = () => {
         </TabsContent>
       </Tabs>
 
-      {/* FULL-SCREEN DEVICE EDITOR WINDOW FOR PAGES (Device under a full) */}
+      {/* FULL-SCREEN DEVICE EDITOR WINDOW FOR PAGES (Mobile & PC responsive) */}
       {open && editing && (
-        <div className="fixed inset-0 z-50 bg-[#ffffff] flex flex-col w-screen h-screen overflow-hidden animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 bg-[#ffffff] flex flex-col w-screen h-[100dvh] overflow-hidden animate-in fade-in duration-150">
           {/* Top Full Device Bar */}
-          <header className="h-14 sm:h-16 bg-white border-b border-[#dadce0] px-4 sm:px-6 flex items-center justify-between shrink-0 shadow-xs select-none">
-            <div className="flex items-center gap-3 min-w-0">
+          <header className="h-14 sm:h-16 bg-white border-b border-[#dadce0] px-3 sm:px-6 flex items-center justify-between gap-2 shrink-0 shadow-xs select-none">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="p-2 text-[#5f6368] hover:bg-[#f1f3f4] rounded-full transition-colors"
+                className="p-2 text-[#5f6368] hover:bg-[#f1f3f4] rounded-full transition-colors shrink-0"
                 title="Back to pages"
               >
                 <ArrowLeft size={20} />
@@ -394,10 +390,15 @@ export const PagesAdmin = () => {
               <img
                 src="/images/site-logo.png"
                 onError={(e) => {
-                  e.currentTarget.src = "/profile.webp";
+                  if (!e.currentTarget.dataset.triedFallback) {
+                    e.currentTarget.dataset.triedFallback = "1";
+                    e.currentTarget.src = "/site-logo.png";
+                  } else {
+                    e.currentTarget.style.display = "none";
+                  }
                 }}
                 alt="Site Logo"
-                className="w-8 h-8 rounded-full object-cover border border-orange-500/40 shrink-0"
+                className="w-8 h-8 rounded-full object-cover border border-orange-500/40 shrink-0 hidden sm:block"
               />
               <div className="min-w-0">
                 <div className="text-sm sm:text-base font-semibold text-[#202124] truncate">
@@ -462,11 +463,11 @@ export const PagesAdmin = () => {
             </div>
           </header>
 
-          {/* Full Screen Scrollable Canvas + Sidebar */}
-          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-[#f8f9fa]">
+          {/* Full Screen Scrollable Canvas + Sidebar (scrolls smoothly on both Mobile & PC) */}
+          <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden bg-[#f8f9fa]">
             {/* Main Content Writing Area */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-              <div className="max-w-4xl mx-auto space-y-6 bg-white p-6 sm:p-8 rounded-2xl border border-[#dadce0] shadow-sm">
+            <div className="lg:flex-1 lg:overflow-y-auto p-3 sm:p-6 lg:p-8">
+              <div className="max-w-4xl mx-auto space-y-5 sm:space-y-6 bg-white p-4 sm:p-8 rounded-2xl border border-[#dadce0] shadow-sm">
                 <div>
                   <Input
                     value={editing.title}
@@ -476,13 +477,13 @@ export const PagesAdmin = () => {
                   />
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-[#5f6368] font-mono bg-[#f8f9fa] p-2.5 rounded-lg border border-[#e8eaed]">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-[#5f6368] font-mono bg-[#f8f9fa] p-2.5 rounded-lg border border-[#e8eaed]">
                   <span className="font-semibold text-[#202124]">Permalink:</span>
-                  <span>https://mdshinhasarder.com/p/</span>
+                  <span className="truncate">https://mdshinhasarder.com/p/</span>
                   <input
                     value={editing.slug}
                     onChange={(e) => setEditing({ ...editing, slug: e.target.value })}
-                    className="bg-transparent border-b border-dashed border-[#5f6368] outline-none flex-1 text-[#1a73e8]"
+                    className="bg-transparent border-b border-dashed border-[#5f6368] outline-none flex-1 min-w-[120px] text-[#1a73e8]"
                     placeholder="page-slug"
                   />
                   <span>.html</span>
@@ -599,16 +600,17 @@ export const PagesAdmin = () => {
             </div>
 
             {/* Right Settings Sidebar */}
-            <div className="w-full lg:w-96 shrink-0 bg-white border-t lg:border-t-0 lg:border-l border-[#dadce0] p-5 lg:overflow-y-auto space-y-6">
+            <div className="w-full lg:w-96 shrink-0 bg-white border-t lg:border-t-0 lg:border-l border-[#dadce0] p-4 sm:p-5 lg:overflow-y-auto space-y-6">
               <h4 className="text-sm font-bold text-[#202124] uppercase tracking-wider pb-2 border-b border-[#f1f3f4] flex items-center gap-2">
                 <FileText size={16} className="text-[#1a73e8]" />
                 <span>Page Settings</span>
               </h4>
 
-              {/* Photo Upload Box for Page */}
+              {/* Photo Upload Box for Page — displays ONLY the uploaded photo */}
               <PhotoUploadBox
-                label="Page Cover Photo Upload Box"
-                description="Upload photo directly to /images/ folder — automatically generates domain link and applies as page cover."
+                label="Page Photo Upload"
+                description="Upload a photo — only the photo you upload is saved and displayed."
+                value={editing.cover_url || ""}
                 onUploadSuccess={(res) => {
                   setEditing({
                     ...editing,
@@ -619,33 +621,17 @@ export const PagesAdmin = () => {
                 onApply={(domainUrl) => {
                   setEditing({ ...editing, cover_url: domainUrl });
                 }}
-                applyButtonLabel="Apply as Cover Photo"
+                onClear={() => setEditing({ ...editing, cover_url: "" })}
               />
 
               <div>
-                <Label className="text-xs font-semibold text-[#5f6368]">Cover Image URL</Label>
+                <Label className="text-xs font-semibold text-[#5f6368]">Photo URL (Optional)</Label>
                 <Input
                   value={editing.cover_url || ""}
                   onChange={(e) => setEditing({ ...editing, cover_url: e.target.value })}
                   placeholder="https://mdshinhasarder.com/images/..."
                   className="bg-white border-[#dadce0] text-[#202124] font-mono text-xs mt-1"
                 />
-                {editing.cover_url && (
-                  <div className="mt-2 p-2 rounded-lg border border-[#e8eaed] bg-[#f8f9fa] flex items-center gap-3">
-                    <img
-                      src={resolveMediaUrl(editing.cover_url)}
-                      alt="Cover Preview"
-                      className="w-14 h-14 object-cover rounded border border-[#dadce0] shrink-0"
-                      onError={(e) => {
-                        e.currentTarget.src = "/profile.webp";
-                      }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold text-[#1e8e3e]">Active Cover Photo</div>
-                      <div className="text-[11px] font-mono text-[#5f6368] truncate">{editing.cover_url}</div>
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div>

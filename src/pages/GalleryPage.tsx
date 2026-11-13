@@ -23,6 +23,7 @@ import { useEffect } from "react";
 import { usePosts, usePages } from "@/hooks/usePosts";
 import { DEFAULT_BOOKS as chaptraBooksData } from "@/hooks/useBooksData";
 import { DEFAULT_SONGS as songsData } from "@/hooks/useSongsData";
+import { handleUploadedImageError } from "@/lib/mediaUrl";
 import { toDomainImageUrl } from "@/lib/imageSeo";
 import { toCloudinaryImageUrl, CLOUDINARY_CONFIG } from "@/lib/cloudinary";
 import { resolveMediaUrl } from "@/lib/mediaUrl";
@@ -452,9 +453,7 @@ export const GalleryPage = () => {
                     alt={item.title}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      e.currentTarget.src = "/hero-portrait.jpg";
-                    }}
+                    onError={(e) => handleUploadedImageError(e.currentTarget, item.src)}
                   />
                   <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-md p-1.5 rounded-lg text-white pointer-events-none">
                     <ZoomIn size={14} />

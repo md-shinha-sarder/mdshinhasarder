@@ -13,6 +13,7 @@ import {
   Mail,
   Send,
   BadgeCheck,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   FaFacebookF,
@@ -25,7 +26,7 @@ import {
 } from "react-icons/fa6";
 import { usePosts } from "@/hooks/usePosts";
 import { postPath } from "@/lib/postUrl";
-import { resolveMediaUrl } from "@/lib/mediaUrl";
+import { resolveMediaUrl, handleUploadedImageError } from "@/lib/mediaUrl";
 import { toast } from "sonner";
 
 // Estimate reading time from content
@@ -137,18 +138,18 @@ export const MainPostsGrid = () => {
     <div className="w-full my-8 font-['Poppins','Karla',sans-serif]">
       {/* 1. CODIFY TEMPLATE FEATURED POST HERO BANNER */}
       {featuredPost && (
-        <section className="mb-10 group relative rounded-2xl overflow-hidden border border-[#e2e8f0] bg-slate-900 shadow-md">
+        <section className="mb-10 group relative rounded-2xl overflow-hidden border border-[#e2e8f0] bg-gradient-to-br from-[#0a4275] via-[#1e3a8a] to-[#0f172a] shadow-md">
           <Link to={postPath(featuredPost)} className="block relative w-full h-[280px] sm:h-[380px] md:h-[440px] overflow-hidden">
-            <img
-              src={resolveMediaUrl(featuredPost.image) || "/profile.webp"}
-              alt={featuredPost.title}
-              {...({ fetchpriority: "high" } as any)}
-              decoding="async"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 brightness-[0.85]"
-              onError={(e) => {
-                e.currentTarget.src = "/profile.webp";
-              }}
-            />
+            {resolveMediaUrl(featuredPost.image) && (
+              <img
+                src={resolveMediaUrl(featuredPost.image)}
+                alt={featuredPost.title}
+                {...({ fetchpriority: "high" } as any)}
+                decoding="async"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 brightness-[0.85]"
+                onError={(e) => handleUploadedImageError(e.currentTarget, featuredPost.image)}
+              />
+            )}
             {/* Codify Gradient Mask */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
 
@@ -277,17 +278,22 @@ export const MainPostsGrid = () => {
                     className="group flex flex-col bg-white border border-[#e2e8f0] rounded-2xl overflow-hidden shadow-[0_4px_16px_rgba(15,23,42,0.05)] hover:-translate-y-1 hover:shadow-[0_12px_28px_rgba(15,23,42,0.1)] transition-all duration-300"
                   >
                     {/* 16:9 Image Wrap with Hover Zoom */}
-                    <Link to={postPath(p)} className="relative block w-full aspect-[16/10] overflow-hidden bg-slate-100">
-                      <img
-                        src={imgUrl || "/profile.webp"}
-                        alt={p.title}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        onError={(e) => {
-                          e.currentTarget.src = "/profile.webp";
-                        }}
-                      />
+                    <Link to={postPath(p)} className="relative block w-full aspect-[16/10] overflow-hidden bg-slate-100 flex items-center justify-center">
+                      {imgUrl ? (
+                        <img
+                          src={imgUrl}
+                          alt={p.title}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          onError={(e) => handleUploadedImageError(e.currentTarget, p.image)}
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center text-slate-400 gap-1.5">
+                          <ImageIcon size={24} />
+                          <span className="text-[11px] font-medium">No Photo</span>
+                        </div>
+                      )}
                       {/* Subtle dark gradient overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-75 transition-opacity" />
 
@@ -519,16 +525,18 @@ export const MainPostsGrid = () => {
                   </span>
 
                   {/* Square Thumbnail */}
-                  <Link to={postPath(p)} className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-slate-100 border border-[#e2e8f0]">
-                    <img
-                      src={resolveMediaUrl(p.image) || "/profile.webp"}
-                      alt={p.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      onError={(e) => {
-                        e.currentTarget.src = "/profile.webp";
-                      }}
-                    />
+                  <Link to={postPath(p)} className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-slate-100 border border-[#e2e8f0] flex items-center justify-center">
+                    {resolveMediaUrl(p.image) ? (
+                      <img
+                        src={resolveMediaUrl(p.image)}
+                        alt={p.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        onError={(e) => handleUploadedImageError(e.currentTarget, p.image)}
+                      />
+                    ) : (
+                      <ImageIcon size={16} className="text-slate-400" />
+                    )}
                   </Link>
 
                   {/* Title & Date */}

@@ -77,35 +77,42 @@ export default function SongsAdmin() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
+    <div className="space-y-6 font-sans">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#dadce0] pb-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2.5">
-            <Music className="w-7 h-7 text-primary" />
-            <span>Songs &amp; YouTube Videos Manager</span>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#202124] flex items-center gap-2">
+            <Music className="w-6 h-6 text-[#e37400]" />
+            <span>Songs &amp; YouTube Videos</span>
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Customize, add, and edit songs with real YouTube video links, Deezer URLs, and cover art.
+          <p className="text-xs sm:text-sm text-[#5f6368] mt-0.5">
+            Customize, add, and edit songs with YouTube video links, Deezer URLs, and cover art.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleReset} title="Reset to defaults">
-            <RotateCcw className="w-4 h-4 mr-1.5" />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleReset}
+            className="border-[#dadce0] text-[#5f6368] hover:bg-[#f1f3f4] h-8 text-xs"
+            title="Reset to defaults"
+          >
+            <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
             Reset Catalog
           </Button>
 
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button
+                size="sm"
                 onClick={() => setEditing({ ...blankSong, id: `song-${Date.now()}` })}
-                className="bg-primary text-primary-foreground"
+                className="bg-[#e37400] hover:bg-[#d56b00] text-white text-xs font-medium rounded-full px-4 h-8 shadow-sm"
               >
-                <Plus size={16} className="mr-1.5" /> Add New Song
+                <Plus size={15} className="mr-1" /> Add New Song
               </Button>
             </DialogTrigger>
 
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90dvh] overflow-y-auto bg-white border border-[#dadce0] text-[#202124]">
               <DialogHeader>
                 <DialogTitle>{editing && songs.some((s) => s.id === editing.id) ? "Edit Song" : "Add Song"}</DialogTitle>
               </DialogHeader>
@@ -159,24 +166,24 @@ export default function SongsAdmin() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl p-3 bg-red-500/10 border border-red-500/20 space-y-2">
-                    <Label className="text-red-400 font-semibold flex items-center gap-1.5">
-                      <Youtube className="w-4 h-4 text-red-500" />
+                  <div className="rounded-xl p-3 bg-[#fce8e6]/60 border border-red-200 space-y-2">
+                    <Label className="text-[#d93025] font-semibold flex items-center gap-1.5 text-xs">
+                      <Youtube className="w-4 h-4 text-[#d93025]" />
                       YouTube Video ID or Link (from channel)
                     </Label>
                     <Input
                       value={editing.youtubeId}
                       onChange={(e) => setEditing({ ...editing, youtubeId: e.target.value })}
                       placeholder="e.g. dQMyeL9CDks or full YouTube watch link"
-                      className="bg-black/40"
+                      className="bg-white border-red-200 text-[#202124]"
                     />
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-[11px] text-[#5f6368]">
                       Channel:{" "}
                       <a
                         href="https://www.youtube.com/channel/UCejecdsURkKqMAa9UCy9eZw"
                         target="_blank"
                         rel="noreferrer"
-                        className="text-red-400 underline"
+                        className="text-[#d93025] underline break-all"
                       >
                         https://www.youtube.com/channel/UCejecdsURkKqMAa9UCy9eZw
                       </a>

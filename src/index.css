@@ -100,6 +100,35 @@
     --sidebar-ring: 217 91% 60%;
   }
 
+  /* Force crisp Blogger Light Workspace theme inside Admin Panel (including Radix Dialog/Select portals) */
+  html[data-admin="true"] {
+    --background: 0 0% 100%;
+    --foreground: 213 5% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 213 5% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 5% 13%;
+    --primary: 28 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 17% 95%;
+    --secondary-foreground: 213 5% 13%;
+    --muted: 210 17% 95%;
+    --muted-foreground: 213 5% 39%;
+    --accent: 210 17% 95%;
+    --accent-foreground: 213 5% 13%;
+    --border: 214 9% 85%;
+    --input: 214 9% 85%;
+    --ring: 214 82% 51%;
+    --gradient-card: #ffffff;
+    --shadow-card: 0 1px 3px rgba(60, 64, 67, 0.12);
+    color-scheme: light;
+  }
+
+  html[data-admin="true"] body {
+    background-color: #ffffff !important;
+    color: #202124 !important;
+  }
+
 @layer base {
   * {
     @apply border-border;

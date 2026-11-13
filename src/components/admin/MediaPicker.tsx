@@ -69,37 +69,40 @@ async function uploadFile(file: File, userId: string): Promise<string> {
   const safe = `${uniqueSlug}.${ext}`;
   const domainUrl = `https://mdshinhasarder.com/images/${safe}`;
 
-  // 1. Save directly to server /public/images/
-  try {
+  // 1. Read file and save directly to /public/images/
+  const dataUrl = await new Promise<string>((resolve) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      const b64 = (reader.result || "").toString().split(";base64,").pop();
-      if (b64) {
-        fetch("/api/save-image", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fileName: safe, base64: b64, publicId: uniqueSlug }),
-        }).catch(() => {});
-      }
-    };
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => resolve("");
     reader.readAsDataURL(file);
-  } catch (_saveErr) {
-    void _saveErr;
+  });
+
+  if (dataUrl) {
+    try {
+      await fetch("/api/save-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileName: safe, dataUrl, publicId: uniqueSlug }),
+      });
+    } catch (_saveErr) {
+      void _saveErr;
+    }
   }
 
-  // 2. Upload to Cloudinary for guaranteed 100% uptime delivery
-  const websiteLink = domainUrl;
+  // 2. Upload to Cloudinary for global CDN delivery
   let cdnUrl = "";
   try {
     const cldRes = await uploadImageToCloudinary(file, uniqueSlug);
-    if (cldRes?.cdn_optimized_url) {
-      cdnUrl = cldRes.cdn_optimized_url;
+    if (cldRes?.cdn_optimized_url || cldRes?.secure_url) {
+      cdnUrl = cldRes.cdn_optimized_url || cldRes.secure_url;
     }
   } catch (cErr) {
     console.warn("Cloudinary direct upload note:", cErr);
   }
 
-  // 3. Cache in localStorage so it appears everywhere across site
+  const previewBackup = await compressImageToDataUrl(file);
+
+  // 3. Cache exact uploaded photo in localStorage
   try {
     const mediaItem = {
       id: `local-${Date.now()}-${uniqueSlug}`,
@@ -110,6 +113,7 @@ async function uploadFile(file: File, userId: string): Promise<string> {
       mime_type: file.type,
       size_bytes: file.size,
       cloudinary_url: cdnUrl,
+      previewDataUrl: previewBackup || undefined,
     };
     const raw = localStorage.getItem("shinha_media_items");
     const list = raw ? JSON.parse(raw) : [];
@@ -119,7 +123,7 @@ async function uploadFile(file: File, userId: string): Promise<string> {
     void _e;
   }
 
-  // 4. Also try Supabase storage for backup
+  // 4. Optional Supabase storage backup
   const path = `${userId || "admin"}/${Date.now()}-${safe}`;
   try {
     const { error: upErr } = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
@@ -147,12 +151,14 @@ export function MediaPicker({ value, onChange, label = "Image", accept = "image/
   const [busy, setBusy] = useState(false);
   const [libOpen, setLibOpen] = useState(false);
   const [drag, setDrag] = useState(false);
+  const [imgErr, setImgErr] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files?.length) return;
     const uid = user?.id || "admin";
     setBusy(true);
+    setImgErr(false);
     try {
       const url = await uploadFile(files[0], uid);
       onChange(url);
@@ -166,24 +172,38 @@ export function MediaPicker({ value, onChange, label = "Image", accept = "image/
 
   return (
     <div className="space-y-2">
-      <div className="text-sm font-medium">{label}</div>
+      <div className="text-sm font-medium text-foreground">{label}</div>
       <div
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
         onDragLeave={() => setDrag(false)}
         onDrop={(e) => { e.preventDefault(); setDrag(false); handleFiles(e.dataTransfer.files); }}
-        className={`relative rounded-xl border-2 border-dashed transition-colors ${drag ? "border-primary bg-primary/5" : "border-border bg-secondary/30"}`}
+        className={`relative rounded-xl border-2 border-dashed transition-colors ${drag ? "border-[#1a73e8] bg-[#e8f0fe]/40" : "border-border bg-secondary/40"}`}
       >
         {value ? (
-          <div className="p-3 flex items-center gap-3">
-            <img
-              src={resolveMediaUrl(value)}
-              alt=""
-              className="w-20 h-20 rounded object-cover border border-border"
-              onError={(e) => {
-                e.currentTarget.src = "/hero-portrait.jpg";
-              }}
-            />
-            <div className="flex-1 min-w-0">
+          <div className="p-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="w-20 h-20 rounded border border-border bg-white overflow-hidden shrink-0 flex items-center justify-center">
+              {!imgErr ? (
+                <img
+                  src={resolveMediaUrl(value)}
+                  alt=""
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    const el = e.currentTarget;
+                    if (el.dataset.triedFallback === "1") {
+                      setImgErr(true);
+                    } else {
+                      el.dataset.triedFallback = "1";
+                      const resolved = toSiteMediaUrl(value);
+                      if (resolved && resolved !== el.src) el.src = resolved;
+                      else setImgErr(true);
+                    }
+                  }}
+                />
+              ) : (
+                <ImageIcon size={20} className="text-muted-foreground" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0 w-full">
               <div className="text-xs text-muted-foreground truncate">{value}</div>
               <div className="flex flex-wrap gap-2 mt-2">
                 <Button type="button" size="sm" variant="outline" onClick={() => inputRef.current?.click()} disabled={busy}>
@@ -192,16 +212,16 @@ export function MediaPicker({ value, onChange, label = "Image", accept = "image/
                 <Button type="button" size="sm" variant="outline" onClick={() => setLibOpen(true)}>
                   <Library size={14} className="mr-1" /> Library
                 </Button>
-                <Button type="button" size="sm" variant="ghost" onClick={() => onChange("")}>
+                <Button type="button" size="sm" variant="ghost" onClick={() => { setImgErr(false); onChange(""); }}>
                   <X size={14} className="mr-1" /> Clear
                 </Button>
               </div>
             </div>
           </div>
         ) : (
-          <div className="p-6 text-center">
-            <ImageIcon className="mx-auto mb-2 text-muted-foreground" size={28} />
-            <div className="text-sm text-muted-foreground mb-3">Drag & drop, or</div>
+          <div className="p-5 text-center">
+            <ImageIcon className="mx-auto mb-2 text-muted-foreground" size={26} />
+            <div className="text-xs sm:text-sm text-muted-foreground mb-3">Drag &amp; drop, or</div>
             <div className="flex flex-wrap gap-2 justify-center">
               <Button type="button" size="sm" onClick={() => inputRef.current?.click()} disabled={busy}>
                 {busy ? <Loader2 size={14} className="mr-1 animate-spin" /> : <Upload size={14} className="mr-1" />} Upload
@@ -214,8 +234,8 @@ export function MediaPicker({ value, onChange, label = "Image", accept = "image/
         )}
         <input ref={inputRef} type="file" accept={accept} hidden onChange={(e) => handleFiles(e.target.files)} />
       </div>
-      <Input placeholder="Or paste image URL" value={value} onChange={(e) => onChange(e.target.value)} className="text-xs" />
-      <MediaLibraryDialog open={libOpen} onOpenChange={setLibOpen} onSelect={(u) => { onChange(u); setLibOpen(false); }} accept={accept} />
+      <Input placeholder="Or paste image URL" value={value} onChange={(e) => { setImgErr(false); onChange(e.target.value); }} className="text-xs" />
+      <MediaLibraryDialog open={libOpen} onOpenChange={setLibOpen} onSelect={(u) => { setImgErr(false); onChange(u); setLibOpen(false); }} accept={accept} />
     </div>
   );
 }
@@ -230,11 +250,12 @@ export function MediaMultiPicker({ value, onChange, label = "Images", accept = "
   const inputRef = useRef<HTMLInputElement>(null);
 
   const uploadMany = async (files: FileList | null) => {
-    if (!files?.length || !user) return;
+    if (!files?.length) return;
+    const uid = user?.id || "admin";
     setBusy(true);
     try {
       const urls: string[] = [];
-      for (const f of Array.from(files)) urls.push(await uploadFile(f, user.id));
+      for (const f of Array.from(files)) urls.push(await uploadFile(f, uid));
       onChange([...value, ...urls]);
       toast.success(`Uploaded ${urls.length}`);
     } catch (e: any) { toast.error(e.message); }
@@ -243,7 +264,7 @@ export function MediaMultiPicker({ value, onChange, label = "Images", accept = "
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="text-sm font-medium">{label}</div>
         <div className="flex gap-2">
           <Button type="button" size="sm" variant="outline" onClick={() => setLibOpen(true)}>
@@ -258,19 +279,19 @@ export function MediaMultiPicker({ value, onChange, label = "Images", accept = "
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
         onDragLeave={() => setDrag(false)}
         onDrop={(e) => { e.preventDefault(); setDrag(false); uploadMany(e.dataTransfer.files); }}
-        className={`rounded-xl border-2 border-dashed p-4 min-h-24 transition-colors ${drag ? "border-primary bg-primary/5" : "border-border bg-secondary/30"}`}
+        className={`rounded-xl border-2 border-dashed p-3 sm:p-4 min-h-24 transition-colors ${drag ? "border-[#1a73e8] bg-[#e8f0fe]/40" : "border-border bg-secondary/40"}`}
       >
         {value.length === 0 ? (
-          <div className="text-center text-sm text-muted-foreground py-6">Drag & drop photos/videos here, or use Add / Library</div>
+          <div className="text-center text-xs sm:text-sm text-muted-foreground py-5">Drag &amp; drop photos/videos here, or use Add / Library</div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
             {value.map((u, i) => (
-              <div key={i} className="relative group aspect-square rounded overflow-hidden border border-border">
+              <div key={i} className="relative group aspect-square rounded overflow-hidden border border-border bg-white">
                 {u.match(/\.(mp4|webm|mov)$/i)
-                  ? <video src={u} className="w-full h-full object-cover" />
-                  : <img src={u} alt="" className="w-full h-full object-cover" />}
+                  ? <video src={resolveMediaUrl(u)} className="w-full h-full object-cover" />
+                  : <img src={resolveMediaUrl(u)} alt="" className="w-full h-full object-cover" />}
                 <button type="button" onClick={() => onChange(value.filter((_, x) => x !== i))}
-                  className="absolute top-1 right-1 p-1 rounded-full bg-black/70 text-white opacity-0 group-hover:opacity-100 transition">
+                  className="absolute top-1 right-1 p-1 rounded-full bg-black/70 text-white sm:opacity-0 sm:group-hover:opacity-100 transition">
                   <X size={12} />
                 </button>
               </div>
@@ -306,7 +327,7 @@ function MediaLibraryDialog({ open, onOpenChange, onSelect, onSelectMany, multi,
           localRows = list.map((item: any) => ({
             id: item.id || `local-${Math.random()}`,
             name: item.name || "Photo",
-            url: item.localUrl || item.url,
+            url: item.url || item.localUrl,
             path: item.path || "",
             mime_type: item.mime_type || "image/jpeg",
           }));
@@ -339,18 +360,18 @@ function MediaLibraryDialog({ open, onOpenChange, onSelect, onSelectMany, multi,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="w-[95vw] sm:max-w-3xl max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6">
         <DialogHeader><DialogTitle>Media Library</DialogTitle></DialogHeader>
         <Input placeholder="Search filename..." value={q} onChange={(e) => setQ(e.target.value)} />
-        <div className="overflow-y-auto grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 flex-1">
-          {filtered.length === 0 && <div className="col-span-full text-center text-muted-foreground p-6 text-sm">No media found. Upload from Media Library first.</div>}
+        <div className="overflow-y-auto grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2 flex-1">
+          {filtered.length === 0 && <div className="col-span-full text-center text-muted-foreground p-6 text-sm">No media found. Upload a photo first.</div>}
           {filtered.map((m) => {
             const url = toSiteMediaUrl(m.url);
             const isPicked = picked.includes(url);
             return (
               <button key={m.id} type="button"
                 onClick={() => multi ? toggle(url) : onSelect?.(url)}
-                className={`relative aspect-square rounded overflow-hidden border-2 transition ${isPicked ? "border-primary" : "border-border hover:border-primary/50"}`}>
+                className={`relative aspect-square rounded overflow-hidden border-2 transition ${isPicked ? "border-[#1a73e8]" : "border-border hover:border-[#1a73e8]/50"}`}>
                 {m.mime_type?.startsWith("image/")
                   ? <img src={resolveMediaUrl(m.url)} alt={m.name} className="w-full h-full object-cover" />
                   : <div className="w-full h-full flex items-center justify-center bg-secondary text-xs p-1 text-center">{m.name}</div>}

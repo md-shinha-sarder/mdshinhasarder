@@ -105,42 +105,42 @@ const NewsCheckAdmin = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
+    <div className="space-y-6 font-sans">
+      <div className="flex items-start justify-between gap-3 flex-wrap pb-3 border-b border-[#dadce0]">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-gradient-gold">Google SEO &amp; Search Rank #1 Audit</h1>
-          <p className="text-sm text-muted-foreground mt-1">Validates entity requirements, schema metadata, fast indexing and Google search ranking health.</p>
-          {auditedAt && <p className="text-[11px] text-muted-foreground/70 mt-1">Last audit: {auditedAt.toLocaleTimeString()}</p>}
+          <h1 className="text-xl sm:text-2xl font-bold text-[#202124]">Layout &amp; SEO Audit</h1>
+          <p className="text-xs sm:text-sm text-[#5f6368] mt-0.5">Toggle homepage sections, verify schema metadata, and ping search sitemaps.</p>
+          {auditedAt && <p className="text-[11px] text-[#80868b] mt-1">Last audit: {auditedAt.toLocaleTimeString()}</p>}
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button onClick={rerun} disabled={busy !== null} variant="outline" className="gap-2"><RefreshCw size={14} className={busy === "rerun" ? "animate-spin" : ""} /> Re-run check</Button>
-          <Button onClick={reindexAll} disabled={busy !== null} className="gap-2"><Zap size={14} /> One-click reindex</Button>
+          <Button onClick={rerun} disabled={busy !== null} variant="outline" size="sm" className="gap-1.5 border-[#dadce0] text-[#3c4043] h-8 text-xs"><RefreshCw size={13} className={busy === "rerun" ? "animate-spin" : ""} /> Re-run check</Button>
+          <Button onClick={reindexAll} disabled={busy !== null} size="sm" className="gap-1.5 bg-[#e37400] hover:bg-[#d56b00] text-white h-8 text-xs rounded-full px-4"><Zap size={13} /> One-click reindex</Button>
         </div>
       </div>
 
       {reindexProgress && (
-        <div className="p-3 rounded-lg border border-primary/30 bg-primary/5">
-          <div className="flex justify-between text-xs mb-1.5"><span>Reindexing…</span><span>{reindexProgress.done}/{reindexProgress.total}</span></div>
-          <div className="h-1.5 bg-card rounded-full overflow-hidden"><div className="h-full bg-primary transition-all" style={{ width: `${(reindexProgress.done / reindexProgress.total) * 100}%` }} /></div>
+        <div className="p-3 rounded-lg border border-[#d2e3fc] bg-[#e8f0fe]">
+          <div className="flex justify-between text-xs mb-1.5 text-[#1a73e8] font-medium"><span>Reindexing…</span><span>{reindexProgress.done}/{reindexProgress.total}</span></div>
+          <div className="h-1.5 bg-white rounded-full overflow-hidden"><div className="h-full bg-[#1a73e8] transition-all" style={{ width: `${(reindexProgress.done / reindexProgress.total) * 100}%` }} /></div>
         </div>
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="p-4 rounded-xl border border-border bg-card/60"><div className="text-xs text-muted-foreground">Posts</div><div className="text-2xl font-bold">{posts.length}</div></div>
-        <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5"><div className="text-xs text-emerald-400">Passing</div><div className="text-2xl font-bold">{summary.pass}</div></div>
-        <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5"><div className="text-xs text-amber-400">Warnings</div><div className="text-2xl font-bold">{summary.warn}</div></div>
-        <div className="p-4 rounded-xl border border-rose-500/30 bg-rose-500/5"><div className="text-xs text-rose-400">Failing</div><div className="text-2xl font-bold">{summary.fail}</div></div>
+        <div className="p-4 rounded-xl border border-[#dadce0] bg-white"><div className="text-xs text-[#5f6368]">Posts</div><div className="text-2xl font-bold text-[#202124]">{posts.length}</div></div>
+        <div className="p-4 rounded-xl border border-[#ceead6] bg-[#e6f4ea]/60"><div className="text-xs text-[#137333] font-medium">Passing</div><div className="text-2xl font-bold text-[#137333]">{summary.pass}</div></div>
+        <div className="p-4 rounded-xl border border-[#fde293] bg-[#fef7e0]/60"><div className="text-xs text-[#b06000] font-medium">Warnings</div><div className="text-2xl font-bold text-[#b06000]">{summary.warn}</div></div>
+        <div className="p-4 rounded-xl border border-red-200 bg-[#fce8e6]/60"><div className="text-xs text-[#d93025] font-medium">Failing</div><div className="text-2xl font-bold text-[#d93025]">{summary.fail}</div></div>
       </div>
 
-      <div className="p-4 rounded-xl border border-border bg-card/40">
+      <div className="p-4 sm:p-5 rounded-xl border border-[#dadce0] bg-white shadow-xs">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-serif font-semibold flex items-center gap-2"><LayoutGrid size={16} className="text-primary" /> Homepage sections</h2>
-          <Button size="sm" variant="ghost" onClick={reset} className="h-7 text-xs">Reset</Button>
+          <h2 className="font-bold text-sm text-[#202124] flex items-center gap-2"><LayoutGrid size={16} className="text-[#e37400]" /> Homepage Sections (Mobile &amp; PC)</h2>
+          <Button size="sm" variant="ghost" onClick={reset} className="h-7 text-xs text-[#5f6368]">Reset</Button>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
           {HOME_SECTIONS.map((s) => (
-            <label key={s.key} className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg border border-border bg-background/40">
-              <span className="text-sm">{s.label}</span>
+            <label key={s.key} className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-lg border border-[#dadce0] bg-[#f8f9fa] cursor-pointer">
+              <span className="text-xs sm:text-sm font-medium text-[#202124]">{s.label}</span>
               <Switch checked={!!sections[s.key]} onCheckedChange={(v) => setSection(s.key, v)} />
             </label>
           ))}

@@ -36,22 +36,34 @@ export const AdminLayout = () => {
   const location = useLocation();
   const [drawer, setDrawer] = useState(false);
   const [userDropdown, setUserDropdown] = useState(false);
+  const [appsDropdown, setAppsDropdown] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [blogDropdown, setBlogDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Scope document root with light Blogger Admin variables while active
+  useEffect(() => {
+    document.documentElement.setAttribute("data-admin", "true");
+    return () => {
+      document.documentElement.removeAttribute("data-admin");
+    };
+  }, []);
 
   // Close menus when route changes
   useEffect(() => {
     setDrawer(false);
     setUserDropdown(false);
+    setAppsDropdown(false);
     setBlogDropdown(false);
   }, [location.pathname]);
 
-  // Handle outside clicks to close user & blog dropdowns
+  // Handle outside clicks to close user & apps dropdowns
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setUserDropdown(false);
+        setAppsDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
@@ -80,12 +92,17 @@ export const AdminLayout = () => {
           <meta name="robots" content="noindex, nofollow" />
         </Helmet>
         <div className="flex flex-col items-center gap-3">
-          <img
-            src="/images/site-logo.png"
-            onError={(e) => {
-              e.currentTarget.src = "/profile.webp";
-            }}
-            alt="Site Logo"
+              <img
+                src="/images/site-logo.png"
+                onError={(e) => {
+                  if (!e.currentTarget.dataset.triedFallback) {
+                    e.currentTarget.dataset.triedFallback = "1";
+                    e.currentTarget.src = "/site-logo.png";
+                  } else {
+                    e.currentTarget.style.display = "none";
+                  }
+                }}
+                alt="Site Logo"
             className="w-12 h-12 rounded-full object-cover border-2 border-orange-500 shadow-md animate-pulse"
           />
           <span className="text-sm font-medium text-[#202124]">Loading Blogger Dashboard...</span>
@@ -287,104 +304,169 @@ export const AdminLayout = () => {
     </div>
   );
 
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    const el = document.getElementById("blogger-search-event") as HTMLInputElement | null;
+    if (el) {
+      el.value = val;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  };
+
   return (
-    <div className="h-screen flex flex-col bg-[#ffffff] text-[#202124] font-sans antialiased overflow-hidden">
+    <div className="h-[100dvh] flex flex-col bg-[#ffffff] text-[#202124] font-sans antialiased overflow-hidden">
       <Helmet>
-        <title>Blogger: Posts - MD. Shinha Sarder</title>
+        <title>Blogger Admin - MD. Shinha Sarder</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       {/* Google Blogger Top Bar */}
-      <header className="h-16 bg-white border-b border-[#dadce0] px-4 flex items-center justify-between shrink-0 select-none z-40">
-        {/* Left: Menu Hamburger + Real Site Logo (Replacing orange B logo) */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setDrawer(!drawer)}
-            className="p-2 text-[#5f6368] hover:bg-[#f1f3f4] rounded-full transition-colors"
-            aria-label="Main menu"
-          >
-            <Menu size={20} />
-          </button>
+      <header className="bg-white border-b border-[#dadce0] shrink-0 select-none z-40">
+        <div className="h-14 sm:h-16 px-3 sm:px-4 flex items-center justify-between gap-2">
+          {/* Left: Menu Hamburger + Real Site Logo */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button
+              onClick={() => setDrawer(!drawer)}
+              className="p-2 text-[#5f6368] hover:bg-[#f1f3f4] rounded-full transition-colors shrink-0"
+              aria-label="Main menu"
+            >
+              <Menu size={20} />
+            </button>
 
-          <NavLink to="/admin/posts" className="flex items-center gap-2.5 group">
-            <img
-              src="/images/site-logo.png"
-              onError={(e) => {
-                e.currentTarget.src = "/profile.webp";
-              }}
-              alt="MD. Shinha Sarder Site Logo"
-              className="w-9 h-9 rounded-full object-cover border-2 border-orange-500/40 shadow-xs transition-transform group-hover:scale-105"
-            />
-            <span className="font-serif font-bold text-base text-[#202124] hidden sm:inline tracking-tight">
-              Blogger
-            </span>
-          </NavLink>
-        </div>
+            <NavLink to="/admin/posts" className="flex items-center gap-2 sm:gap-2.5 group min-w-0">
+              <img
+                src="/images/site-logo.png"
+                onError={(e) => {
+                  e.currentTarget.src = "/profile.webp";
+                }}
+                alt="MD. Shinha Sarder Site Logo"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-orange-500/40 shadow-xs shrink-0 transition-transform group-hover:scale-105"
+              />
+              <span className="font-serif font-bold text-base text-[#202124] truncate tracking-tight">
+                Blogger
+              </span>
+            </NavLink>
+          </div>
 
-        {/* Center: Search Posts Capsule Input matching Blogger */}
-        <div className="flex-1 max-w-2xl mx-4 hidden sm:block">
-          <div className="relative flex items-center bg-[#f1f3f4] hover:bg-[#e8eaed] focus-within:bg-white focus-within:shadow-md focus-within:ring-1 focus-within:ring-[#dadce0] rounded-full px-4 py-2 transition-all">
-            <Search size={18} className="text-[#5f6368] mr-3 shrink-0" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                const el = document.getElementById("blogger-search-event") as HTMLInputElement | null;
-                if (el) {
-                  el.value = e.target.value;
-                  el.dispatchEvent(new Event("input", { bubbles: true }));
-                }
-              }}
-              placeholder="Search posts"
-              className="w-full bg-transparent text-sm text-[#202124] placeholder-[#5f6368] outline-none"
-            />
+          {/* Center: Search Posts Capsule Input on PC/Tablet */}
+          <div className="flex-1 max-w-2xl mx-4 hidden sm:block">
+            <div className="relative flex items-center bg-[#f1f3f4] hover:bg-[#e8eaed] focus-within:bg-white focus-within:shadow-md focus-within:ring-1 focus-within:ring-[#dadce0] rounded-full px-4 py-2 transition-all">
+              <Search size={18} className="text-[#5f6368] mr-3 shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Search posts"
+                className="w-full bg-transparent text-sm text-[#202124] placeholder-[#5f6368] outline-none"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => handleSearchChange("")}
+                  className="text-[#5f6368] hover:text-[#202124] p-0.5 mr-1"
+                  title="Clear search"
+                >
+                  <X size={15} />
+                </button>
+              )}
+              <button
+                type="button"
+                title="Search posts by title, label, or slug"
+                className="text-[#5f6368] hover:text-[#202124] p-0.5 ml-1"
+              >
+                <Info size={18} />
+              </button>
+            </div>
+          </div>
+
+          {/* Hidden bridge input for communicating search queries */}
+          <input
+            id="blogger-search-event"
+            type="hidden"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+
+          {/* Right side: Mobile search trigger, Quick Launcher, User Avatar */}
+          <div className="flex items-center gap-1 sm:gap-2 relative shrink-0" ref={dropdownRef}>
             <button
               type="button"
-              title="Search tips"
-              className="text-[#5f6368] hover:text-[#202124] p-0.5 ml-2"
+              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+              className={`sm:hidden p-2 rounded-full transition-colors flex items-center justify-center ${
+                mobileSearchOpen ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-[#5f6368] hover:bg-[#f1f3f4]"
+              }`}
+              title="Search posts"
+              aria-label="Toggle mobile search"
             >
-              <Info size={18} />
+              <Search size={19} />
             </button>
-          </div>
-        </div>
 
-        {/* Hidden bridge input for communicating search queries */}
-        <input
-          id="blogger-search-event"
-          type="hidden"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-
-        {/* Right side: Help icon, Google 9-dots apps icon, user avatar */}
-        <div className="flex items-center gap-1.5 sm:gap-2 relative" ref={dropdownRef}>
-          <button
-            type="button"
-            className="p-2 text-[#5f6368] hover:bg-[#f1f3f4] rounded-full transition-colors hidden sm:flex items-center justify-center"
-            title="Help"
-          >
-            <HelpCircle size={20} />
-          </button>
-
-          {/* Google Apps 9-dots grid */}
-          <button
-            type="button"
-            className="p-2 text-[#5f6368] hover:bg-[#f1f3f4] rounded-full transition-colors flex items-center justify-center"
-            title="Google apps"
-          >
-            <svg className="w-5 h-5 fill-[#5f6368]" viewBox="0 0 24 24">
-              <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM6 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-            </svg>
-          </button>
-
-          {/* User Profile Avatar */}
-          <div className="relative">
-            <button
-              onClick={() => setUserDropdown(!userDropdown)}
-              className="p-0.5 rounded-full hover:ring-2 hover:ring-[#dadce0] transition-all flex items-center justify-center"
-              title="Google Account: MD. Shinha Sarder"
+            <NavLink
+              to="/admin/seo"
+              className="p-2 text-[#5f6368] hover:bg-[#f1f3f4] rounded-full transition-colors hidden sm:flex items-center justify-center"
+              title="All Settings"
             >
+              <Settings size={19} />
+            </NavLink>
+
+            {/* Quick Apps 9-dots launcher */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setAppsDropdown(!appsDropdown);
+                  setUserDropdown(false);
+                }}
+                className={`p-2 rounded-full transition-colors flex items-center justify-center ${
+                  appsDropdown ? "bg-[#f1f3f4] text-[#202124]" : "text-[#5f6368] hover:bg-[#f1f3f4]"
+                }`}
+                title="Admin Quick Tools"
+              >
+                <svg className="w-5 h-5 fill-[#5f6368]" viewBox="0 0 24 24">
+                  <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM6 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                </svg>
+              </button>
+
+              {appsDropdown && (
+                <div className="absolute right-0 top-11 w-64 max-w-[calc(100vw-1rem)] bg-white rounded-xl shadow-xl border border-[#dadce0] p-3 z-50 grid grid-cols-3 gap-2">
+                  {[
+                    { to: "/admin/posts", icon: FileText, label: "Posts" },
+                    { to: "/admin/pages", icon: Copy, label: "Pages" },
+                    { to: "/admin/media", icon: Images, label: "Media" },
+                    { to: "/admin/seo", icon: Settings, label: "Settings" },
+                    { to: "/admin/theme", icon: Palette, label: "Theme" },
+                    { to: "/admin/profile-data", icon: Layout, label: "Layout" },
+                    { to: "/admin/dashboard", icon: BarChart2, label: "Stats" },
+                    { to: "/admin/songs", icon: Music, label: "Songs" },
+                    { to: "/admin/books", icon: BookOpen, label: "Books" },
+                  ].map((app) => {
+                    const AppIcon = app.icon;
+                    return (
+                      <NavLink
+                        key={app.to}
+                        to={app.to}
+                        onClick={() => setAppsDropdown(false)}
+                        className="flex flex-col items-center justify-center gap-1 p-2 rounded-lg hover:bg-[#f1f3f4] text-[#3c4043] text-[11px] font-medium text-center transition-colors"
+                      >
+                        <AppIcon size={18} className="text-[#1a73e8]" />
+                        <span className="truncate w-full">{app.label}</span>
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* User Profile Avatar */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setUserDropdown(!userDropdown);
+                  setAppsDropdown(false);
+                }}
+                className="p-0.5 rounded-full hover:ring-2 hover:ring-[#dadce0] transition-all flex items-center justify-center"
+                title="Google Account: MD. Shinha Sarder"
+              >
               <img
                 src="/profile.webp"
                 alt="MD. Shinha Sarder"
@@ -429,8 +511,35 @@ export const AdminLayout = () => {
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
+
+        {/* Mobile Expandable Search Bar */}
+        {mobileSearchOpen && (
+          <div className="sm:hidden px-3 pb-2.5 pt-0.5 border-t border-[#f1f3f4]">
+            <div className="relative flex items-center bg-[#f1f3f4] focus-within:bg-white focus-within:ring-1 focus-within:ring-[#1a73e8] rounded-full px-3 py-1.5">
+              <Search size={16} className="text-[#5f6368] mr-2 shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Search posts..."
+                className="w-full bg-transparent text-xs text-[#202124] placeholder-[#5f6368] outline-none"
+                autoFocus
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => handleSearchChange("")}
+                  className="text-[#5f6368] p-0.5"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Main Body: Sidebar + Content */}
@@ -473,7 +582,7 @@ export const AdminLayout = () => {
         )}
 
         {/* Content Area */}
-        <main className="flex-1 min-w-0 overflow-y-auto bg-white p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 min-w-0 overflow-y-auto bg-[#f8f9fa] p-3 sm:p-6 lg:p-8">
           <div className="max-w-6xl mx-auto">
             <Outlet />
           </div>

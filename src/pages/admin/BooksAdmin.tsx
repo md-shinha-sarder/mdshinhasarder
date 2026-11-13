@@ -50,32 +50,41 @@ export default function BooksAdmin() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
+    <div className="space-y-6 font-sans">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#dadce0] pb-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2.5">
-            <BookOpen className="w-7 h-7 text-primary" />
-            <span>Books &amp; Publications Manager</span>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#202124] flex items-center gap-2">
+            <BookOpen className="w-6 h-6 text-[#e37400]" />
+            <span>Books &amp; Publications</span>
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs sm:text-sm text-[#5f6368] mt-0.5">
             Add, update, or edit published books, Google Books links, and Chaptra catalog entries.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => { if (confirm("Reset catalog?")) { resetBooks(); toast.success("Reset done"); } }}>
-            <RotateCcw className="w-4 h-4 mr-1.5" />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-[#dadce0] text-[#5f6368] hover:bg-[#f1f3f4] h-8 text-xs"
+            onClick={() => { if (confirm("Reset catalog?")) { resetBooks(); toast.success("Reset done"); } }}
+          >
+            <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
             Reset Books
           </Button>
 
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => setEditing({ ...blankBook, id: `book-${Date.now()}` })} className="bg-primary text-primary-foreground">
-                <Plus size={16} className="mr-1.5" /> Add New Book
+              <Button
+                size="sm"
+                onClick={() => setEditing({ ...blankBook, id: `book-${Date.now()}` })}
+                className="bg-[#e37400] hover:bg-[#d56b00] text-white text-xs font-medium rounded-full px-4 h-8 shadow-sm"
+              >
+                <Plus size={15} className="mr-1" /> Add New Book
               </Button>
             </DialogTrigger>
 
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90dvh] overflow-y-auto bg-white border border-[#dadce0] text-[#202124]">
               <DialogHeader>
                 <DialogTitle>{editing && books.some((b) => b.id === editing.id) ? "Edit Book" : "Add Book"}</DialogTitle>
               </DialogHeader>

@@ -12,7 +12,7 @@ import { postPath } from "@/lib/postUrl";
 import { buildSeo } from "@/lib/seo";
 import { buildAlt, enhanceContentImages, toFullResolutionImageUrl } from "@/lib/imageSeo";
 import { getStoredAdminPosts, getCachedAllPosts, getCachedAllPages } from "@/lib/postSync";
-import { resolveMediaUrl } from "@/lib/mediaUrl";
+import { resolveMediaUrl, handleUploadedImageError } from "@/lib/mediaUrl";
 import { toast } from "sonner";
 
 const fmt = (d?: string | null) => {
@@ -564,9 +564,7 @@ const PostDetailContent = () => {
                         decoding="async"
                         {...({ fetchpriority: "high" } as any)}
                         className="w-full max-w-full h-auto object-contain rounded-2xl group-hover:scale-[1.008] transition-transform duration-300"
-                        onError={(e) => {
-                          e.currentTarget.src = "/hero-portrait.jpg";
-                        }}
+                        onError={(e) => handleUploadedImageError(e.currentTarget, post.image)}
                       />
                     </div>
                   </div>
@@ -669,11 +667,12 @@ const PostDetailContent = () => {
                             {r.image && (
                               <div className="w-full aspect-[16/9] bg-slate-100 dark:bg-black overflow-hidden">
                                 <img
-                                  src={r.image}
+                                  src={resolveMediaUrl(r.image)}
                                   alt={buildAlt(r.title, rTags)}
                                   loading="lazy"
                                   decoding="async"
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  onError={(e) => handleUploadedImageError(e.currentTarget, r.image)}
                                 />
                               </div>
                             )}

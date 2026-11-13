@@ -58,7 +58,7 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
     editorProps: {
       attributes: {
         class:
-          "min-h-[280px] max-h-[600px] overflow-y-auto px-4 py-3 focus:outline-none prose prose-invert max-w-none text-foreground text-base leading-relaxed",
+          "min-h-[300px] max-h-[600px] overflow-y-auto px-4 py-3 focus:outline-none prose prose-slate max-w-none text-[#202124] text-sm sm:text-base leading-relaxed",
       },
     },
     onUpdate: ({ editor }) => {
@@ -100,9 +100,9 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
   };
 
   return (
-    <div className="border border-border/80 rounded-xl overflow-hidden bg-card/60 backdrop-blur-md shadow-lg transition-all focus-within:border-amber-400/50">
+    <div className="border border-[#dadce0] rounded-xl overflow-hidden bg-white shadow-xs transition-all focus-within:border-[#1a73e8]">
       {/* Editor Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 p-2 bg-secondary/40 border-b border-border/60 select-none">
+      <div className="flex flex-wrap items-center gap-1 p-2 bg-[#f8f9fa] border-b border-[#dadce0] select-none text-[#3c4043]">
         {/* Headings */}
         <Button
           type="button"
@@ -187,7 +187,7 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
           size="sm"
           variant={editor.isActive("highlight") ? "secondary" : "ghost"}
           onClick={toggleAmberHighlight}
-          className="h-8 px-2 text-xs gap-1 text-amber-400 bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30"
+          className="h-8 px-2 text-xs gap-1 text-amber-700 bg-amber-100 hover:bg-amber-200 border border-amber-300"
           title="Highlight Text (Gold)"
         >
           <Highlighter size={14} /> Highlight
@@ -200,8 +200,8 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
           onClick={setLink}
           className={`h-8 px-2 text-xs gap-1 ${
             editor.isActive("link")
-              ? "text-amber-300 bg-amber-500/25 border border-amber-400/50"
-              : "text-amber-400 hover:text-amber-300"
+              ? "text-[#1a73e8] bg-[#e8f0fe] border border-[#d2e3fc]"
+              : "text-[#3c4043] hover:text-[#1a73e8]"
           }`}
           title="Add or Edit Link"
         >
@@ -290,16 +290,16 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
       </div>
 
       {/* Editor Body */}
-      <div className="relative bg-background/50">
+      <div className="relative bg-white">
         <EditorContent editor={editor} />
       </div>
 
       {/* Word and Character Count Footer */}
-      <div className="flex items-center justify-between px-3 py-1.5 text-xs text-muted-foreground bg-secondary/20 border-t border-border/40">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 text-xs text-[#5f6368] bg-[#f8f9fa] border-t border-[#e8eaed]">
         <span className="flex items-center gap-2">
-          <span>Tip: Select any word and click <strong className="text-amber-400">Highlight</strong> or <strong className="text-amber-400">Link</strong></span>
+          <span>Tip: Select text and click <strong className="text-amber-700">Highlight</strong> or <strong className="text-[#1a73e8]">Link</strong></span>
         </span>
-        <span className="text-[11px] font-mono">TipTap Editor • Edge Ready</span>
+        <span className="text-[11px] font-mono">TipTap Visual Editor</span>
       </div>
     </div>
   );

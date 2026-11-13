@@ -24,10 +24,11 @@ import {
   X,
   FileText,
   Code,
+  Image as ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PhotoUploadBox } from "@/components/admin/PhotoUploadBox";
-import { resolveMediaUrl } from "@/lib/mediaUrl";
+import { resolveMediaUrl, handleUploadedImageError } from "@/lib/mediaUrl";
 import { usePosts } from "@/hooks/usePosts";
 import { TipTapEditor } from "@/components/editor/TipTapEditor";
 import { postPath } from "@/lib/postUrl";
@@ -300,7 +301,6 @@ const PostsAdmin = () => {
     if (!editing.title.trim()) return toast.error("Please enter a title.");
     const finalSlug = (editing.slug || slugify(editing.title)).trim();
     if (!finalSlug) return toast.error("Please provide a URL slug.");
-    if (!editing.cover_url) return toast.error("Please add a cover image.");
 
     setSaving(true);
     try {
@@ -505,16 +505,32 @@ const PostsAdmin = () => {
                     />
                   )}
 
-                  {/* Square thumbnail matching image.png */}
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden bg-[#f1f3f4] border border-[#e8eaed] shrink-0">
-                    <img
-                      src={imgSrc || "/profile.webp"}
-                      alt={p.title}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = "/profile.webp";
-                      }}
-                    />
+                  {/* Square thumbnail showing ONLY the post's own photo */}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden bg-[#f1f3f4] border border-[#e8eaed] shrink-0 flex items-center justify-center relative">
+                    {imgSrc ? (
+                      <>
+                        <img
+                          src={imgSrc}
+                          alt={p.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) =>
+                            handleUploadedImageError(
+                              e.currentTarget,
+                              p.cover_url || (p as any).image,
+                              () => {
+                                const fallback = e.currentTarget.nextElementSibling;
+                                if (fallback) fallback.classList.remove("hidden");
+                              }
+                            )
+                          }
+                        />
+                        <div className="hidden w-full h-full items-center justify-center text-[#9aa0a6]">
+                          <ImageIcon size={20} />
+                        </div>
+                      </>
+                    ) : (
+                      <ImageIcon size={20} className="text-[#9aa0a6]" />
+                    )}
                   </div>
 
                   {/* Post Title & Meta */}
@@ -581,8 +597,8 @@ const PostsAdmin = () => {
                     <span>{viewsCount}</span>
                   </div>
 
-                  {/* Hover Quick Action Buttons */}
-                  <div className="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity pl-1 border-l border-[#f1f3f4]">
+                  {/* Quick Action Buttons (always reachable on mobile, hover on desktop) */}
+                  <div className="flex items-center gap-0.5 sm:gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity pl-1 border-l border-[#f1f3f4]">
                     <Link
                       to={postPath(p)}
                       target="_blank"
@@ -620,16 +636,16 @@ const PostsAdmin = () => {
         )}
       </div>
 
-      {/* FULL-SCREEN DEVICE EDITOR WINDOW (Device under a full) */}
+      {/* FULL-SCREEN DEVICE EDITOR WINDOW (Mobile & PC responsive) */}
       {open && editing && (
-        <div className="fixed inset-0 z-50 bg-[#ffffff] flex flex-col w-screen h-screen overflow-hidden animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 bg-[#ffffff] flex flex-col w-screen h-[100dvh] overflow-hidden animate-in fade-in duration-150">
           {/* Top Full Device Bar */}
-          <header className="h-14 sm:h-16 bg-white border-b border-[#dadce0] px-4 sm:px-6 flex items-center justify-between shrink-0 shadow-xs select-none">
-            <div className="flex items-center gap-3 min-w-0">
+          <header className="h-14 sm:h-16 bg-white border-b border-[#dadce0] px-3 sm:px-6 flex items-center justify-between gap-2 shrink-0 shadow-xs select-none">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="p-2 text-[#5f6368] hover:bg-[#f1f3f4] rounded-full transition-colors"
+                className="p-2 text-[#5f6368] hover:bg-[#f1f3f4] rounded-full transition-colors shrink-0"
                 title="Back to posts"
               >
                 <ArrowLeft size={20} />
@@ -637,10 +653,15 @@ const PostsAdmin = () => {
               <img
                 src="/images/site-logo.png"
                 onError={(e) => {
-                  e.currentTarget.src = "/profile.webp";
+                  if (!e.currentTarget.dataset.triedFallback) {
+                    e.currentTarget.dataset.triedFallback = "1";
+                    e.currentTarget.src = "/site-logo.png";
+                  } else {
+                    e.currentTarget.style.display = "none";
+                  }
                 }}
                 alt="Site Logo"
-                className="w-8 h-8 rounded-full object-cover border border-orange-500/40 shrink-0"
+                className="w-8 h-8 rounded-full object-cover border border-orange-500/40 shrink-0 hidden sm:block"
               />
               <div className="min-w-0">
                 <div className="text-sm sm:text-base font-semibold text-[#202124] truncate">
@@ -705,11 +726,11 @@ const PostsAdmin = () => {
             </div>
           </header>
 
-          {/* Full Screen Scrollable Canvas + Sidebar */}
-          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-[#f8f9fa]">
+          {/* Full Screen Scrollable Canvas + Sidebar (scrolls smoothly on both Mobile & PC) */}
+          <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden bg-[#f8f9fa]">
             {/* Main Rich Content Area */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-              <div className="max-w-4xl mx-auto space-y-6 bg-white p-6 sm:p-8 rounded-2xl border border-[#dadce0] shadow-sm">
+            <div className="lg:flex-1 lg:overflow-y-auto p-3 sm:p-6 lg:p-8">
+              <div className="max-w-4xl mx-auto space-y-5 sm:space-y-6 bg-white p-4 sm:p-8 rounded-2xl border border-[#dadce0] shadow-sm">
                 <div>
                   <Input
                     value={editing.title}
@@ -719,13 +740,13 @@ const PostsAdmin = () => {
                   />
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-[#5f6368] font-mono bg-[#f8f9fa] p-2.5 rounded-lg border border-[#e8eaed]">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-[#5f6368] font-mono bg-[#f8f9fa] p-2.5 rounded-lg border border-[#e8eaed]">
                   <span className="font-semibold text-[#202124]">Permalink:</span>
-                  <span>https://mdshinhasarder.com/post/</span>
+                  <span className="truncate">https://mdshinhasarder.com/post/</span>
                   <input
                     value={editing.slug}
                     onChange={(e) => setEditing({ ...editing, slug: e.target.value })}
-                    className="bg-transparent border-b border-dashed border-[#5f6368] outline-none flex-1 text-[#1a73e8]"
+                    className="bg-transparent border-b border-dashed border-[#5f6368] outline-none flex-1 min-w-[140px] text-[#1a73e8]"
                     placeholder="slug-url"
                   />
                 </div>
@@ -854,49 +875,34 @@ const PostsAdmin = () => {
             </div>
 
             {/* Right Settings Sidebar */}
-            <div className="w-full lg:w-96 shrink-0 bg-white border-t lg:border-t-0 lg:border-l border-[#dadce0] p-5 lg:overflow-y-auto space-y-6">
+            <div className="w-full lg:w-96 shrink-0 bg-white border-t lg:border-t-0 lg:border-l border-[#dadce0] p-4 sm:p-5 lg:overflow-y-auto space-y-6">
               <h4 className="text-sm font-bold text-[#202124] uppercase tracking-wider pb-2 border-b border-[#f1f3f4] flex items-center gap-2">
                 <FileText size={16} className="text-[#1a73e8]" />
                 <span>Post Settings</span>
               </h4>
 
-              {/* Dedicated Photo Upload Box saving to /images/ folder */}
+              {/* Direct Photo Upload Box — displays ONLY the uploaded photo */}
               <PhotoUploadBox
-                label="Post Cover Photo Upload Box"
-                description="Upload photo directly to /images/ folder — automatically generates domain link and applies as cover photo."
+                label="Post Photo Upload"
+                description="Upload a photo — only the photo you upload is saved and displayed."
+                value={editing.cover_url || ""}
                 onUploadSuccess={(res) => {
                   setEditing({ ...editing, cover_url: res.domainUrl });
                 }}
                 onApply={(domainUrl) => {
                   setEditing({ ...editing, cover_url: domainUrl });
                 }}
-                applyButtonLabel="Apply as Cover Photo"
+                onClear={() => setEditing({ ...editing, cover_url: "" })}
               />
 
               <div>
-                <Label className="text-xs font-semibold text-[#5f6368]">Cover Image URL *</Label>
+                <Label className="text-xs font-semibold text-[#5f6368]">Photo URL (Optional)</Label>
                 <Input
                   value={editing.cover_url || ""}
                   onChange={(e) => setEditing({ ...editing, cover_url: e.target.value })}
                   placeholder="https://mdshinhasarder.com/images/..."
                   className="bg-white border-[#dadce0] text-[#202124] font-mono text-xs mt-1"
                 />
-                {editing.cover_url && (
-                  <div className="mt-2 p-2 rounded-lg border border-[#e8eaed] bg-[#f8f9fa] flex items-center gap-3">
-                    <img
-                      src={resolveMediaUrl(editing.cover_url)}
-                      alt="Cover Preview"
-                      className="w-14 h-14 object-cover rounded border border-[#dadce0] shrink-0"
-                      onError={(e) => {
-                        e.currentTarget.src = "/profile.webp";
-                      }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold text-[#1e8e3e]">Active Cover Photo</div>
-                      <div className="text-[11px] font-mono text-[#5f6368] truncate">{editing.cover_url}</div>
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div>
